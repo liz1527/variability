@@ -84,9 +84,9 @@ vary2 = median_absolute_deviation(flux2, axis=1)
 magmask = avgfluxperob2 < 21
 outliers2 = outliers2*magmask
 varydata = tb2[outliers2]
-#cols = fits.ColDefs(varydata)
-#hdu = fits.BinTableHDU.from_columns(cols)
-#hdu.writeto('variable_mag_flux_table_with06B_mag21.fits')
+cols = fits.ColDefs(varydata)
+hdu = fits.BinTableHDU.from_columns(cols)
+hdu.writeto('variable_tables/variable_mag_flux_table_with06B_mag21.fits')
 
 varyfluxcorr = flux2[outliers2]
 varymadcorr = vary2[outliers2]
@@ -122,17 +122,17 @@ plt.ylabel('MAD Magnitude')
 #
 ##plt.plot(varymeancorr, varymadcorr, 'md', mfc='none', markersize=10)
 
-#### plot mod z score as contours ###
-#xi = np.linspace(min(avgfluxperob2), max(avgfluxperob2), 1000)
-#yi = np.logspace(-4, 1, 5000)
-#
-#
-#zi = griddata(avgfluxperob2, vary2, modz2, xi, yi, interp='linear')
-##plt.plot(avgfluxperob, vary, 'b+')
-#plt.figure(1)
-#plt.contour(xi, yi, zi, [0,4,5,6,8,10], zorder=3)
-#cbar = plt.colorbar()
-#cbar.set_label('Modified z-score')
+### plot mod z score as contours ###
+xi = np.linspace(min(avgfluxperob2), max(avgfluxperob2), 1000)
+yi = np.logspace(-4, 1, 5000)
+
+
+zi = griddata(avgfluxperob2, vary2, modz2, xi, yi, interp='linear')
+#plt.plot(avgfluxperob, vary, 'b+')
+plt.figure(1)
+plt.contour(xi, yi, zi, [0,4,5,6,8,10], zorder=3)
+cbar = plt.colorbar()
+cbar.set_label('Modified z-score')
 
 #interest = tb2['NUMBER_05B'] == 1
 #xint = avgfluxperob2[interest]
