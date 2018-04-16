@@ -106,30 +106,21 @@ def month_mag_flux(month):
         
     return semtb
 
+#%% 
+    
 months = ['sep05','oct05','nov05','dec05', 'jan06', 'jan07']
 
-sep05 = month_mag_flux(months[0])
-oct05 = month_mag_flux(months[1])
-nov05 = month_mag_flux(months[2])
-dec05 = month_mag_flux(months[3])
-jan06 = month_mag_flux(months[4])
-jan07 = month_mag_flux(months[5])
-
-#%% Join these tables using their IDs (will be fine for just this part as numbers alwasy match)
-print('Join 1')
-semcom = join(sep05, oct05, keys='NUMBER')
-print('Join 2')
-semcom = join(semcom, nov05, keys='NUMBER')
-print('Join 3')
-semcom = join(semcom, dec05, keys='NUMBER')
-print('Join 4')
-semcom = join(semcom, jan06, keys='NUMBER')
-print('Join 5')
-semcom = join(semcom, jan07, keys='NUMBER')
-#print('Join 6')
-#semcom = join(semcom, sem11B, keys='NUMBER')
-#print('Join 7')
-#semcom = join(semcom, sem12B, keys='NUMBER')
+for i, month  in enumerate(months):
+    #create month table with correctly renamed columns
+    montb = month_mag_flux(month)
+    print('Join ' + str(i))
+    if i == 0:
+        semcom = montb # for the first month just make the combined table the 
+                        #month table
+    else:
+        semcom = join(semcom, montb, keys='NUMBER') #join tables together using 
+                                                    # IDs in my catalogue
+    
 
 ##%% Match these with various catalogs to create final tables
 #from astropy.coordinates import match_coordinates_sky
