@@ -20,11 +20,11 @@ import vari_funcs #my module to help run code neatly
 #from numpy.lib.recfunctions import append_fields
 
 ### Open the fits files and get data ###
-combined = fits.open('mag_flux_tables/mag_flux_table_best.fits')
+combined = fits.open('mag_flux_tables/month_mag_flux_table_best.fits')
 tbdata = combined[1].data
-chandra = fits.open('mag_flux_tables/xray_mag_flux_table_best.fits')
+chandra = fits.open('mag_flux_tables/month_xray_mag_flux_table_best.fits')
 chandata = chandra[1].data
-stars = fits.open('mag_flux_tables/stars_mag_flux_table.fits')
+stars = fits.open('mag_flux_tables/month_stars_mag_flux_table.fits')
 sdata = stars[1].data
 
 ### Restrict objects to those in the Chandra field ###
@@ -37,11 +37,16 @@ sdata = stars[1].data
 #xmmdata = chandata[mask]
 #chandata = chandata[~mask]
 
-## Create arrays of flux values ###
-fluxn = vari_funcs.mag5_stacks(tbdata)
-fluxchann = vari_funcs.mag5_stacks(chandata) # for chandra non-stellar objects
-sfluxn = vari_funcs.mag5_stacks(sdata)
+### Create arrays of flux values ###
+#fluxn = vari_funcs.mag5_stacks(tbdata)
+#fluxchann = vari_funcs.mag5_stacks(chandata) # for chandra non-stellar objects
+#sfluxn = vari_funcs.mag5_stacks(sdata)
 #fluxxmm = vari_funcs.mag5_stacks(xmmdata)
+
+## Create arrays of flux values ###
+fluxn = vari_funcs.mag5_months(tbdata)
+fluxchann = vari_funcs.mag5_months(chandata) # for chandra non-stellar objects
+sfluxn = vari_funcs.mag5_months(sdata)
 
 ### remove values that are +/-99 ###
 fluxn, tbdata = vari_funcs.no99(fluxn, tbdata)

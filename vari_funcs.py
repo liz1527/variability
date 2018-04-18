@@ -153,6 +153,175 @@ def magerr5_stacks(tbdata):
                 tbdata['MAGERR_APER_11B'][:,4],tbdata['MAGERR_APER_12B'][:,4]], axis=1)
     return fluxerr 
 
+### Define Functions ###
+def flux4_months(tbdata):
+    ''' Function that takes a catalogue of flux data from the sextracor output
+    and makes a np array containing only the 3 arcsec aperture data for each 
+    epoch
+    This version is edited for the month stacks
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        flux = an array with 8 columns containing flux values for each year '''
+        
+    flux = np.stack(([tbdata['FLUX_APER_05B'][:,3], tbdata['FLUX_APER_06B'][:,3],
+                tbdata['FLUX_APER_07B'][:,3], tbdata['FLUX_APER_08B'][:,3],
+                tbdata['FLUX_APER_09B'][:,3], tbdata['FLUX_APER_10B'][:,3], 
+                tbdata['FLUX_APER_11B'][:,3], tbdata['FLUX_APER_12B'][:,3]]), axis=1)
+    return flux
+
+def fluxerr4_months(tbdata):
+    ''' Function that takes a catalogue of flux data from the sextracor output
+    and makes a np array containing only the 3 arcsec aperture error data for 
+    each epoch
+    This version is edited for the month stacks
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        fluxerr = an array with 8 columns containing flux error values for each
+        year '''
+        
+    fluxerr = np.stack([tbdata['FLUXERR_APER_05B'][:,3],tbdata['FLUXERR_APER_06B'][:,3],
+                tbdata['FLUXERR_APER_07B'][:,3],tbdata['FLUXERR_APER_08B'][:,3],
+                tbdata['FLUXERR_APER_09B'][:,3],tbdata['FLUXERR_APER_10B'][:,3], 
+                tbdata['FLUXERR_APER_11B'][:,3],tbdata['FLUXERR_APER_12B'][:,3]], axis=1)
+    return fluxerr
+
+def flux5_monthss(tbdata):
+    ''' Function that takes a catalogue of flux data from the sextracor output
+    and makes a np array containing only the 2 arcsec aperture data for each 
+    epoch
+    This version is edited for the month stacks
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        flux = an array with 8 columns containing flux values for each year '''
+        
+    flux = np.stack(([tbdata['FLUX_APER_05B'][:,4], tbdata['FLUX_APER_06B'][:,4],
+                tbdata['FLUX_APER_07B'][:,4], tbdata['FLUX_APER_08B'][:,4],
+                tbdata['FLUX_APER_09B'][:,4], tbdata['FLUX_APER_10B'][:,4], 
+                tbdata['FLUX_APER_11B'][:,4], tbdata['FLUX_APER_12B'][:,4]]), axis=1)
+    return flux
+
+def fluxerr5_months(tbdata):
+    ''' Function that takes a catalogue of flux data from the sextracor output
+    and makes a np array containing only the 2 arcsec aperture error data for 
+    each epoch
+    This version is edited for the month stacks
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        fluxerr = an array with 8 columns containing flux error values for each
+        year '''
+        
+    fluxerr = np.stack([tbdata['FLUXERR_APER_05B'][:,3],tbdata['FLUXERR_APER_06B'][:,3],
+                tbdata['FLUXERR_APER_07B'][:,3],tbdata['FLUXERR_APER_08B'][:,3],
+                tbdata['FLUXERR_APER_09B'][:,3],tbdata['FLUXERR_APER_10B'][:,3], 
+                tbdata['FLUXERR_APER_11B'][:,3],tbdata['FLUXERR_APER_12B'][:,3]], axis=1)
+    return fluxerr
+   
+def mag4_months(tbdata):
+    ''' Function that takes a catalogue of magnitude data from the sextracor 
+    output and makes a np array containing only the 2 arcsec aperture data for 
+    each epoch
+    This version is edited for the month stacks
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        flux = an array with 8 columns containing flux values for each year '''
+        
+    months = ['sep05','oct05','nov05','dec05', 'jan06', 'dec06', 'jan07',  
+          'aug07', 'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 'jul09',  
+          'aug09', 'sep09', 'oct09', 'nov09', 'dec09', 'jan10', 'feb10', 
+          'aug10', 'sep10', 'oct10', 'nov10', 'dec10', 'jan11', 'feb11', 
+          'aug11', 'sep11', 'oct11', 'nov11', 'dec11', 'jan12', 'feb12', 
+          'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
+    
+    for month in months:
+        if month == 'sep05':
+            flux = tbdata['MAG_APER_'+month][:,3]
+        else:
+            flux = np.vstack([flux, tbdata['MAG_APER_'+month][:,3]])
+            
+    return flux
+
+def magerr4_months(tbdata):
+    ''' Function that takes a catalogue of magnitude data from the sextracor 
+    output and makes a np array containing only the 2 arcsec aperture error 
+    data for each epoch
+    This version is edited for the month stacks
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        fluxerr = an array with 8 columns containing flux error values for each
+        year '''
+        
+    months = ['sep05','oct05','nov05','dec05', 'jan06', 'dec06', 'jan07',  
+          'aug07', 'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 'jul09',  
+          'aug09', 'sep09', 'oct09', 'nov09', 'dec09', 'jan10', 'feb10', 
+          'aug10', 'sep10', 'oct10', 'nov10', 'dec10', 'jan11', 'feb11', 
+          'aug11', 'sep11', 'oct11', 'nov11', 'dec11', 'jan12', 'feb12', 
+          'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
+    
+    for month in months:
+        if month == 'sep05':
+            fluxerr = tbdata['MAGERR_APER_'+month][:,3]
+        else:
+            fluxerr = np.vstack([fluxerr, tbdata['MAGERR_APER_'+month][:,3]])
+            
+    return fluxerr
+
+def mag5_months(tbdata):
+    ''' Function that takes a catalogue of magnitude data from the sextractor 
+    output and makes a np array containing only the 3 arcsec aperture data for
+    each epoch
+    This version is edited for the month stacks
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        flux = an array with 8 columns containing flux values for each year '''
+        
+    months = ['sep05','oct05','nov05','dec05', 'jan06', 'dec06', 'jan07',  
+          'aug07', 'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 'jul09',  
+          'aug09', 'sep09', 'oct09', 'nov09', 'dec09', 'jan10', 'feb10', 
+          'aug10', 'sep10', 'oct10', 'nov10', 'dec10', 'jan11', 'feb11', 
+          'aug11', 'sep11', 'oct11', 'nov11', 'dec11', 'jan12', 'feb12', 
+          'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
+    
+    for month in months:
+        if month == 'sep05':
+            flux = tbdata['MAG_APER_'+month][:,4]
+        else:
+            flux = np.vstack([flux, tbdata['MAG_APER_'+month][:,4]])
+
+    return flux
+
+def magerr5_months(tbdata):
+    ''' Function that takes a catalogue of magnitude data from the sextractor 
+    output and makes a np array containing only the 3 arcsec aperture error 
+    data for each epoch
+    This version is edited for the month stacks
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        fluxerr = an array with 8 columns containing flux error values for each
+        year '''
+        
+    months = ['sep05','oct05','nov05','dec05', 'jan06', 'dec06', 'jan07',  
+          'aug07', 'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 'jul09',  
+          'aug09', 'sep09', 'oct09', 'nov09', 'dec09', 'jan10', 'feb10', 
+          'aug10', 'sep10', 'oct10', 'nov10', 'dec10', 'jan11', 'feb11', 
+          'aug11', 'sep11', 'oct11', 'nov11', 'dec11', 'jan12', 'feb12', 
+          'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
+    
+    for month in months:
+        if month == 'sep05':
+            fluxerr = tbdata['MAGERR_APER_'+month][:,4]
+        else:
+            fluxerr = np.vstack([fluxerr, tbdata['MAGERR_APER_'+month][:,4]])
+            
+    return fluxerr 
+
 def lightcurve4(ob, fitsdata)  :
     ''' Function that plots the light curve of an object in terms of its flux 
     in an aperture 4 pixels across (i.e. 2 arcsec in diameter) 
@@ -442,10 +611,10 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
                 required '''
     
     fig = plt.figure()
-    avgfluxperob = np.mean(flux, axis=1) #for UDS
-    avgfluxchanperob = np.mean(fluxchan, axis=1) #for non-stellar chandra
+    avgfluxperob = np.mean(flux, axis=0) #for UDS
+    avgfluxchanperob = np.mean(fluxchan, axis=0) #for non-stellar chandra
     if stars == True:
-        savgfluxperob = np.mean(starflux, axis=1) #for stars
+        savgfluxperob = np.mean(starflux, axis=0) #for stars
 
     ### Check if normalisation is true and normalise if necessary ###
     if normalised == True:
@@ -461,10 +630,10 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
         flux = psf_correct_mag(flux, flux, 'median')
     ### Find out which plot type is specified and calculate appropriate statistic ###
     if plottype == 'mad':
-        vary = median_absolute_deviation(flux, axis=1)
-        varychan = median_absolute_deviation(fluxchan, axis=1)
+        vary = median_absolute_deviation(flux, axis=0)
+        varychan = median_absolute_deviation(fluxchan, axis=0)
         if stars == True:
-            varystar = median_absolute_deviation(starflux, axis=1)
+            varystar = median_absolute_deviation(starflux, axis=0)
         plt.ylabel('MAD')
     elif plottype == 'excess':
         if normalised == True:
@@ -476,10 +645,10 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
             varystar = sigmasq(starflux, fluxerr)
         plt.ylabel('Excess Variance')
     elif plottype == 'chisq':
-        [vary, _] = chisquare(flux, axis=1)
-        [varychan, _] = chisquare(fluxchan, axis=1)
+        [vary, _] = chisquare(flux, axis=0)
+        [varychan, _] = chisquare(fluxchan, axis=0)
         if stars == True:
-            [varystar, _] = chisquare(starflux, axis=1)
+            [varystar, _] = chisquare(starflux, axis=0)
     else:
         print('Invalid plottype') #returns if unrecognised value is entered
         return
@@ -487,16 +656,16 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
     ### Plot the variability v mean as appropriate ###
     if comparison == True:     
         
-        avgfluxperob2 = np.mean(flux2, axis=1) #for UDS
-        avgfluxchanperob2 = np.mean(fluxchan2, axis=1) #for non-stellar chandra
+        avgfluxperob2 = np.mean(flux2, axis=0) #for UDS
+        avgfluxchanperob2 = np.mean(fluxchan2, axis=0) #for non-stellar chandra
         
         if normalised == True:
             flux2old = flux # need for error calc
             flux2 = normalise_mag(flux2)
             fluxchan2 = normalise_mag(fluxchan2)     
         if plottype == 'mad':
-            varycorr = median_absolute_deviation(flux2, axis=1)
-            varychancorr = median_absolute_deviation(fluxchan2, axis=1)
+            varycorr = median_absolute_deviation(flux2, axis=0)
+            varychancorr = median_absolute_deviation(fluxchan2, axis=0)
         elif plottype == 'excess':
             if normalised == True:
                 # need to normalise the errors as well as the flux values
@@ -615,8 +784,8 @@ def err_correct(flux, fluxerr, fluxnew):
 
 def no99(fluxn, tbdata):
     fluxn[fluxn == 99] = np.nan
-    mask = ~np.isnan(fluxn).any(axis=1)
-    fluxn = fluxn[mask]
+    mask = ~np.isnan(fluxn).any(axis=0)
+    fluxn = fluxn[:,mask]
     tbdata = tbdata[mask]
     return fluxn, tbdata
 
