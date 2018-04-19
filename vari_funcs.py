@@ -353,7 +353,7 @@ def lightcurve4(ob, fitsdata)  :
     # normalise and correct for seeing
     flux = psf_correct(flux, flux, 'mean')
     fluxerr = psf_correct(flux, fluxerr, 'mean')
-    avgflux =np.mean(flux)
+    avgflux =np.nanmean(flux)
     normflux = flux/avgflux
     normerr = fluxerr/avgflux
     
@@ -404,13 +404,13 @@ def lightcurve5(ob, fitsdata)  :
     
     # normalise and correct for seeing
     fullflux = normalise_mag(fullflux)
-    avgfluxperepoch = np.median(fullflux, axis=0)#for UDS
-    avgflux = 1#np.median(fullflux)
+    avgfluxperepoch = np.nanmedian(fullflux, axis=0)#for UDS
+    avgflux = 1#np.nanmedian(fullflux)
     const = avgflux-avgfluxperepoch
     fluxcorr = flux + const[:,None]
 #    fluxcorr = psf_correct_mag(fullflux, flux, 'median')
     fluxerrcorr = err_correct(flux, fluxerr, fluxcorr)
-#    avgflux =np.mean(fluxcorr)
+#    avgflux =np.nanmean(fluxcorr)
 #    normflux = fluxcorr/avgflux
 #    normerr = fluxerrcorr/avgflux
     
@@ -454,8 +454,8 @@ def sigmasq(flux, baseerr):
         baseerr = array of errors that the mean error should be calculated from
     Output:
         sig = array of excess variance values for every object '''
-    avgflux = np.mean(flux, axis=1)
-    meanerr = np.mean(baseerr)
+    avgflux = np.nanmean(flux, axis=1)
+    meanerr = np.nanmean(baseerr)
     meanerrsq = meanerr**2
     N = np.size(flux, axis=1)
     numobs = np.size(flux, axis=0)
@@ -474,11 +474,11 @@ def fluxbin(min, max, flux, tbdata):
     Output:
         fluxbin = the array of fluxes for objects whose average flux is within 
                     the limits of the bin '''
-    avgflux = np.mean(flux, axis=1)
+    avgflux = np.nanmean(flux, axis=0)
     bina = avgflux >= min
     binb = avgflux < max
     bin = bina*binb
-    fluxbin = flux[bin]
+    fluxbin = flux[:,bin]
     tbdata = tbdata[bin]
     return fluxbin, tbdata
 
@@ -516,7 +516,7 @@ def normalise_flux(flux):
     Output:
         array of object flux values normalised to the average flux of the 
         object '''
-    avgflux = np.mean(flux, axis=1)
+    avgflux = np.nanmean(flux, axis=1)
     return flux / avgflux[:,None]
 
 
@@ -527,7 +527,7 @@ def normalise_mag(mag):
     Output:
         array of object flux values normalised to the average flux of the 
         object '''
-    avgflux = np.mean(mag, axis=1)
+    avgflux = np.nanmean(mag, axis=1)
     diff = avgflux - 1
     return mag - diff[:,None]
 
@@ -611,10 +611,10 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
                 required '''
     
     fig = plt.figure()
-    avgfluxperob = np.mean(flux, axis=0) #for UDS
-    avgfluxchanperob = np.mean(fluxchan, axis=0) #for non-stellar chandra
+    avgfluxperob = np.nanmean(flux, axis=0) #for UDS
+    avgfluxchanperob = np.nanmean(fluxchan, axis=0) #for non-stellar chandra
     if stars == True:
-        savgfluxperob = np.mean(starflux, axis=0) #for stars
+        savgfluxperob = np.nanmean(starflux, axis=0) #for stars
 
     ### Check if normalisation is true and normalise if necessary ###
     if normalised == True:
@@ -630,10 +630,10 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
         flux = psf_correct_mag(flux, flux, 'median')
     ### Find out which plot type is specified and calculate appropriate statistic ###
     if plottype == 'mad':
-        vary = median_absolute_deviation(flux, axis=0)
-        varychan = median_absolute_deviation(fluxchan, axis=0)
+        vary = median_absolute_deviation(flux, axis=0, ignore_nan=True)
+        varychan = median_absolute_deviation(fluxchan, axis=0, ignore_nan=True)
         if stars == True:
-            varystar = median_absolute_deviation(starflux, axis=0)
+            varystar = median_absolute_deviation(starflux, axis=0, ignore_nan=True)
         plt.ylabel('MAD')
     elif plottype == 'excess':
         if normalised == True:
@@ -656,16 +656,16 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
     ### Plot the variability v mean as appropriate ###
     if comparison == True:     
         
-        avgfluxperob2 = np.mean(flux2, axis=0) #for UDS
-        avgfluxchanperob2 = np.mean(fluxchan2, axis=0) #for non-stellar chandra
+        avgfluxperob2 = np.nanmean(flux2, axis=0) #for UDS
+        avgfluxchanperob2 = np.nanmean(fluxchan2, axis=0) #for non-stellar chandra
         
         if normalised == True:
             flux2old = flux # need for error calc
             flux2 = normalise_mag(flux2)
             fluxchan2 = normalise_mag(fluxchan2)     
         if plottype == 'mad':
-            varycorr = median_absolute_deviation(flux2, axis=0)
-            varychancorr = median_absolute_deviation(fluxchan2, axis=0)
+            varycorr = median_absolute_deviation(flux2, axis=0, ignore_nan=True)
+            varychancorr = median_absolute_deviation(fluxchan2, axis=0, ignore_nan=True)
         elif plottype == 'excess':
             if normalised == True:
                 # need to normalise the errors as well as the flux values
@@ -697,8 +697,8 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
 #    plt.xscale('log')
 #    plt.yscale('symlog', linthreshy=0.001)
     plt.yscale('log')
-    plt.ylim(2e-4, 3)
-    plt.xlim(9,26)
+#    plt.ylim(2e-4, 3)
+#    plt.xlim(9,26)
     plt.xlabel('Mean Magnitude')
     plt.legend()
     
@@ -725,12 +725,12 @@ def psf_correct_flux(baseflux, initflux, avgtype):
         Flux array with values crudely corrected for differences in seeing
         (average flux should now be the same for each epoch). '''
     if avgtype == 'mean':
-        avgfluxperepoch = np.mean(baseflux, axis=0)#for UDS
-        avgflux = np.mean(baseflux)
+        avgfluxperepoch = np.nanmean(baseflux, axis=0)#for UDS
+        avgflux = np.nanmean(baseflux)
         const = avgflux/avgfluxperepoch
     elif avgtype == 'median':
-        avgfluxperepoch = np.median(baseflux, axis=0)#for UDS
-        avgflux = np.median(baseflux)
+        avgfluxperepoch = np.nanmedian(baseflux, axis=0)#for UDS
+        avgflux = np.nanmedian(baseflux)
         const = avgflux/avgfluxperepoch
     else:
         print('Invalid basetype')
@@ -757,12 +757,12 @@ def psf_correct_mag(basemag, initmag, avgtype):
         Flux array with values crudely corrected for differences in seeing
         (average flux should now be the same for each epoch). '''
     if avgtype == 'mean':
-        avgfluxperepoch = np.mean(basemag, axis=0)#for UDS
-        avgflux = np.mean(basemag)
+        avgfluxperepoch = np.nanmean(basemag, axis=0)#for UDS
+        avgflux = np.nanmean(basemag)
         const = avgflux-avgfluxperepoch
     elif avgtype == 'median':
-        avgfluxperepoch = np.median(basemag, axis=0)#for UDS
-        avgflux = np.median(basemag)
+        avgfluxperepoch = np.nanmedian(basemag, axis=0)#for UDS
+        avgflux = np.nanmedian(basemag)
         const = avgflux-avgfluxperepoch
     else:
         print('Invalid basetype')
@@ -790,8 +790,8 @@ def no99(fluxn, tbdata):
     return fluxn, tbdata
 
 def mod_z_score(arr):
-    medx = np.median(arr)
-    mad = median_absolute_deviation(arr)
+    medx = np.nanmedian(arr)
+    mad = median_absolute_deviation(arr, ignore_nan=True)
     zvalues = np.array([(0.6745*(x-medx))/mad for x in arr])
     return zvalues
 
@@ -804,7 +804,7 @@ def find_outliers(flux, tbdata, bins, threshold=6):
             break
         fluxbin1, tbbin1 = fluxbin(binedge, bins[n+1], flux, tbdata)
         #calulate mad values in the bins
-        mad1 = median_absolute_deviation(fluxbin1, axis=1) #for UDS
+        mad1 = median_absolute_deviation(fluxbin1, axis=0, ignore_nan=True) #for UDS
         modz = mod_z_score(mad1)
         tbnew = np.hstack([tbnew, tbbin1])
         allmodz = np.append(allmodz, modz)

@@ -49,10 +49,23 @@ fluxchann = vari_funcs.mag5_months(chandata) # for chandra non-stellar objects
 sfluxn = vari_funcs.mag5_months(sdata)
 
 ### remove values that are +/-99 ###
-fluxn, tbdata = vari_funcs.no99(fluxn, tbdata)
-fluxchann, chandata = vari_funcs.no99(fluxchann, chandata)
-sfluxn, sdata = vari_funcs.no99(sfluxn, sdata)
+#fluxn, tbdata = vari_funcs.no99(fluxn, tbdata)
+#fluxchann, chandata = vari_funcs.no99(fluxchann, chandata)
+#sfluxn, sdata = vari_funcs.no99(sfluxn, sdata)
 #fluxxmm, xmmdata = vari_funcs.no99(fluxxmm, xmmdata)
+
+### Change 99s to nans so they are ignored ###
+fluxn[fluxn == 99] = np.nan
+fluxchann[fluxchann == 99] = np.nan
+sfluxn[sfluxn == 99] = np.nan
+
+### Remove rows where all are nans ###
+avgflux = np.nanmean(fluxn, axis=0)
+fluxn = fluxn[:,~np.isnan(avgflux)]
+avgflux = np.nanmean(fluxchann, axis=0)
+fluxchann = fluxchann[:,~np.isnan(avgflux)]
+avgflux = np.nanmean(sfluxn, axis=0)
+sfluxn = sfluxn[:,~np.isnan(avgflux)]
 
 #### normalise to 1 ###
 #fluxn = vari_funcs.normalise(fluxn)
