@@ -28,6 +28,7 @@ font = {'family' : 'DejaVu Sans',
 
 plt.rc('font', **font)
 
+
 ### Define Functions ###
 def flux4_stacks(tbdata):
     ''' Function that takes a catalogue of flux data from the sextracor output
@@ -322,6 +323,7 @@ def magerr5_months(tbdata):
             
     return fluxerr 
 
+
 def lightcurve4(ob, fitsdata)  :
     ''' Function that plots the light curve of an object in terms of its flux 
     in an aperture 4 pixels across (i.e. 2 arcsec in diameter) 
@@ -428,6 +430,58 @@ def lightcurve5(ob, fitsdata)  :
     plt.title('Light curve for object number %i' % ob)
     return
 
+def lightcurve5months(ob, fitsdata)  :
+    ''' Function that plots the light curve of an object in terms of its flux 
+    in an aperture 5 pixels across (i.e. 3 arcsec in diameter) 
+    Inputs:
+        ob = the ID of the object that you want the lightcurve from
+        fitsdata = the original catalogue of data that the curve will be 
+                    plotted from 
+    Output:
+        None '''
+        
+    #Get data for the object called
+    mask = fitsdata['NUMBER'] == ob
+    obdata = fitsdata[mask]
+    if not obdata: #Reject if no object number matches the input value
+        print('error- invalid object number')
+        return
+    months = ['sep05','oct05','nov05','dec05', 'jan06', 'dec06', 'jan07',  
+          'aug07', 'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 'jul09',  
+          'aug09', 'sep09', 'oct09', 'nov09', 'dec09', 'jan10', 'feb10', 
+          'aug10', 'sep10', 'oct10', 'nov10', 'dec10', 'jan11', 'feb11', 
+          'aug11', 'sep11', 'oct11', 'nov11', 'dec11', 'jan12', 'feb12', 
+          'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
+    
+    for month in months:
+        if month == 'sep05':
+            flux = obdata['MAG_APER_'+month][:,4]
+            fluxerr = obdata['MAGERR_APER_'+month][:,4]
+        else:
+            flux = np.append(flux, obdata['MAG_APER_'+month][:,4])
+            fluxerr = np.append(fluxerr, obdata['MAGERR_APER_'+month][:,4])
+    
+    flux[flux == 99] = np.nan
+    fluxerr[flux==99] = np.nan
+       
+    #set up time variable for plot
+    nums = fits.open('monthly_numbers.fits')[1].data
+    t = np.linspace(1, len(nums), num=len(nums))
+    tdataind = np.isin(nums['Month'], months)
+    tdata = t[tdataind]
+    
+    
+    
+    #Plot graph in new figure
+    plt.figure(figsize=[17,7])
+    plt.xticks(t, nums['Month'], rotation='vertical')
+    plt.errorbar(tdata, flux, yerr=fluxerr, fmt = 'ro')
+    plt.xlabel('Month')
+    plt.ylabel('K-band magnitude of object')
+    plt.title('Light curve for object number %i' % ob)
+    plt.tight_layout()
+    return 
+            
 def chandra_only(tbdata):
     ''' Function that restricts the objects included in analysis to only 
     those within the Chandra footprint 
@@ -571,6 +625,22 @@ def onpick(event):
         return
     print('Object identified')
     lightcurve5(ob, tbdata) #Plot the lightcurve from the lightcurve function
+    
+def onpickmonth(event):
+    ''' Function that plots the lightcurve of an object when it is clicked on 
+    the vairiability v flux plot '''
+    print('Pick Registered')
+    tbdata = fits.open('mag_flux_tables/month_mag_flux_table_best.fits')[1].data
+    flux = mag5_months(tbdata)
+    flux[flux==99] = np.nan
+    numbers = tbdata['NUMBER'][~np.isnan(np.nanmean(flux, axis=0))]
+
+    ob = numbers[event.ind] #Define the object number from the index of the selected point
+    if len(ob) > 1: #Reject selection if more than one object has been selected
+        print('Too many objects selected')
+        return
+    print('Object identified')
+    lightcurve5months(ob, tbdata) #Plot the lightcurve from the lightcurve function
     
 def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
                           fluxerr = [], fluxerr2 = [], starflux=[], starfluxerr=[],
