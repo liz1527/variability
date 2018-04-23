@@ -508,12 +508,12 @@ def sigmasq(flux, baseerr):
         baseerr = array of errors that the mean error should be calculated from
     Output:
         sig = array of excess variance values for every object '''
-    avgflux = np.nanmean(flux, axis=1)
+    avgflux = np.nanmean(flux, axis=0)
     meanerr = np.nanmean(baseerr)
     meanerrsq = meanerr**2
-    N = np.size(flux, axis=1)
-    numobs = np.size(flux, axis=0)
-    sig = [((flux[n, None, :]- avgflux[n])**2 - meanerrsq)/(N-1) for n in range(numobs)]# 
+    N = np.size(flux, axis=0)
+    numobs = np.size(flux, axis=1)
+    sig = [((flux[:, None, n]- avgflux[n])**2 - meanerrsq)/(N-1) for n in range(numobs)]# 
     sig = np.array(sig).reshape(numobs, N)
     sig = np.sum(sig, axis=1)
     return sig
