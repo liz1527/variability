@@ -16,7 +16,7 @@ import numpy as np #for handling arrays
 #import math
 from astropy.stats import median_absolute_deviation
 import vari_funcs #my module to help run code neatly
-#plt.close('all') #close any open plots
+plt.close('all') #close any open plots
 #from numpy.lib.recfunctions import append_fields
 
 ### Open the fits files and get data ###
@@ -61,38 +61,17 @@ sfluxn, sdata = vari_funcs.no99(sfluxn, sdata)
 #sfluxcorrn = vari_funcs.psf_correct(fluxn, sfluxn, 'median') 
 
 ### get error arrays and correct them ###
-#fluxerrn = vari_funcs.magerr5_stacks(tbdata)
-#fluxerrn = fluxerrn[mask]
+fluxerrn = vari_funcs.magerr5_stacks(tbdata)
+sfluxerr = vari_funcs.magerr5_stacks(sdata)
 #fluxerrcorrn = vari_funcs.err_correct(fluxn, fluxerrn, fluxcorrn)
 
-### Create Plot for non corrected ###
+
 #fig = vari_funcs.flux_variability_plot(fluxn, fluxchann, 'mad',
-#                                            starflux=sfluxn, stars=True,
-#                                            normalised=True, psfcorrect=True)
-#plt.title('Normalised and PSF-Corrected')
-#fig = vari_funcs.flux_variability_plot(fluxn, fluxchann, 'mad',
-#                                            starflux=sfluxn, stars=True,
-#                                            normalised=True)
-#plt.title('Normalised')
-#fig = vari_funcs.flux_variability_plot(fluxn, fluxchann, 'mad',
-#                                            starflux=sfluxn, stars=True,
-#                                            psfcorrect=True)
-#plt.title('PSF-Corrected')
-fig = vari_funcs.flux_variability_plot(fluxn, fluxchann, 'mad',
+#                                            starflux=sfluxn, stars=True)
+
+fig = vari_funcs.flux_variability_plot(fluxn, fluxchann, 'excess',
+                                       fluxerr = fluxerrn, starfluxerr = sfluxerr,
                                             starflux=sfluxn, stars=True)
-#plt.title('No Changes')
-###include xmm 
-#avgflux = np.mean(fluxxmm, axis=1) 
-#vary = median_absolute_deviation(fluxxmm, axis=1)
-#plt.plot(avgflux, vary, 'rs', mfc = 'none', markersize = 10,
-#                 label='XMM Source')
-#plt.legend()
-### Create plot for corrected ###
-#fig = vari_funcs.flux_variability_plot(fluxcorrn, fluxchancorrn, 'mad',
-#                                            starflux=sfluxcorrn, stars=True)
-#plt.title('Using unconvolved images')
-#vari_funcs.flux_variability_plot(fluxcorrn, fluxchancorrn, 'excess', 
-#                                      fluxerr=fluxerrcorrn)
 
 fig.canvas.mpl_connect('pick_event', vari_funcs.onpick)
 #

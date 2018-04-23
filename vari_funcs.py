@@ -286,11 +286,11 @@ def sigmasq(flux, baseerr):
     Output:
         sig = array of excess variance values for every object '''
     avgflux = np.mean(flux, axis=1)
-    meanerr = np.mean(baseerr)
+    meanerr = np.mean(baseerr,axis=1)
     meanerrsq = meanerr**2
     N = np.size(flux, axis=1)
     numobs = np.size(flux, axis=0)
-    sig = [((flux[n, None, :]- avgflux[n])**2 - meanerrsq)/(N-1) for n in range(numobs)]# 
+    sig = [((flux[n, None, :]- avgflux[n])**2 - meanerrsq[n])/(N-1) for n in range(numobs)]# 
     sig = np.array(sig).reshape(numobs, N)
     sig = np.sum(sig, axis=1)
     return sig
@@ -362,6 +362,13 @@ def normalise_mag(mag):
     diff = avgflux - 1
     return mag - diff[:,None]
 
+def no99(fluxn, tbdata):
+    fluxn[fluxn == 99] = np.nan
+    mask = ~np.isnan(fluxn).any(axis=1)
+    fluxn = fluxn[mask]
+    tbdata = tbdata[mask]
+    return fluxn, tbdata
+
 def onpickchanonly(event):
     ''' Function that plots the lightcurve of an object when it is clicked on 
     the vairiability v flux plot '''
@@ -387,14 +394,12 @@ def onpick(event):
     ''' Function that plots the lightcurve of an object when it is clicked on 
     the vairiability v flux plot '''
         
-    combined = fits.open('mag_flux_tables/mag_flux_table_best_qS.fits')
+    combined = fits.open('mag_flux_tables/mag_flux_table_best.fits')
     tbdata = combined[1].data
     
     ### remove values that are +/-99 ###
     fluxn = mag5_stacks(tbdata)
-    fluxn[fluxn == 99] = np.nan
-    mask = ~np.isnan(fluxn).any(axis=1)
-    tbdata = tbdata[mask]
+    fluxn, tbdata = no99(fluxn, tbdata)
     
     ob = tbdata['NUMBER_05B'][event.ind] #Define the object number from the index of the selected point
     if len(ob) > 1: #Reject selection if more than one object has been selected
@@ -528,7 +533,7 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
 #    plt.xscale('log')
 #    plt.yscale('symlog', linthreshy=0.001)
     plt.yscale('log')
-    plt.ylim(2e-4, 3)
+#    plt.ylim(2e-4, 3)
     plt.xlim(9,26)
     plt.xlabel('Mean Magnitude')
     plt.legend()
@@ -613,12 +618,6 @@ def err_correct(flux, fluxerr, fluxnew):
     return fluxnew * (fluxerr/flux)
 
 
-def no99(fluxn, tbdata):
-    fluxn[fluxn == 99] = np.nan
-    mask = ~np.isnan(fluxn).any(axis=1)
-    fluxn = fluxn[mask]
-    tbdata = tbdata[mask]
-    return fluxn, tbdata
 
 def mod_z_score(arr):
     medx = np.median(arr)
