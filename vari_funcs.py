@@ -411,7 +411,7 @@ def onpick(event):
 def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
                           fluxerr = [], fluxerr2 = [], starflux=[], starfluxerr=[],
                           comparison = False, normalised = False, stars=False,
-                          psfcorrect=False):
+                          psfcorrect=False, chanerr = [], chanerr2 = []):
     ''' Function to plot the variability vs mean flux plot using either the
     MAD statistic or the Excess Variance statistic 
     If using MAD, specify plottype = 'mad' and supply just the flux and chandra 
@@ -476,9 +476,9 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
             # need to normalise the errors as well as the flux values
             fluxerr = err_correct(fluxold, fluxerr, flux)
         vary = sigmasq(flux, fluxerr)
-        varychan = sigmasq(fluxchan, fluxerr)
+        varychan = sigmasq(fluxchan, chanerr)
         if stars == True:
-            varystar = sigmasq(starflux, fluxerr)
+            varystar = sigmasq(starflux, starfluxerr)
         plt.ylabel('Excess Variance')
     elif plottype == 'chisq':
         [vary, _] = chisquare(flux, axis=1)
@@ -507,7 +507,7 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
                 # need to normalise the errors as well as the flux values
                 fluxerr2 = err_correct(flux2old, fluxerr2, flux2)
             varycorr = sigmasq(flux2, fluxerr2)
-            varychancorr = sigmasq(fluxchan, fluxerr2)
+            varychancorr = sigmasq(fluxchan2, chanerr2)
 
         ### plot varibility v flux graph for original in gray ###
         plt.plot(avgfluxperob, vary, '+', color =  'tab:gray', label='UDS before correction', alpha = 0.5) 

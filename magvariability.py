@@ -62,6 +62,7 @@ sfluxn, sdata = vari_funcs.no99(sfluxn, sdata)
 
 ### get error arrays and correct them ###
 fluxerrn = vari_funcs.magerr5_stacks(tbdata)
+fluxerrchan = vari_funcs.magerr5_stacks(chandata)
 sfluxerr = vari_funcs.magerr5_stacks(sdata)
 #fluxerrcorrn = vari_funcs.err_correct(fluxn, fluxerrn, fluxcorrn)
 
@@ -71,7 +72,8 @@ sfluxerr = vari_funcs.magerr5_stacks(sdata)
 
 fig = vari_funcs.flux_variability_plot(fluxn, fluxchann, 'excess',
                                        fluxerr = fluxerrn, starfluxerr = sfluxerr,
-                                            starflux=sfluxn, stars=True)
+                                            starflux=sfluxn, stars=True, 
+                                            chanerr = fluxerrchan)
 
 fig.canvas.mpl_connect('pick_event', vari_funcs.onpick)
 #
