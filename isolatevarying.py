@@ -86,9 +86,9 @@ print('Tabulating outliers')
 magmask = avgfluxperob2 < 21
 outliers2 = outliers2*magmask
 varydata = tb2[outliers2]
-cols = fits.ColDefs(varydata)
-hdu = fits.BinTableHDU.from_columns(cols)
-hdu.writeto('variable_tables/variable_mag_flux_table_months_no99.fits')
+#cols = fits.ColDefs(varydata)
+#hdu = fits.BinTableHDU.from_columns(cols)
+#hdu.writeto('variable_tables/variable_mag_flux_table_months_no99.fits')
 
 varyfluxcorr = flux2[:,outliers2]
 varymadcorr = vary2[outliers2]

@@ -20,20 +20,37 @@ from matplotlib.mlab import griddata
 plt.close('all') #close any open plots
 
 # Import fits table
-varydata = fits.open('variable_tables/variable_with06B_mag21_DR11details_modz.fits')[1].data
+varydata = fits.open('variable_tables/variable_mag_flux_table_months_no99_DR11_modz.fits')[1].data
 
 # Extract magnitude table and error table
-mag = vari_funcs.mag5_stacks(varydata)
-magerr = vari_funcs.magerr5_stacks(varydata)
+mag = vari_funcs.mag5_months(varydata)
+magerr = vari_funcs.magerr5_months(varydata)
+
+## Change 99s to nans so they are ignored ###
+mask = magerr >= 99
+mag[mask] = np.nan
+magerr[mask] = np.nan
+varydata['KMAG_20'][varydata['KMAG_20']==99] = np.nan
+
+## Remove rows where all are nans ###
+mask = ~np.isnan(np.nanmean(mag, axis=0))
+mag = mag[:,mask]
+magerr = magerr[:,mask]
+varydata = varydata[mask]
 
 # Calculate excess variance
-excess = vari_funcs.sigmasq(mag, magerr)
-mad = median_absolute_deviation(mag, axis=1)
+excess = vari_funcs.normsigmasq(mag, magerr)
+mad = median_absolute_deviation(mag, axis=0, ignore_nan=True)
 
+# remove anonamolous excess
+excess[excess==np.nanmin(excess)] = np.nan
+
+plt.figure()
 plt.subplot(231)
 plt.scatter(varydata['z_m2'], excess, c=varydata['X-ray'])
 plt.xlabel('photometric redshift')
 plt.ylabel('excess variance')
+#plt.ylim(ymin = np.nanmin(excess), ymax=np.nanmax(excess))
 plt.xlim(xmin=0)
 
 plt.subplot(232)
@@ -46,6 +63,7 @@ plt.subplot(234)
 plt.scatter(varydata['z_spec'], excess,c=varydata['X-ray'])
 plt.xlabel('spectroscopic redshift')
 plt.ylabel('excess variance')
+#plt.ylim(ymin = np.nanmin(excess), ymax=np.nanmax(excess))
 plt.xlim(xmin=0)
 
 plt.subplot(235)
@@ -71,6 +89,7 @@ plt.subplot(231)
 plt.scatter(varydata['z_m2'], excess, c=varydata['KMAG_20'])
 plt.xlabel('photometric redshift')
 plt.ylabel('excess variance')
+#plt.ylim(ymin = np.nanmin(excess), ymax=np.nanmax(excess))
 plt.xlim(xmin=0)
 plt.colorbar()
 
@@ -85,6 +104,7 @@ plt.subplot(234)
 plt.scatter(varydata['z_spec'], excess,c=varydata['KMAG_20'])
 plt.xlabel('spectroscopic redshift')
 plt.ylabel('excess variance')
+#plt.ylim(ymin = np.nanmin(excess), ymax=np.nanmax(excess))
 plt.xlim(xmin=0)
 plt.colorbar()
 

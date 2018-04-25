@@ -532,7 +532,7 @@ def normsigmasq(flux, baseerr):
     numobs = np.size(flux, axis=1)
     sig = [((flux[:, n]- avgflux[n])**2 - baseerrsq[:, n]) for n in range(numobs)]# 
     sigsum = np.nansum(sig, axis=1)
-    normsig = sigsum/(N*avgflux**2)
+    normsig = sigsum/N#*(avgflux**2))
     return normsig
 
 def fluxbin(min, max, flux, tbdata):
