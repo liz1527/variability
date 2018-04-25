@@ -509,14 +509,31 @@ def sigmasq(flux, baseerr):
     Output:
         sig = array of excess variance values for every object '''
     avgflux = np.nanmean(flux, axis=0)
-    meanerr = np.nanmean(baseerr)
+    meanerr = np.nanmedian(baseerr, axis=0)
     meanerrsq = meanerr**2
     N = np.size(flux, axis=0)
     numobs = np.size(flux, axis=1)
-    sig = [((flux[:, None, n]- avgflux[n])**2 - meanerrsq)/(N-1) for n in range(numobs)]# 
+    sig = [((flux[:, None, n]- avgflux[n])**2 - meanerrsq[n])/(N-1) for n in range(numobs)]# 
     sig = np.array(sig).reshape(numobs, N)
-    sig = np.sum(sig, axis=1)
+    sig = np.nansum(sig, axis=1)
     return sig
+
+def normsigmasq(flux, baseerr):
+    ''' Function that calculates the excess varience value for each row in an 
+    array 
+    Inputs:
+        flux = array of fluxes from objects in a number of epochs 
+        baseerr = array of errors that the mean error should be calculated from
+    Output:
+        sig = array of excess variance values for every object '''
+    avgflux = np.nanmean(flux, axis=0)
+    baseerrsq = np.square(baseerr)
+    N = np.size(flux, axis=0)
+    numobs = np.size(flux, axis=1)
+    sig = [((flux[:, n]- avgflux[n])**2 - baseerrsq[:, n]) for n in range(numobs)]# 
+    sigsum = np.nansum(sig, axis=1)
+    normsig = sigsum/(N*avgflux**2)
+    return normsig
 
 def fluxbin(min, max, flux, tbdata):
     ''' Separate a flux array into a bin depending on the average flux of the
@@ -563,6 +580,31 @@ def avg_lightcurve(avgfluxarr):
     plt.ylim(ymin = 6.3, ymax=7.2)
     return ax
 
+def month_avg_lightcurve(avgflux, avgfluxerr):
+    months = ['sep05','oct05','nov05','dec05', 'jan06', 'dec06', 'jan07',  
+          'aug07', 'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 'jul09',  
+          'aug09', 'sep09', 'oct09', 'nov09', 'dec09', 'jan10', 'feb10', 
+          'aug10', 'sep10', 'oct10', 'nov10', 'dec10', 'jan11', 'feb11', 
+          'aug11', 'sep11', 'oct11', 'nov11', 'dec11', 'jan12', 'feb12', 
+          'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
+   
+       
+    #set up time variable for plot
+    nums = fits.open('monthly_numbers.fits')[1].data
+    t = np.linspace(1, len(nums), num=len(nums))
+    tdataind = np.isin(nums['Month'], months)
+    tdata = t[tdataind]
+  
+    #Plot graph in new figure
+    plt.figure(figsize=[17,7])
+    plt.xticks(t, nums['Month'], rotation='vertical')
+    plt.errorbar(tdata, avgflux, yerr=avgfluxerr, fmt = 'ro')
+    plt.xlabel('Month')
+    plt.ylabel('K-band magnitude of object')
+    plt.title('Average Lightcurve')
+    plt.tight_layout()
+    return
+    
 def normalise_flux(flux):
     ''' Normalise each objects flux to its average value
     Input:
@@ -645,7 +687,7 @@ def onpickmonth(event):
 def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
                           fluxerr = [], fluxerr2 = [], starflux=[], starfluxerr=[],
                           comparison = False, normalised = False, stars=False,
-                          psfcorrect=False):
+                          psfcorrect=False, chanerr = [], chanerr2=[]):
     ''' Function to plot the variability vs mean flux plot using either the
     MAD statistic or the Excess Variance statistic 
     If using MAD, specify plottype = 'mad' and supply just the flux and chandra 
@@ -683,6 +725,7 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
     fig = plt.figure()
     avgfluxperob = np.nanmean(flux, axis=0) #for UDS
     avgfluxchanperob = np.nanmean(fluxchan, axis=0) #for non-stellar chandra
+
     if stars == True:
         savgfluxperob = np.nanmean(starflux, axis=0) #for stars
 
@@ -709,10 +752,10 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
         if normalised == True:
             # need to normalise the errors as well as the flux values
             fluxerr = err_correct(fluxold, fluxerr, flux)
-        vary = sigmasq(flux, fluxerr)
-        varychan = sigmasq(fluxchan, fluxerr)
+        vary = normsigmasq(flux, fluxerr)
+        varychan = normsigmasq(fluxchan, chanerr)
         if stars == True:
-            varystar = sigmasq(starflux, fluxerr)
+            varystar = normsigmasq(starflux, starfluxerr)
         plt.ylabel('Excess Variance')
     elif plottype == 'chisq':
         [vary, _] = chisquare(flux, axis=0)
@@ -740,8 +783,8 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
             if normalised == True:
                 # need to normalise the errors as well as the flux values
                 fluxerr2 = err_correct(flux2old, fluxerr2, flux2)
-            varycorr = sigmasq(flux2, fluxerr2)
-            varychancorr = sigmasq(fluxchan, fluxerr2)
+            varycorr = normsigmasq(flux2, fluxerr2)
+            varychancorr = normsigmasq(fluxchan2, chanerr2)
 
         ### plot varibility v flux graph for original in gray ###
         plt.plot(avgfluxperob, vary, '+', color =  'tab:gray', label='UDS before correction', alpha = 0.5) 
@@ -765,10 +808,10 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
         
     ### Apply required plot charateristics ###
 #    plt.xscale('log')
-#    plt.yscale('symlog', linthreshy=0.001)
+#    plt.yscale('symlog', linthreshy=1e-10)
     plt.yscale('log')
 #    plt.ylim(2e-4, 3)
-#    plt.xlim(9,26)
+    plt.xlim(9,26)
     plt.xlabel('Mean Magnitude')
     plt.legend()
     

@@ -51,12 +51,15 @@ fluxerrchan = vari_funcs.magerr5_months(chandata)
 sfluxerr = vari_funcs.magerr5_months(sdata)
 
 ## Change 99s to nans so they are ignored ###
-fluxn[fluxn == 99] = np.nan
-fluxerrn[fluxn == 99] = np.nan
-fluxchann[fluxchann == 99] = np.nan
-fluxerrchan[fluxchann == 99] = np.nan
-sfluxn[sfluxn == 99] = np.nan
-sfluxerr[sfluxn == 99] = np.nan
+mask = fluxerrn >= 99
+fluxn[mask] = np.nan
+fluxerrn[mask] = np.nan
+mask = fluxerrchan >= 99
+fluxchann[mask] = np.nan
+fluxerrchan[mask] = np.nan
+mask = sfluxerr >= 99
+sfluxn[mask] = np.nan
+sfluxerr[mask] = np.nan
 
 ## Remove rows where all are nans ###
 mask = ~np.isnan(np.nanmean(fluxn, axis=0))
@@ -82,11 +85,13 @@ sfluxerr = sfluxerr[:,mask]
 
 
 ### Create Plot for non corrected ###
-#fig = vari_funcs.flux_variability_plot(fluxn, fluxchann, 'mad',
-#                                            starflux=sfluxn, stars=True)
-fig = vari_funcs.flux_variability_plot(fluxn, fluxchann, 'excess',
+fig1 = vari_funcs.flux_variability_plot(fluxn, fluxchann, 'mad',
+                                            starflux=sfluxn, stars=True)
+fig2 = vari_funcs.flux_variability_plot(fluxn, fluxchann, 'excess',
                                        fluxerr = fluxerrn, 
                                        starfluxerr = sfluxerr,
-                                            starflux=sfluxn, stars=True)
-fig.canvas.mpl_connect('pick_event', vari_funcs.onpickmonth)
+                                            starflux=sfluxn, stars=True,
+                                            chanerr = fluxerrchan)
+fig2.canvas.mpl_connect('pick_event', vari_funcs.onpickmonth)
+fig1.canvas.mpl_connect('pick_event', vari_funcs.onpickmonth)
 #
