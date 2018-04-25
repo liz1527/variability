@@ -295,6 +295,24 @@ def sigmasq(flux, baseerr):
     sig = np.sum(sig, axis=1)
     return sig
 
+def normsigmasq(flux, baseerr):
+    ''' Function that calculates the excess varience value for each row in an 
+    array 
+    Inputs:
+        flux = array of fluxes from objects in a number of epochs 
+        baseerr = array of errors that the mean error should be calculated from
+    Output:
+        sig = array of excess variance values for every object '''
+    avgflux = np.nanmean(flux, axis=1)
+    baseerrsq = np.square(baseerr)
+    N = np.size(flux, axis=1)
+    numobs = np.size(flux, axis=0)
+    sig = [((flux[n, :]- avgflux[n])**2 - baseerrsq[n, :]) for n in range(numobs)]# 
+    sig = np.array(sig).reshape(numobs, N)
+    sigsum = np.nansum(sig, axis=1)
+    normsig = sigsum/(N*avgflux**2)
+    return normsig
+
 def fluxbin(min, max, flux, tbdata):
     ''' Separate a flux array into a bin depending on the average flux of the
     object 
