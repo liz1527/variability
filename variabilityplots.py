@@ -20,7 +20,7 @@ from matplotlib.mlab import griddata
 plt.close('all') #close any open plots
 
 # Import fits table
-varydata = fits.open('variable_tables/variable_mag_flux_table_months_no99_DR11_modz.fits')[1].data
+varydata = fits.open('variable_tables/variable_month_3.5_alldetails.fits')[1].data
 
 # Extract magnitude table and error table
 mag = vari_funcs.mag5_months(varydata)
@@ -32,98 +32,73 @@ mag[mask] = np.nan
 magerr[mask] = np.nan
 varydata['KMAG_20'][varydata['KMAG_20']==99] = np.nan
 
-## Remove rows where all are nans ###
+### Remove rows where all are nans ###
 mask = ~np.isnan(np.nanmean(mag, axis=0))
 mag = mag[:,mask]
 magerr = magerr[:,mask]
-varydata = varydata[mask]
+#varydata = varydata[mask]
 
-# Calculate excess variance
+# Calculate variance measures
 excess = vari_funcs.normsigmasq(mag, magerr)
-mad = median_absolute_deviation(mag, axis=0, ignore_nan=True)
+mad = varydata['MAD'][mask]
+modz = varydata['mod_z_score'][mask]
 
-# remove anonamolous excess
-excess[excess==np.nanmin(excess)] = np.nan
+# get redshifts
+specz = varydata['z_spec'][mask]
+photz = varydata['z_m2'][mask]
 
-plt.figure()
-plt.subplot(231)
-plt.scatter(varydata['z_m2'], excess, c=varydata['X-ray'])
-plt.xlabel('photometric redshift')
-plt.ylabel('excess variance')
-#plt.ylim(ymin = np.nanmin(excess), ymax=np.nanmax(excess))
-plt.xlim(xmin=0)
+# get colours
+c1 = varydata['X-ray'][mask]
+c2 = varydata['KMAG_20'][mask]
 
-plt.subplot(232)
-plt.scatter(varydata['z_m2'], mad,c=varydata['X-ray'])
-plt.xlabel('photometric redshift')
-plt.ylabel('MAD')
-plt.xlim(xmin=0)
-
-plt.subplot(234)
-plt.scatter(varydata['z_spec'], excess,c=varydata['X-ray'])
-plt.xlabel('spectroscopic redshift')
-plt.ylabel('excess variance')
-#plt.ylim(ymin = np.nanmin(excess), ymax=np.nanmax(excess))
-plt.xlim(xmin=0)
-
-plt.subplot(235)
-plt.scatter(varydata['z_spec'], mad,c=varydata['X-ray'])
-plt.xlabel('photometric redshift')
-plt.ylabel('MAD')
-plt.xlim(xmin=0)
-
-plt.subplot(233)
-plt.scatter(varydata['z_m2'], varydata['mod_z_score'], c=varydata['X-ray'])
-plt.xlabel('photometric redshift')
-plt.ylabel('Modified z_score')
-plt.xlim(xmin=0)
-
-plt.subplot(236)
-plt.scatter(varydata['z_spec'], varydata['mod_z_score'],c=varydata['X-ray'])
-plt.xlabel('spectroscopic redshift')
-plt.ylabel('Modified z_score')
-plt.xlim(xmin=0)
 
 plt.figure()
 plt.subplot(231)
-plt.scatter(varydata['z_m2'], excess, c=varydata['KMAG_20'])
+plt.scatter(photz, excess, c=c2)
+plt.plot(photz[c1], excess[c1],'ro', mfc = 'none', markersize = 10)
 plt.xlabel('photometric redshift')
 plt.ylabel('excess variance')
+#plt.yscale('symlog')
 #plt.ylim(ymin = np.nanmin(excess), ymax=np.nanmax(excess))
 plt.xlim(xmin=0)
 plt.colorbar()
 
 plt.subplot(232)
-plt.scatter(varydata['z_m2'], mad,c=varydata['KMAG_20'])
+plt.scatter(photz, mad, c=c2)
+plt.plot(photz[c1], mad[c1],'ro', mfc = 'none', markersize = 10)
 plt.xlabel('photometric redshift')
 plt.ylabel('MAD')
 plt.xlim(xmin=0)
 plt.colorbar()
 
 plt.subplot(234)
-plt.scatter(varydata['z_spec'], excess,c=varydata['KMAG_20'])
+plt.scatter(specz, excess, c=c2)
+plt.plot(specz[c1], excess[c1],'ro', mfc = 'none', markersize = 10)
 plt.xlabel('spectroscopic redshift')
 plt.ylabel('excess variance')
-#plt.ylim(ymin = np.nanmin(excess), ymax=np.nanmax(excess))
+plt.ylim(ymin = np.nanmin(excess), ymax=np.nanmax(excess))
 plt.xlim(xmin=0)
 plt.colorbar()
 
 plt.subplot(235)
-plt.scatter(varydata['z_spec'], mad,c=varydata['KMAG_20'])
-plt.xlabel('photometric redshift')
+plt.scatter(specz, mad, c=c2)
+plt.plot(specz[c1], mad[c1],'ro', mfc = 'none', markersize = 10)
+plt.xlabel('spectroscopic redshift')
 plt.ylabel('MAD')
 plt.xlim(xmin=0)
 plt.colorbar()
 
 plt.subplot(233)
-plt.scatter(varydata['z_m2'], varydata['mod_z_score'], c=varydata['KMAG_20'])
+plt.scatter(photz, modz, c=c2)
+plt.plot(photz[c1], modz[c1],'ro', mfc = 'none', markersize = 10)
 plt.xlabel('photometric redshift')
 plt.ylabel('Modified z_score')
 plt.xlim(xmin=0)
 plt.colorbar()
 
 plt.subplot(236)
-plt.scatter(varydata['z_spec'], varydata['mod_z_score'],c=varydata['KMAG_20'])
+plt.scatter(specz, modz, c=c2)
+plt.plot(specz[c1], modz[c1],'ro', mfc = 'none', markersize = 10)
 plt.xlabel('spectroscopic redshift')
 plt.ylabel('Modified z_score')
 plt.xlim(xmin=0)

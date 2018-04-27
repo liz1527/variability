@@ -42,15 +42,15 @@ fluxchan[fluxchan == 99] = np.nan
 sflux[sflux == 99] = np.nan
 
 ### Remove rows where all are nans ###
-mask = ~np.isnan(np.nanmean(flux, axis=0))
-flux = flux[:,mask]
-tbdata = tbdata[mask]
-mask = ~np.isnan(np.nanmean(fluxchan, axis=0))
-fluxchan = fluxchan[:,mask]
-chandata = chandata[mask]
-mask = ~np.isnan(np.nanmean(sflux, axis=0))
-sflux = sflux[:,mask]
-sdata = sdata[mask]
+#mask = ~np.isnan(np.nanmean(flux, axis=0))
+#flux = flux[:,mask]
+#tbdata = tbdata[mask]
+#mask = ~np.isnan(np.nanmean(fluxchan, axis=0))
+#fluxchan = fluxchan[:,mask]
+#chandata = chandata[mask]
+#mask = ~np.isnan(np.nanmean(sflux, axis=0))
+#sflux = sflux[:,mask]
+#sdata = sdata[mask]
 
 print('Producing plot')
 fig = vari_funcs.flux_variability_plot(flux, fluxchan, 'mad', starflux=sflux,
@@ -72,7 +72,7 @@ bins = np.append(bins, [24, 25, 26])
 #
 
 print('Identifying outliers')
-outliers2, tb2, modz2 = vari_funcs.find_outliers(flux, tbdata, bins, threshold=5)
+outliers2, tb2, modz2 = vari_funcs.find_outliers(flux, tbdata, bins, threshold=3.5)
 tb2['X-ray'][tb2['X-ray']==70] = False 
 tb2['X-ray'][tb2['X-ray']==84] = True
 ### Find plotting values for the new flux table ###
@@ -86,9 +86,9 @@ print('Tabulating outliers')
 magmask = avgfluxperob2 < 21
 outliers2 = outliers2*magmask
 varydata = tb2[outliers2]
-#cols = fits.ColDefs(varydata)
-#hdu = fits.BinTableHDU.from_columns(cols)
-#hdu.writeto('variable_tables/variable_mag_flux_table_months_no99.fits')
+cols = fits.ColDefs(varydata)
+hdu = fits.BinTableHDU.from_columns(cols)
+hdu.writeto('variable_tables/variable_mag_flux_table_months_3.5.fits')
 
 varyfluxcorr = flux2[:,outliers2]
 varymadcorr = vary2[outliers2]
@@ -134,7 +134,7 @@ yi = np.logspace(-4, 1, 1000)
 zi = griddata(avgfluxperob2, vary2, modz2, xi, yi, interp='linear')
 #plt.plot(avgfluxperob, vary, 'b+')
 plt.figure(1)
-plt.contour(xi, yi, zi, [0,4,5,6,8,10], zorder=3)
+plt.contour(xi, yi, zi, [0,3.5,4,5,6,8,10], zorder=3)
 cbar = plt.colorbar()
 cbar.set_label('Modified z-score')
 

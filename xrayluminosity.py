@@ -26,59 +26,102 @@ from astropy.cosmology import FlatLambdaCDM
 cosmo = FlatLambdaCDM(H0=70, Om0=0.3)
 plt.close('all') #close any open plots
 
-# Import fits table
-varydata = fits.open('variable_tables/variable_with06B_mag21_DR11details.fits')[1].data
-
-# Extract magnitude table and error table
-mag = vari_funcs.mag5_stacks(varydata)
-magerr = vari_funcs.magerr5_stacks(varydata)
-
-# Calculate excess variance
-excess = vari_funcs.sigmasq(mag, magerr)
+## Import fits table
+#varydata = fits.open('variable_tables/variable_month_3.5_alldetails.fits')[1].data
+#
+## Extract magnitude table and error table
+#mag = vari_funcs.mag5_months(varydata)
+#magerr = vari_funcs.magerr5_months(varydata)
+#
+## Calculate excess variance
+#excess = vari_funcs.sigmasq(mag, magerr)
 
 # Get X-ray data
-varycoord = SkyCoord(varydata['ALPHA_J2000_05B']*u.degree, varydata['DELTA_J2000_05B']*u.degree)
+chandata = fits.open('variable_tables/chan_variable_month_3.5_alldetails.fits')[1].data
+xmmdata = fits.open('variable_tables/xmm_variable_month_3.5_alldetails.fits')[1].data
 
-#match with xmm
-print('Matching XMM')
-xmm = Table.read('UDS_catalogues/XMM_not_Chandra.fits')
-xmmcoord = SkyCoord(xmm['RAJ2000'], xmm['DEJ2000'])
-idx, d2d , _ = match_coordinates_sky(varycoord, xmmcoord)
-mask = d2d<=5*u.arcsec #make sure match is within 5 arcsec (like in topcat)
-xmmidx = idx[mask]
-xmmdata = xmm[xmmidx] #create table containing xmm details for the variable sources
-idx, d2d , _ = match_coordinates_sky(xmmcoord, varycoord)
-mask = d2d<=5*u.arcsec #make sure match is within 5 arcsec (like in topcat)
-xmmvaryidx = idx[mask]
-
-#match with chandra
-print('Matching Chandra')
-chan = Table.read('UDS_catalogues/chandra_catalogue.fits')
-chan['RA'].unit = u.deg
-chan['Dec'].unit = u.deg
-chancoord = SkyCoord(chan['RA'], chan['Dec'])
-idx, d2d , _ = match_coordinates_sky(varycoord, chancoord)
-mask = d2d<=1*u.arcsec #make sure match is within 1 arcsec (like in topcat)
-chanidx = idx[mask]
-chandata = chan[chanidx] #create table containing chandra details for the variable sources
-idx, d2d , _ = match_coordinates_sky(chancoord, varycoord)
-mask = d2d<=1*u.arcsec #make sure match is within 5 arcsec (like in topcat)
-chanvaryidx = idx[mask]
-
-xrayvaryidx = np.append(chanvaryidx, xmmvaryidx)
+#xrayvaryidx = chanvaryidx
+#xrayvaryidx = np.append(chanvaryidx, xmmvaryidx)
 
 # Calculate luminosity distances with both photometric and spectroscopic data
-DLspec = cosmo.luminosity_distance(varydata['z_spec'][xrayvaryidx])
-DLphot = cosmo.luminosity_distance(varydata['z_m2'][xrayvaryidx])
+chanDLspec = cosmo.luminosity_distance(chandata['z_spec'])
+chanDLspec = chanDLspec.to(u.cm)
+chanDLspec[chanDLspec==0.0] = np.nan
+chanDLphot = cosmo.luminosity_distance(chandata['z_m2'])
+chanDLphot = chanDLphot.to(u.cm)
+xmmDLspec = cosmo.luminosity_distance(xmmdata['z_spec'])
+xmmDLspec[xmmDLspec==0.0] = np.nan
+xmmDLspec = xmmDLspec.to(u.cm)
+xmmDLphot = cosmo.luminosity_distance(xmmdata['z_m2'])
+xmmDLphot = xmmDLphot.to(u.cm)
 
 # Calculate luminosity
+chanF = chandata['Soft_flux']
+chanF[chanF==0] = np.nan
+xmmF = xmmdata['CR(S)']*0.167e-14
 
+xmmLspec = xmmF*4*np.pi*xmmDLspec.value**2
+chanLspec = chanF*4*np.pi*chanDLspec.value**2
+xmmLphot = xmmF*4*np.pi*xmmDLphot.value**2
+chanLphot = chanF*4*np.pi*chanDLphot.value**2
 
+#get variability measures
+chanmodz = chandata['mod_z_score']
+xmmmodz = xmmdata['mod_z_score']
 
+chanmag = vari_funcs.mag5_months(chandata)
+chanmagerr = vari_funcs.magerr5_months(chandata)
+xmmmag = vari_funcs.mag5_months(xmmdata)
+xmmmagerr = vari_funcs.magerr5_months(xmmdata)
+## Change 99s to nans so they are ignored ###
+mask = chanmagerr >= 99
+chanmag[mask] = np.nan
+chanmagerr[mask] = np.nan
+mask = xmmmagerr >= 99
+xmmmag[mask] = np.nan
+xmmmagerr[mask] = np.nan
 
+chanexcess = vari_funcs.normsigmasq(chanmag, chanmagerr)
+xmmexcess = vari_funcs.normsigmasq(xmmmag, xmmmagerr)
 
+#plt.figure()
+#plt.scatter(chanLspec, chanmodz, label='Chandra')
+#plt.xlabel('X-ray Luminosity (ergs/s)')
+#plt.ylabel('Modified z-score')
+#plt.title('Soft x-ray luminosity using spectroscopic redshifts')
+#plt.scatter(xmmLspec, xmmmodz, label='XMM')
+#plt.yscale('log')
+#plt.xscale('log')
+#plt.legend()
+#
+#plt.figure()
+#plt.scatter(chanLphot, chanmodz, label='Chandra')
+#plt.xlabel('X-ray Luminosity (ergs/s)')
+#plt.ylabel('Modified z-score')
+#plt.title('Soft x-ray luminosity using photometric redshifts')
+#plt.scatter(xmmLphot, xmmmodz, label='XMM')
+#plt.yscale('log')
+#plt.xscale('log')
+#plt.legend()
 
+plt.figure()
+plt.scatter(chanLspec, chanexcess, label='Chandra')
+plt.xlabel('X-ray Luminosity (ergs/s)')
+plt.ylabel('Excess Variance')
+plt.title('Soft x-ray luminosity using spectroscopic redshifts')
+plt.scatter(xmmLspec, xmmexcess, label='XMM')
+#plt.yscale('log')
+plt.xscale('log')
+plt.legend()
+plt.tight_layout()
 
-
-
-
+plt.figure()
+plt.scatter(chanLphot, chanexcess, label='Chandra')
+plt.xlabel('X-ray Luminosity (ergs/s)')
+plt.ylabel('Excess Variance')
+plt.title('Soft x-ray luminosity using photometric redshifts')
+plt.scatter(xmmLphot, xmmexcess, label='XMM')
+#plt.yscale('log')
+plt.xscale('log')
+plt.legend()
+plt.tight_layout()

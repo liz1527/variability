@@ -528,9 +528,10 @@ def normsigmasq(flux, baseerr):
         sig = array of excess variance values for every object '''
     avgflux = np.nanmean(flux, axis=0)
     baseerrsq = np.square(baseerr)
+    meanerrsq = np.nanmean(baseerrsq, axis=0)
     N = np.size(flux, axis=0)
     numobs = np.size(flux, axis=1)
-    sig = [((flux[:, n]- avgflux[n])**2 - baseerrsq[:, n]) for n in range(numobs)]# 
+    sig = [((flux[:, n]- avgflux[n])**2 - meanerrsq[n]) for n in range(numobs)]# 
     sigsum = np.nansum(sig, axis=1)
     normsig = sigsum/N#*(avgflux**2))
     return normsig
