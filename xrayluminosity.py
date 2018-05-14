@@ -39,40 +39,51 @@ plt.close('all') #close any open plots
 # Get X-ray data
 chandata = fits.open('variable_tables/chan_variable_month_3.5_alldetails.fits')[1].data
 xmmdata = fits.open('variable_tables/xmm_variable_month_3.5_alldetails.fits')[1].data
-
-#xrayvaryidx = chanvaryidx
-#xrayvaryidx = np.append(chanvaryidx, xmmvaryidx)
-
-# Calculate luminosity distances with both photometric and spectroscopic data
-chanDLspec = cosmo.luminosity_distance(chandata['z_spec'])
-chanDLspec = chanDLspec.to(u.cm)
-chanDLspec[chanDLspec==0.0] = np.nan
-chanDLphot = cosmo.luminosity_distance(chandata['z_m2'])
-chanDLphot = chanDLphot.to(u.cm)
-xmmDLspec = cosmo.luminosity_distance(xmmdata['z_spec'])
-xmmDLspec[xmmDLspec==0.0] = np.nan
-xmmDLspec = xmmDLspec.to(u.cm)
-xmmDLphot = cosmo.luminosity_distance(xmmdata['z_m2'])
-xmmDLphot = xmmDLphot.to(u.cm)
+chanfull = fits.open('mag_flux_tables/month_chan_mag_flux_table_DR11.fits')[1].data
+xmmfull = fits.open('mag_flux_tables/month_xmm_mag_flux_table_DR11.fits')[1].data
 
 # Calculate luminosity
 chanF = chandata['Soft_flux']
 chanF[chanF==0] = np.nan
+fullchanF = chanfull['Soft_flux']
+fullchanF[fullchanF==0] = np.nan
 xmmF = xmmdata['CR(S)']*0.167e-14
+fullxmmF = xmmfull['CR(S)']*0.167e-14
 
-xmmLspec = xmmF*4*np.pi*xmmDLspec.value**2
-chanLspec = chanF*4*np.pi*chanDLspec.value**2
-xmmLphot = xmmF*4*np.pi*xmmDLphot.value**2
-chanLphot = chanF*4*np.pi*chanDLphot.value**2
+def spec_lum(tbdata, flux):
+    DLspec = cosmo.luminosity_distance(tbdata['z_spec'])
+    DLspec = DLspec.to(u.cm)
+    DLspec[DLspec==0.0] = np.nan
+    Lspec = flux*4*np.pi*DLspec.value**2
+    return Lspec
+
+def phot_lum(tbdata, flux):
+    DLphot = cosmo.luminosity_distance(tbdata['z_m2'])
+    DLphot = DLphot.to(u.cm)
+    DLphot[DLphot==0.0] = np.nan
+    Lphot = flux*4*np.pi*DLphot.value**2
+    return Lphot
+
+
+xmmLspec = spec_lum(xmmdata, xmmF)
+chanLspec = spec_lum(chandata, chanF)
+xmmLphot = phot_lum(xmmdata, xmmF)
+chanLphot = phot_lum(chandata, chanF)
+fullxmmLspec = spec_lum(xmmfull, fullxmmF)
+fullchanLspec = spec_lum(chanfull, fullchanF)
+fullxmmLphot = phot_lum(xmmfull, fullxmmF)
+fullchanLphot = phot_lum(chanfull, fullchanF) 
 
 #get variability measures
-chanmodz = chandata['mod_z_score']
-xmmmodz = xmmdata['mod_z_score']
-
 chanmag = vari_funcs.mag5_months(chandata)
 chanmagerr = vari_funcs.magerr5_months(chandata)
 xmmmag = vari_funcs.mag5_months(xmmdata)
 xmmmagerr = vari_funcs.magerr5_months(xmmdata)
+fullchanmag = vari_funcs.mag5_months(chanfull)
+fullchanmagerr = vari_funcs.magerr5_months(chanfull)
+fullxmmmag = vari_funcs.mag5_months(xmmfull)
+fullxmmmagerr = vari_funcs.magerr5_months(xmmfull)
+
 ## Change 99s to nans so they are ignored ###
 mask = chanmagerr >= 99
 chanmag[mask] = np.nan
@@ -80,48 +91,44 @@ chanmagerr[mask] = np.nan
 mask = xmmmagerr >= 99
 xmmmag[mask] = np.nan
 xmmmagerr[mask] = np.nan
+mask = fullchanmagerr >= 99
+fullchanmag[mask] = np.nan
+fullchanmagerr[mask] = np.nan
+mask = fullxmmmagerr >= 99
+fullxmmmag[mask] = np.nan
+fullxmmmagerr[mask] = np.nan
 
 chanexcess = vari_funcs.normsigmasq(chanmag, chanmagerr)
 xmmexcess = vari_funcs.normsigmasq(xmmmag, xmmmagerr)
-
-#plt.figure()
-#plt.scatter(chanLspec, chanmodz, label='Chandra')
-#plt.xlabel('X-ray Luminosity (ergs/s)')
-#plt.ylabel('Modified z-score')
-#plt.title('Soft x-ray luminosity using spectroscopic redshifts')
-#plt.scatter(xmmLspec, xmmmodz, label='XMM')
-#plt.yscale('log')
-#plt.xscale('log')
-#plt.legend()
-#
-#plt.figure()
-#plt.scatter(chanLphot, chanmodz, label='Chandra')
-#plt.xlabel('X-ray Luminosity (ergs/s)')
-#plt.ylabel('Modified z-score')
-#plt.title('Soft x-ray luminosity using photometric redshifts')
-#plt.scatter(xmmLphot, xmmmodz, label='XMM')
-#plt.yscale('log')
-#plt.xscale('log')
-#plt.legend()
+fullchanexcess = vari_funcs.normsigmasq(fullchanmag, fullchanmagerr)
+fullxmmexcess = vari_funcs.normsigmasq(fullxmmmag, fullxmmmagerr)
+fullxmmexcess[fullxmmexcess<=0.0] = np.nan
+fullchanexcess[fullchanexcess<=0.0] = np.nan
 
 plt.figure()
-plt.scatter(chanLspec, chanexcess, label='Chandra')
+plt.scatter(fullchanLspec, fullchanexcess, label='Chandra')
+plt.scatter(fullxmmLspec, fullxmmexcess, label='XMM')
+plt.plot(chanLspec, chanexcess, 'ro', markersize=10, label='Varying Chandra')
+plt.plot(xmmLspec, xmmexcess, 'go', markersize=10, label='Varying XMM')
 plt.xlabel('X-ray Luminosity (ergs/s)')
 plt.ylabel('Excess Variance')
 plt.title('Soft x-ray luminosity using spectroscopic redshifts')
-plt.scatter(xmmLspec, xmmexcess, label='XMM')
-#plt.yscale('log')
+plt.ylim(ymin=0.00002)
+plt.yscale('log')
 plt.xscale('log')
 plt.legend()
 plt.tight_layout()
 
 plt.figure()
-plt.scatter(chanLphot, chanexcess, label='Chandra')
+plt.scatter(fullchanLphot, fullchanexcess, c=chanfull['KMAG_20'], label='Chandra')
+plt.scatter(fullxmmLphot, fullxmmexcess, c=xmmfull['KMAG_20'], label='XMM')
+plt.plot(chanLphot, chanexcess, 'ro', markersize=10, mfc='None', label='Varying Chandra')
+plt.plot(xmmLphot, xmmexcess, 'go', markersize=10, mfc='None', label='Varying XMM')
 plt.xlabel('X-ray Luminosity (ergs/s)')
 plt.ylabel('Excess Variance')
 plt.title('Soft x-ray luminosity using photometric redshifts')
-plt.scatter(xmmLphot, xmmexcess, label='XMM')
-#plt.yscale('log')
+plt.ylim(ymin=0.00002)
+plt.yscale('log')
 plt.xscale('log')
 plt.legend()
 plt.tight_layout()

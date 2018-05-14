@@ -323,6 +323,33 @@ def magerr5_months(tbdata):
             
     return fluxerr 
 
+def magerr5_months_errdiff(tbdata):
+    ''' Function that takes a catalogue of magnitude data from the sextractor 
+    output and makes a np array containing only the 3 arcsec aperture error 
+    data for each epoch
+    This version is edited for the month stacks
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        fluxerr = an array with 8 columns containing flux error values for each
+        year '''
+        
+    months = ['sep05','oct05','nov05','dec05', 'jan06', 'dec06', 'jan07',  
+          'aug07', 'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 'jul09',  
+          'aug09', 'sep09', 'oct09', 'nov09', 'dec09', 'jan10', 'feb10', 
+          'aug10', 'sep10', 'oct10', 'nov10', 'dec10', 'jan11', 'feb11', 
+          'aug11', 'sep11', 'oct11', 'nov11', 'dec11', 'jan12', 'feb12', 
+          'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
+    
+    for month in months:
+        print(month)
+        if month == 'sep05':
+            fluxerr = tbdata['MAGERR_APER_'+month][:,4]
+        else:
+            fluxerr = np.vstack([fluxerr, tbdata['MAGERR_APER_'+month][:,4]])
+    fluxerr = fluxerr + tbdata['errordiff'][None,:]
+    return fluxerr 
+
 
 def lightcurve4(ob, fitsdata)  :
     ''' Function that plots the light curve of an object in terms of its flux 
@@ -441,7 +468,7 @@ def lightcurve5months(ob, fitsdata)  :
         None '''
         
     #Get data for the object called
-    mask = fitsdata['NUMBER'] == ob
+    mask = fitsdata['NUMBER_1'] == ob
     obdata = fitsdata[mask]
     if not obdata: #Reject if no object number matches the input value
         print('error- invalid object number')
@@ -463,7 +490,8 @@ def lightcurve5months(ob, fitsdata)  :
     
     flux[flux == 99] = np.nan
     fluxerr[flux==99] = np.nan
-       
+    fluxerr = fluxerr + obdata['errordiff']
+   
     #set up time variable for plot
     nums = fits.open('monthly_numbers.fits')[1].data
     t = np.linspace(1, len(nums), num=len(nums))
@@ -527,14 +555,14 @@ def normsigmasq(flux, baseerr):
     Output:
         sig = array of excess variance values for every object '''
     avgflux = np.nanmean(flux, axis=0)
-    baseerrsq = np.square(baseerr)
-    meanerrsq = np.nanmean(baseerrsq, axis=0)
+    meanerr = np.nanmean(baseerr, axis=0)
+    meanerrsq = np.square(meanerr)
     N = np.size(flux, axis=0)
     numobs = np.size(flux, axis=1)
     sig = [((flux[:, n]- avgflux[n])**2 - meanerrsq[n]) for n in range(numobs)]# 
     sigsum = np.nansum(sig, axis=1)
-    normsig = sigsum/N#*(avgflux**2))
-    return normsig
+    normsig = sigsum/N
+    return np.sqrt(normsig)
 
 def fluxbin(min, max, flux, tbdata):
     ''' Separate a flux array into a bin depending on the average flux of the
@@ -624,9 +652,9 @@ def normalise_mag(mag):
     Output:
         array of object flux values normalised to the average flux of the 
         object '''
-    avgflux = np.nanmean(mag, axis=1)
+    avgflux = np.nanmean(mag, axis=0)
     diff = avgflux - 1
-    return mag - diff[:,None]
+    return mag - diff[None,:]
 
 def onpickchanonly(event):
     ''' Function that plots the lightcurve of an object when it is clicked on 
@@ -734,8 +762,10 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
     if normalised == True:
         fluxold = flux # need for error calc
         flux = normalise_mag(flux)
+        fluxchanold = fluxchan
         fluxchan = normalise_mag(fluxchan) 
         if stars == True:
+            starfluxold = starflux
             starflux = normalise_mag(starflux)
     if psfcorrect == True:
         fluxchan = psf_correct_mag(flux, fluxchan, 'median')
@@ -750,12 +780,15 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
             varystar = median_absolute_deviation(starflux, axis=0, ignore_nan=True)
         plt.ylabel('MAD')
     elif plottype == 'excess':
-        if normalised == True:
+#        if normalised == True:
             # need to normalise the errors as well as the flux values
-            fluxerr = err_correct(fluxold, fluxerr, flux)
+#            fluxerr = err_correct(fluxold, fluxerr, flux)
+#            chanerr = err_correct(fluxchanold, chanerr, fluxchan)
         vary = normsigmasq(flux, fluxerr)
         varychan = normsigmasq(fluxchan, chanerr)
         if stars == True:
+#            if normalised == True:
+#                starfluxerr = err_correct(starfluxold, starfluxerr, starflux)
             varystar = normsigmasq(starflux, starfluxerr)
         plt.ylabel('Excess Variance')
     elif plottype == 'chisq':
