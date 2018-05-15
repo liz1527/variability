@@ -310,7 +310,7 @@ def normsigmasq(flux, baseerr):
     sig = [((flux[n, :]- avgflux[n])**2 - baseerrsq[n, :]) for n in range(numobs)]# 
     sig = np.array(sig).reshape(numobs, N)
     sigsum = np.nansum(sig, axis=1)
-    normsig = sigsum/(N*avgflux**2)
+    normsig = sigsum/(N)#*avgflux**2)
     return normsig
 
 def fluxbin(min, max, flux, tbdata):
@@ -331,7 +331,7 @@ def fluxbin(min, max, flux, tbdata):
     tbdata = tbdata[bin]
     return fluxbin, tbdata
 
-def avg_lightcurve(avgfluxarr):
+def avg_lightcurve(avgfluxarr, errarr):
     ''' Plot light curves for a provided set of fluxes rather than extracting
     a certain objects fluxes from a larger array.
     Input:
@@ -351,11 +351,11 @@ def avg_lightcurve(avgfluxarr):
     plt.figure()
     ax = plt.axes()
     plt.xticks(t, years)
-    ax.plot(t, avgfluxarr, 'ro')
+    ax.errorbar(t, avgfluxarr, errarr, fmt='ro')
     plt.xlabel('Semester')
     plt.ylabel('Flux of object')
     plt.title('Average light curve')
-    plt.ylim(ymin = 6.3, ymax=7.2)
+#    plt.ylim(ymin = 6.3, ymax=7.2)
     return ax
 
 def normalise_flux(flux):

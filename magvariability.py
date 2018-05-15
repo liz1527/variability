@@ -16,7 +16,7 @@ import numpy as np #for handling arrays
 #import math
 from astropy.stats import median_absolute_deviation
 import vari_funcs #my module to help run code neatly
-plt.close('all') #close any open plots
+#plt.close('all') #close any open plots
 #from numpy.lib.recfunctions import append_fields
 
 ### Open the fits files and get data ###
