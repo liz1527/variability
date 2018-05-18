@@ -73,7 +73,8 @@ sfluxerr = vari_funcs.magerr5_stacks(sdata)
 fig = vari_funcs.flux_variability_plot(fluxn, fluxchann, 'excess',
                                        fluxerr = fluxerrn, starfluxerr = sfluxerr,
                                             starflux=sfluxn, stars=True, 
-                                            chanerr = fluxerrchan)
+                                            chanerr = fluxerrchan,
+                                            normalised=True)
 
 fig.canvas.mpl_connect('pick_event', vari_funcs.onpick)
 #

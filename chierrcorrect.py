@@ -150,8 +150,20 @@ fig = vari_funcs.flux_variability_plot(newallmag, newallchanmag, 'excess',
                                        fluxerr = newallmagerr, 
                                        starfluxerr = newallsmagerr,
                                        starflux=newallsmag, stars=True, 
-                                       chanerr = newallchanmagerr)
+                                       chanerr = newallchanmagerr,
+                                       normalised=True)
 
 #%% plot errchange with magnitude
 plt.figure()
 plt.scatter(bins[0:44], allerrchange)
+
+#%% save new magnitude and error arrays
+#np.save('chanmagorderedarray', newallchanmag)
+#np.save('channewmagerrarray', newallchanmagerr)
+#np.save('smagorderedarray', newallsmag)
+#np.save('snewmagerrarray', newallsmagerr)
+#corrections = np.array([bins[0:44], allerrchange])
+#np.save('chisquarecorrections', corrections)
+
+
+

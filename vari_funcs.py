@@ -285,15 +285,15 @@ def sigmasq(flux, baseerr):
         baseerr = array of errors that the mean error should be calculated from
     Output:
         sig = array of excess variance values for every object '''
-    avgflux = np.mean(flux, axis=1)
-    meanerr = np.mean(baseerr,axis=1)
-    meanerrsq = meanerr**2
+    avgflux = np.nanmean(flux, axis=1)
+    meanerr = np.nanmean(baseerr, axis=1)
+    meanerrsq = np.square(meanerr)
     N = np.size(flux, axis=1)
     numobs = np.size(flux, axis=0)
-    sig = [((flux[n, None, :]- avgflux[n])**2 - meanerrsq[n])/(N-1) for n in range(numobs)]# 
-    sig = np.array(sig).reshape(numobs, N)
-    sig = np.sum(sig, axis=1)
-    return sig
+    sig = [((flux[n, :]- avgflux[n])**2 - meanerrsq[n]) for n in range(numobs)]# 
+    sigsum = np.nansum(sig, axis=1)
+    normsig = sigsum/(N-1)
+    return normsig
 
 def normsigmasq(flux, baseerr):
     ''' Function that calculates the excess varience value for each row in an 
@@ -304,13 +304,13 @@ def normsigmasq(flux, baseerr):
     Output:
         sig = array of excess variance values for every object '''
     avgflux = np.nanmean(flux, axis=1)
-    baseerrsq = np.square(baseerr)
+    meanerr = np.nanmean(baseerr, axis=1)
+    meanerrsq = np.square(meanerr)
     N = np.size(flux, axis=1)
     numobs = np.size(flux, axis=0)
-    sig = [((flux[n, :]- avgflux[n])**2 - baseerrsq[n, :]) for n in range(numobs)]# 
-    sig = np.array(sig).reshape(numobs, N)
+    sig = [((flux[n, :]- 1)**2 - meanerrsq[n]) for n in range(numobs)]# 
     sigsum = np.nansum(sig, axis=1)
-    normsig = sigsum/(N)#*avgflux**2)
+    normsig = sigsum/(N-1)
     return normsig
 
 def fluxbin(min, max, flux, tbdata):
@@ -368,6 +368,17 @@ def normalise_flux(flux):
     avgflux = np.mean(flux, axis=1)
     return flux / avgflux[:,None]
 
+def normalise_flux_and_errors(flux, fluxerr):
+    ''' Normalise each objects flux to its average value
+    Input:
+        flux = array of object flux values 
+    Output:
+        array of object flux values normalised to the average flux of the 
+        object '''
+    avgflux = np.mean(flux, axis=1)
+    flux = flux/avgflux[:,None]
+    fluxerr = fluxerr/avgflux[:,None]
+    return flux, fluxerr
 
 def normalise_mag(mag):
     ''' Normalise each objects flux to its average value
@@ -382,6 +393,13 @@ def normalise_mag(mag):
 
 def no99(fluxn, tbdata):
     fluxn[fluxn == 99] = np.nan
+    mask = ~np.isnan(fluxn).any(axis=1)
+    fluxn = fluxn[mask]
+    tbdata = tbdata[mask]
+    return fluxn, tbdata
+
+def noneg(fluxn, tbdata):
+    fluxn[fluxn <= 0] = np.nan
     mask = ~np.isnan(fluxn).any(axis=1)
     fluxn = fluxn[mask]
     tbdata = tbdata[mask]
@@ -473,10 +491,16 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
     ### Check if normalisation is true and normalise if necessary ###
     if normalised == True:
         fluxold = flux # need for error calc
-        flux = normalise_mag(flux)
-        fluxchan = normalise_mag(fluxchan) 
+        chanold = fluxchan
+#        flux = normalise_mag(flux)
+#        fluxchan = normalise_mag(fluxchan) 
+#        if stars == True:
+#            starflux = normalise_mag(starflux)
+        flux = normalise_flux(flux)
+        fluxchan = normalise_flux(fluxchan) 
         if stars == True:
-            starflux = normalise_mag(starflux)
+            starold = starflux
+            starflux = normalise_flux(starflux)
     if psfcorrect == True:
         fluxchan = psf_correct_mag(flux, fluxchan, 'median')
         if stars == True:
@@ -491,12 +515,20 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
         plt.ylabel('MAD')
     elif plottype == 'excess':
         if normalised == True:
-            # need to normalise the errors as well as the flux values
-            fluxerr = err_correct(fluxold, fluxerr, flux)
-        vary = sigmasq(flux, fluxerr)
-        varychan = sigmasq(fluxchan, chanerr)
+             #need to normalise the errors as well as the flux values
+            fluxerr = err_correct_flux(fluxold, fluxerr)
+            chanerr = err_correct_flux(chanold, chanerr)
+            vary = normsigmasq(flux, fluxerr)
+            varychan = normsigmasq(fluxchan, chanerr)
+        else:
+            vary = sigmasq(flux, fluxerr)
+            varychan = sigmasq(fluxchan, chanerr)
         if stars == True:
-            varystar = sigmasq(starflux, starfluxerr)
+            if normalised == True:
+                starfluxerr = err_correct_flux(starold, starfluxerr)
+                varystar = normsigmasq(starflux, starfluxerr)
+            else:
+                varystar = sigmasq(starflux, starfluxerr)
         plt.ylabel('Excess Variance')
     elif plottype == 'chisq':
         [vary, _] = chisquare(flux, axis=1)
@@ -521,11 +553,11 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
             varycorr = median_absolute_deviation(flux2, axis=1)
             varychancorr = median_absolute_deviation(fluxchan2, axis=1)
         elif plottype == 'excess':
-            if normalised == True:
-                # need to normalise the errors as well as the flux values
-                fluxerr2 = err_correct(flux2old, fluxerr2, flux2)
-            varycorr = sigmasq(flux2, fluxerr2)
-            varychancorr = sigmasq(fluxchan2, chanerr2)
+#            if normalised == True:
+#                # need to normalise the errors as well as the flux values
+#                fluxerr2 = err_correct(flux2old, fluxerr2, flux2)
+            varycorr = normsigmasq(flux2, fluxerr2)
+            varychancorr = normsigmasq(fluxchan2, chanerr2)
 
         ### plot varibility v flux graph for original in gray ###
         plt.plot(avgfluxperob, vary, '+', color =  'tab:gray', label='UDS before correction', alpha = 0.5) 
@@ -548,15 +580,15 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
 
         
     ### Apply required plot charateristics ###
-#    plt.xscale('log')
-#    plt.yscale('symlog', linthreshy=0.001)
-    plt.yscale('log')
+    plt.xscale('log')
+    plt.yscale('symlog', linthreshy=0.001)
+#    plt.yscale('log')
 #    plt.ylim(2e-4, 3)
-    plt.xlim(9,26)
-    plt.xlabel('Mean Magnitude')
+#    plt.xlim(13,26)
+    plt.xlabel('Mean Flux')
     plt.legend()
-    
-    return fig
+#    plt.gca().invert_xaxis()
+    return fig, vary
 
 
 def psf_correct_flux(baseflux, initflux, avgtype):
@@ -635,7 +667,17 @@ def err_correct(flux, fluxerr, fluxnew):
         
     return fluxnew * (fluxerr/flux)
 
-
+def err_correct_flux(oldflux, fluxerr):
+    ''' Function that applies a correction to the array of error values that 
+    matches the correction applied to the corresponding array of fluxes.
+    Inputs:
+        flux = initial flux array before any corrections were applied
+        fluxerr = initial flux err array
+        fluxcorr = array of fluxes that have been corrected
+    Output:
+        Flux error array with values crudely corrected '''
+    avgflux = np.mean(oldflux, axis=1)
+    return fluxerr/avgflux[:,None]
 
 def mod_z_score(arr):
     medx = np.median(arr)
