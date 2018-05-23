@@ -286,13 +286,13 @@ def sigmasq(flux, baseerr):
     Output:
         sig = array of excess variance values for every object '''
     avgflux = np.nanmean(flux, axis=1)
-    meanerr = np.nanmean(baseerr, axis=1)
-    meanerrsq = np.square(meanerr)
+#    meanerr = np.nanmean(baseerr, axis=1)
+#    meanerrsq = np.square(meanerr)
     N = np.size(flux, axis=1)
     numobs = np.size(flux, axis=0)
-    sig = [((flux[n, :]- avgflux[n])**2 - meanerrsq[n]) for n in range(numobs)]# 
+    sig = [((flux[n, :]- avgflux[n])**2 - (baseerr[n,:])**2) for n in range(numobs)]# 
     sigsum = np.nansum(sig, axis=1)
-    normsig = sigsum/(N-1)
+    normsig = sigsum/(N)
     return normsig
 
 def normsigmasq(flux, baseerr):
@@ -304,13 +304,11 @@ def normsigmasq(flux, baseerr):
     Output:
         sig = array of excess variance values for every object '''
     avgflux = np.nanmean(flux, axis=1)
-    meanerr = np.nanmean(baseerr, axis=1)
-    meanerrsq = np.square(meanerr)
     N = np.size(flux, axis=1)
     numobs = np.size(flux, axis=0)
-    sig = [((flux[n, :]- 1)**2 - meanerrsq[n]) for n in range(numobs)]# 
+    sig = [((flux[n, :]- avgflux[n])**2 - (baseerr[n,:])**2) for n in range(numobs)]# 
     sigsum = np.nansum(sig, axis=1)
-    normsig = sigsum/(N-1)
+    normsig = sigsum/(N)
     return normsig
 
 def fluxbin(min, max, flux, tbdata):
@@ -581,7 +579,7 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
         
     ### Apply required plot charateristics ###
     plt.xscale('log')
-    plt.yscale('symlog', linthreshy=0.001)
+#    plt.yscale('symlog', linthreshy=0.001)
 #    plt.yscale('log')
 #    plt.ylim(2e-4, 3)
 #    plt.xlim(13,26)
