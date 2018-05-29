@@ -51,7 +51,7 @@ sflux, sdata = vari_funcs.no99(sflux, sdata)
 #fluxcorr = vari_funcs.psf_correct(flux, flux, 'median') 
 #fluxchancorr = vari_funcs.psf_correct(flux, fluxchan, 'median') 
 
-fig = vari_funcs.flux_variability_plot(flux, fluxchan, 'mad', starflux=sflux,
+fig,_ = vari_funcs.flux_variability_plot(flux, fluxchan, 'mad', starflux=sflux,
                                       stars=True)
 
 fig.canvas.mpl_connect('pick_event', vari_funcs.onpick)

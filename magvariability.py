@@ -67,16 +67,16 @@ sfluxerr = vari_funcs.magerr5_stacks(sdata)
 #fluxerrcorrn = vari_funcs.err_correct(fluxn, fluxerrn, fluxcorrn)
 
 
-#fig = vari_funcs.flux_variability_plot(fluxn, fluxchann, 'mad',
-#                                            starflux=sfluxn, stars=True)
+fig = vari_funcs.flux_variability_plot(fluxn, fluxchann, 'mad',
+                                            starflux=sfluxn, stars=True)
 
-fig = vari_funcs.flux_variability_plot(fluxn, fluxchann, 'excess',
-                                       fluxerr = fluxerrn, starfluxerr = sfluxerr,
-                                            starflux=sfluxn, stars=True, 
-                                            chanerr = fluxerrchan,
-                                            normalised=True)
+#fig = vari_funcs.flux_variability_plot(fluxn, fluxchann, 'excess',
+#                                       fluxerr = fluxerrn, starfluxerr = sfluxerr,
+#                                            starflux=sfluxn, stars=True, 
+#                                            chanerr = fluxerrchan,
+#                                            normalised=True)
 
-fig.canvas.mpl_connect('pick_event', vari_funcs.onpick)
+#fig.canvas.mpl_connect('pick_event', vari_funcs.onpick)
 #
 
 combined.close()

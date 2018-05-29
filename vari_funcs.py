@@ -580,7 +580,7 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
     ### Apply required plot charateristics ###
     plt.xscale('log')
 #    plt.yscale('symlog', linthreshy=0.001)
-#    plt.yscale('log')
+    plt.yscale('log')
 #    plt.ylim(2e-4, 3)
 #    plt.xlim(13,26)
     plt.xlabel('Mean Flux')
