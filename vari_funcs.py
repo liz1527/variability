@@ -491,18 +491,24 @@ def lightcurve5months(ob, fitsdata)  :
     flux[flux == 99] = np.nan
     fluxerr[flux==99] = np.nan
     fluxerr = fluxerr + obdata['errordiff']
-   
+
+    
     #set up time variable for plot
     nums = fits.open('monthly_numbers.fits')[1].data
     t = np.linspace(1, len(nums), num=len(nums))
     tdataind = np.isin(nums['Month'], months)
     tdata = t[tdataind]
     
-    
+    ticks = nums['Month']
+    mask = np.zeros(91)
+    inds = [0,4,14,16,23,26,36,38,46,53,59,65,71,77,82,86]
+    mask[inds] = 1
+    mask = mask.astype(bool)
+    ticks[~mask] = ''
     
     #Plot graph in new figure
     plt.figure(figsize=[17,7])
-    plt.xticks(t, nums['Month'], rotation='vertical')
+    plt.xticks(t, ticks, rotation='vertical')
     plt.errorbar(tdata, flux, yerr=fluxerr, fmt = 'ro')
     plt.xlabel('Month')
     plt.ylabel('K-band magnitude of object')
@@ -623,10 +629,17 @@ def month_avg_lightcurve(avgflux, avgfluxerr):
     t = np.linspace(1, len(nums), num=len(nums))
     tdataind = np.isin(nums['Month'], months)
     tdata = t[tdataind]
-  
+    
+    ticks = nums['Month']
+    mask = np.zeros(91)
+    inds = [0,4,14,16,23,26,36,38,46,53,59,65,71,77,82,86]
+    mask[inds] = 1
+    mask = mask.astype(bool)
+    ticks[~mask] = ''
+    
     #Plot graph in new figure
     plt.figure(figsize=[17,7])
-    plt.xticks(t, nums['Month'], rotation='vertical')
+    plt.xticks(t, ticks, rotation='vertical')
     plt.errorbar(tdata, avgflux, yerr=avgfluxerr, fmt = 'ro')
     plt.xlabel('Month')
     plt.ylabel('K-band magnitude of object')
