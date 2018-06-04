@@ -85,10 +85,26 @@ def fluxerr5_stacks(tbdata):
         fluxerr = an array with 8 columns containing flux error values for each
         year '''
         
-    fluxerr = np.stack([tbdata['FLUXERR_APER_05B'][:,3],tbdata['FLUXERR_APER_06B'][:,3],
-                tbdata['FLUXERR_APER_07B'][:,3],tbdata['FLUXERR_APER_08B'][:,3],
-                tbdata['FLUXERR_APER_09B'][:,3],tbdata['FLUXERR_APER_10B'][:,3], 
-                tbdata['FLUXERR_APER_11B'][:,3],tbdata['FLUXERR_APER_12B'][:,3]], axis=1)
+    fluxerr = np.stack([tbdata['FLUXERR_APER_05B'][:,4],tbdata['FLUXERR_APER_06B'][:,4],
+                tbdata['FLUXERR_APER_07B'][:,4],tbdata['FLUXERR_APER_08B'][:,4],
+                tbdata['FLUXERR_APER_09B'][:,4],tbdata['FLUXERR_APER_10B'][:,4], 
+                tbdata['FLUXERR_APER_11B'][:,4],tbdata['FLUXERR_APER_12B'][:,4]], axis=1)
+    return fluxerr
+
+def fluxerr5_stacks_corr(tbdata):
+    ''' Function that takes a catalogue of flux data from the sextracor output
+    and makes a np array containing only the 2 arcsec aperture error data for 
+    each epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        fluxerr = an array with 8 columns containing flux error values for each
+        year '''
+        
+    fluxerr = np.stack([tbdata['FLUXERR_APER_05B_CORR'],tbdata['FLUXERR_APER_06B_CORR'],
+                tbdata['FLUXERR_APER_07B_CORR'],tbdata['FLUXERR_APER_08B_CORR'],
+                tbdata['FLUXERR_APER_09B_CORR'],tbdata['FLUXERR_APER_10B_CORR'], 
+                tbdata['FLUXERR_APER_11B_CORR'],tbdata['FLUXERR_APER_12B_CORR']], axis=1)
     return fluxerr
    
 def mag4_stacks(tbdata):
@@ -580,10 +596,11 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
     ### Apply required plot charateristics ###
     plt.xscale('log')
 #    plt.yscale('symlog', linthreshy=0.001)
-    plt.yscale('log')
+#    plt.yscale('log')
 #    plt.ylim(2e-4, 3)
 #    plt.xlim(13,26)
     plt.xlabel('Mean Flux')
+#    plt.xlabel('Mean Magnitude')
     plt.legend()
 #    plt.gca().invert_xaxis()
     return fig, vary
