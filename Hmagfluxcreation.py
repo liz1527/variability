@@ -17,11 +17,7 @@ import numpy as np
 sems = ['05B', '06B', '07B', '08B', '09B', '10B', '11B', '12B']
 
 def sem_mag_flux(sem):
-    if sem == '10B':
-        semtb = Table.read('SE_outputs_yearstacks/cleaned_'+sem+'_output.fits')
-    else:
-        semtb = Table.read('SE_outputs_yearstacks/extra_clean_no06_'+sem+'_output.fits')
-#    semtb = Table.read('SE_outputs_yearstacks/cleaned_'+sem+'_output.fits')
+    semtb = Table.read('SE_outputs_yearstacks/'+sem+'_output_H.fits')
     #extract column names
     cols = np.asarray(semtb.colnames)
     
@@ -46,8 +42,8 @@ def sem_mag_flux(sem):
     return semtb
 
 # Create semester mag flux tables
-sem05B = sem_mag_flux(sems[0])
-#sem06B = sem_mag_flux(sems[1])
+#sem05B = sem_mag_flux(sems[0])
+sem06B = sem_mag_flux(sems[1])
 sem07B = sem_mag_flux(sems[2])
 sem08B = sem_mag_flux(sems[3])
 sem09B = sem_mag_flux(sems[4])
@@ -59,25 +55,25 @@ sem12B = sem_mag_flux(sems[7])
 #print('Join 1')
 #sem06B.rename_column('NUMBER_06B', 'NUMBER_05B')
 #semcom = join(sem05B, sem06B, keys='NUMBER_05B')
-semcom = sem05B
+semcom = sem06B
 print('Join 2')
-sem07B.rename_column('NUMBER_07B', 'NUMBER_05B')
-semcom = join(semcom, sem07B, keys='NUMBER_05B')
+sem07B.rename_column('NUMBER_07B', 'NUMBER_06B')
+semcom = join(semcom, sem07B, keys='NUMBER_06B')
 print('Join 3')
-sem08B.rename_column('NUMBER_08B', 'NUMBER_05B')
-semcom = join(semcom, sem08B, keys='NUMBER_05B')
+sem08B.rename_column('NUMBER_08B', 'NUMBER_06B')
+semcom = join(semcom, sem08B, keys='NUMBER_06B')
 print('Join 4')
-sem09B.rename_column('NUMBER_09B', 'NUMBER_05B')
-semcom = join(semcom, sem09B, keys='NUMBER_05B')
+sem09B.rename_column('NUMBER_09B', 'NUMBER_06B')
+semcom = join(semcom, sem09B, keys='NUMBER_06B')
 print('Join 5')
-sem10B.rename_column('NUMBER_10B', 'NUMBER_05B')
-semcom = join(semcom, sem10B, keys='NUMBER_05B')
+sem10B.rename_column('NUMBER_10B', 'NUMBER_06B')
+semcom = join(semcom, sem10B, keys='NUMBER_06B')
 print('Join 6')
-sem11B.rename_column('NUMBER_11B', 'NUMBER_05B')
-semcom = join(semcom, sem11B, keys='NUMBER_05B')
+sem11B.rename_column('NUMBER_11B', 'NUMBER_06B')
+semcom = join(semcom, sem11B, keys='NUMBER_06B')
 print('Join 7')
-sem12B.rename_column('NUMBER_12B', 'NUMBER_05B')
-semcom = join(semcom, sem12B, keys='NUMBER_05B')
+sem12B.rename_column('NUMBER_12B', 'NUMBER_06B')
+semcom = join(semcom, sem12B, keys='NUMBER_06B')
 
 #%% Match these with various catalogs to create final tables
 from astropy.coordinates import match_coordinates_sky
@@ -88,7 +84,7 @@ from astropy import units as u
 print('Matching Stars')
 stars = Table.read('UDS_catalogues/DR11-secure-stars.fits')
 starscoord = SkyCoord(stars['RA']*u.degree, stars['DEC']*u.degree)
-semcomcoord = SkyCoord(semcom['ALPHA_J2000_05B'], semcom['DELTA_J2000_05B'])
+semcomcoord = SkyCoord(semcom['ALPHA_J2000_06B'], semcom['DELTA_J2000_06B'])
 idx, d2d , _ = match_coordinates_sky(starscoord, semcomcoord)
 mask = d2d<=1*u.arcsec #make sure match is within 1 arcsec (like in topcat)
 idx = idx[mask]
@@ -101,13 +97,13 @@ semcomns = semcom[ind] #create table of no stars
 print('Matching Best')
 best = Table.read('UDS_catalogues/DR11-2arcsec-Jan-1-2018_best.fits')
 bestcoord = SkyCoord(best['RA']*u.degree, best['DEC']*u.degree)
-semcomnscoord = SkyCoord(semcomns['ALPHA_J2000_05B'], semcomns['DELTA_J2000_05B'])
+semcomnscoord = SkyCoord(semcomns['ALPHA_J2000_06B'], semcomns['DELTA_J2000_06B'])
 idx, d2d , _ = match_coordinates_sky(bestcoord, semcomnscoord)
 mask = d2d<=1*u.arcsec #make sure match is within 1 arcsec (like in topcat)
 idx = idx[mask]
 bestmf = semcomns[idx] #create best table with no stars
 
-bestmfcoord = SkyCoord(bestmf['ALPHA_J2000_05B'], bestmf['DELTA_J2000_05B'])
+bestmfcoord = SkyCoord(bestmf['ALPHA_J2000_06B'], bestmf['DELTA_J2000_06B'])
 
 # match with xmm
 print('Matching XMM')
@@ -134,12 +130,12 @@ print('Joining xray table')
 xraymf = vstack([chanmf, xmmmf])
 #%%
 # boolean whether a source is seen in x-rays
-xray = np.isin(bestmf['NUMBER_05B'], xraymf['NUMBER_05B'])
+xray = np.isin(bestmf['NUMBER_06B'], xraymf['NUMBER_06B'])
 xraycol = Column(xray, 'X-ray')
 bestmf.add_column(xraycol)
 
 #%% Save the tables
-semcom.write('mag_flux_tables/mag_flux_table_extra_clean_no06.fits')
-bestmf.write('mag_flux_tables/mag_flux_table_best_extra_clean_no06.fits')
-starsmf.write('mag_flux_tables/stars_mag_flux_table_extra_clean_no06.fits')
-xraymf.write('mag_flux_tables/xray_mag_flux_table_best_extra_clean_no06.fits')
+semcom.write('mag_flux_tables/mag_flux_table_H.fits')
+bestmf.write('mag_flux_tables/mag_flux_table_best_H.fits')
+starsmf.write('mag_flux_tables/stars_mag_flux_table_H.fits')
+xraymf.write('mag_flux_tables/xray_mag_flux_table_best_H.fits')

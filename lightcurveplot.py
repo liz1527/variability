@@ -23,16 +23,18 @@ font = {'family' : 'DejaVu Sans',
 plt.rc('font', **font)
 
 ### Open the fits files and get data ###
-combined = fits.open('mag_flux_tables/mag_flux_table_best_qS.fits')
-tbdata = combined[1].data
+tbdata = fits.open('mag_flux_tables/mag_flux_table_best.fits')[1].data
+varys = fits.open('variable_tables/non_xray_variables_with_spectra_for_Ismael.fits')[1].data
 
 #obnum = input('Object ID: ')#252446 158984
-obnums = [67178, 227399, 203391, 187967,193325,243208]
-for obnum in obnums:
+obnums = varys['NUMBER_05B']
+dr11 = varys['ID_DR11']
+
+for n, obnum in enumerate(obnums):
     vari_funcs.lightcurve5(int(obnum), tbdata)
     plt.tight_layout()
     axes = plt.gca()
     ylims = axes.get_ylim()
     ymid = (ylims[1]+ylims[0])/2
-    plt.ylim(ymin=ymid-0.26, ymax=ymid+0.26)
-    #plt.savefig(str(obnum)+'.png')
+#    plt.ylim(ymin=ymid-0.26, ymax=ymid+0.26)
+    plt.savefig('IsmealLightcurves/DR11_'+str(dr11[n])+'_lightcurve.png')

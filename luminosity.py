@@ -15,7 +15,7 @@ from astropy.io import fits #for handling fits
 import numpy as np #for handling arrays
 #import math
 #from astropy.stats import median_absolute_deviation
-import vari_funcs_no06 #my module to help run code neatly
+import vari_funcs #my module to help run code neatly
 from astropy.cosmology import FlatLambdaCDM
 from astropy import units as u
 plt.close('all') #close any open plots

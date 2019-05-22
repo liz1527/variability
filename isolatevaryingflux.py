@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Nov 29 12:04:36 2017
+Created on Fri Jul 20 17:40:28 2018
 
 @author: ppxee
 """
@@ -15,7 +15,8 @@ import numpy as np #for handling arrays
 #import math
 from astropy.stats import median_absolute_deviation
 import vari_funcs #my module to help run code neatly
-from matplotlib.mlab import griddata
+#from matplotlib.mlab import griddata
+from scipy.interpolate import griddata
 plt.close('all') #close any open plots
 
 ### Open the fits files and get data ###
@@ -30,15 +31,15 @@ sdata = stars[1].data
 #tbdata = vari_funcs.chandra_only(tbdata)
 
 ## Create arrays of flux values but without 06B ###
-flux = vari_funcs.mag5_stacks(tbdata)
-fluxchan = vari_funcs.mag5_stacks(chandata) # for chandra non-stellar objects
-sflux = vari_funcs.mag5_stacks(sdata)
+flux = vari_funcs.flux5_stacks(tbdata)
+fluxchan = vari_funcs.flux5_stacks(chandata) # for chandra non-stellar objects
+sflux = vari_funcs.flux5_stacks(sdata)
 
 
 ### remove values that are +/-99 ###
-flux, tbdata = vari_funcs.no99(flux, tbdata)
-fluxchan, chandata = vari_funcs.no99(fluxchan, chandata)
-sflux, sdata = vari_funcs.no99(sflux, sdata)
+flux, tbdata = vari_funcs.noneg(flux, tbdata)
+fluxchan, chandata = vari_funcs.noneg(fluxchan, chandata)
+sflux, sdata = vari_funcs.noneg(sflux, sdata)
 
 ### Normalise arrays ###
 #fluxn = vari_funcs.normalise_flux(flux)
@@ -53,16 +54,16 @@ sflux, sdata = vari_funcs.no99(sflux, sdata)
 #fluxchancorr = vari_funcs.psf_correct(flux, fluxchan, 'median') 
 
 fig,_ = vari_funcs.flux_variability_plot(flux, fluxchan, 'mad', starflux=sflux,
-                                      stars=True)
+                                      stars=True, normalised=True)
 
 fig.canvas.mpl_connect('pick_event', vari_funcs.onpick)
 # Find outliers ###
 bins = np.array([13, 15])
 bins = np.append(bins, np.arange(16,24,0.2))
 bins = np.append(bins, [24, 25, 26])
+bins = 10**((30-bins)/2.5)
+bins = np.flip(bins, axis=0)
 
-#bins = 10**((30-bins)/2.5)
-#bins = np.flip(bins, axis=0)
 #outliers, tb, modz = vari_funcs.find_outliers(fluxn, tbdata, bins)
 #varys = tb[outliers]
 #varyflux = vari_funcs.mag5_stacks(varys)
@@ -76,16 +77,15 @@ outliers2, tb2, modz2 = vari_funcs.find_outliers(flux, tbdata, bins, threshold=5
 tb2['X-ray'][tb2['X-ray']==70] = False 
 tb2['X-ray'][tb2['X-ray']==84] = True
 ### Find plotting values for the new flux table ###
-flux2 = vari_funcs.mag5_stacks(tb2) 
-flux2, tb2 = vari_funcs.no99(flux2, tb2)
-avgfluxperob2 = np.mean(flux2, axis=1) #for UDS
-#flux2 = vari_funcs.normalise_flux(flux2)
-#flux2 = vari_funcs.psf_correct(flux, flux2, 'median')
+flux2 = vari_funcs.flux5_stacks(tb2) 
+flux2, tb2 = vari_funcs.noneg(flux2, tb2)
+avgfluxperob2 = np.nanmean(flux2, axis=1) #for UDS
+flux2 = vari_funcs.normalise_flux(flux2)
 vary2 = median_absolute_deviation(flux2, axis=1)
 
 
 ### create table of varying ###
-magmask = avgfluxperob2 < 21
+magmask = avgfluxperob2 < 10**((30-21)/2.5)
 outliers2 = outliers2*magmask
 varydata = tb2[outliers2]
 #cols = fits.ColDefs(varydata)
@@ -128,17 +128,17 @@ plt.ylabel('MAD Magnitude')
 #plt.plot(varymeancorr, varymadcorr, 'md', mfc='none', markersize=10)
 
 ### plot mod z score as contours ###
-xi = np.linspace(min(avgfluxperob2), max(avgfluxperob2), 100)
-yi = np.logspace(-4, 1, 100)
+xi = np.logspace(2, 7, 1000)
+yi = np.logspace(-4, 1, 1000)
 
-#xi, yi = np.meshgrid(xi,yi)
-  
-plt.figure()
-plt.plot(xi,yi,'o')
+xi, yi = np.meshgrid(xi,yi)
+#plt.figure()
+#plt.plot(xi,yi,'o')
 #plt.xscale('log')
-plt.yscale('log')
-  
-zi = griddata(avgfluxperob2, vary2, modz2, xi, yi, interp='linear')
+#plt.yscale('log')
+
+#zi = griddata(avgfluxperob2, vary2, modz2, xi, yi)
+zi = griddata((avgfluxperob2, vary2), modz2, (xi, yi))
 #plt.plot(avgfluxperob, vary, 'b+')
 plt.figure(1)
 plt.contour(xi, yi, zi, [0,4,5,6,8,10], zorder=3, linewidths=2.5)
@@ -151,7 +151,10 @@ for axis in ['top','bottom','left','right']:
 #xint = avgfluxperob2[interest]
 #yint = vary2[interest]
 #plt.plot(xint, yint, 'ks', markersize=10)
+  
 
+  
+  
 #  
 #  
 #  ########## code that worked for magnitudes

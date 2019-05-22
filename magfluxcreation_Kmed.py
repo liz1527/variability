@@ -14,14 +14,10 @@ Update on 13/4/18 to allow creations of month stacks mag_flux
 from astropy.table import Table, join, vstack, Column
 import numpy as np
 
-sems = ['05B', '06B', '07B', '08B', '09B', '10B', '11B', '12B']
+sems = ['0','1','2','3','4','5','6','7','8','9']
 
 def sem_mag_flux(sem):
-    if sem == '10B':
-        semtb = Table.read('SE_outputs_yearstacks/cleaned_'+sem+'_output.fits')
-    else:
-        semtb = Table.read('SE_outputs_yearstacks/extra_clean_no06_'+sem+'_output.fits')
-#    semtb = Table.read('SE_outputs_yearstacks/cleaned_'+sem+'_output.fits')
+    semtb = Table.read('SE_outputs_yearstacks/08B_output_cam1_10bin'+sem+'_output.fits')
     #extract column names
     cols = np.asarray(semtb.colnames)
     
@@ -46,38 +42,49 @@ def sem_mag_flux(sem):
     return semtb
 
 # Create semester mag flux tables
-sem05B = sem_mag_flux(sems[0])
-#sem06B = sem_mag_flux(sems[1])
-sem07B = sem_mag_flux(sems[2])
-sem08B = sem_mag_flux(sems[3])
-sem09B = sem_mag_flux(sems[4])
-sem10B = sem_mag_flux(sems[5])
-sem11B = sem_mag_flux(sems[6])
-sem12B = sem_mag_flux(sems[7])
+sem0 = sem_mag_flux(sems[0])
+sem1 = sem_mag_flux(sems[1])
+sem2 = sem_mag_flux(sems[2])
+sem3 = sem_mag_flux(sems[3])
+sem4 = sem_mag_flux(sems[4])
+sem5 = sem_mag_flux(sems[5])
+sem6 = sem_mag_flux(sems[6])
+sem7 = sem_mag_flux(sems[7])
+sem8 = sem_mag_flux(sems[8])
+sem9 = sem_mag_flux(sems[9])
 
 #%% Join these tables using their IDs (will be fine for just this part as numbers alwasy match)
 #print('Join 1')
 #sem06B.rename_column('NUMBER_06B', 'NUMBER_05B')
 #semcom = join(sem05B, sem06B, keys='NUMBER_05B')
-semcom = sem05B
+semcom = sem0
 print('Join 2')
-sem07B.rename_column('NUMBER_07B', 'NUMBER_05B')
-semcom = join(semcom, sem07B, keys='NUMBER_05B')
+sem1.rename_column('NUMBER_1', 'NUMBER_0')
+semcom = join(semcom, sem1, keys='NUMBER_0')
 print('Join 3')
-sem08B.rename_column('NUMBER_08B', 'NUMBER_05B')
-semcom = join(semcom, sem08B, keys='NUMBER_05B')
+sem2.rename_column('NUMBER_0', 'NUMBER_0')
+semcom = join(semcom, sem2, keys='NUMBER_0')
 print('Join 4')
-sem09B.rename_column('NUMBER_09B', 'NUMBER_05B')
-semcom = join(semcom, sem09B, keys='NUMBER_05B')
+sem3.rename_column('NUMBER_0', 'NUMBER_0')
+semcom = join(semcom, sem3, keys='NUMBER_0')
 print('Join 5')
-sem10B.rename_column('NUMBER_10B', 'NUMBER_05B')
-semcom = join(semcom, sem10B, keys='NUMBER_05B')
+sem4.rename_column('NUMBER_0', 'NUMBER_0')
+semcom = join(semcom, sem4, keys='NUMBER_0')
 print('Join 6')
-sem11B.rename_column('NUMBER_11B', 'NUMBER_05B')
-semcom = join(semcom, sem11B, keys='NUMBER_05B')
+sem5.rename_column('NUMBER_0', 'NUMBER_0')
+semcom = join(semcom, sem5, keys='NUMBER_0')
 print('Join 7')
-sem12B.rename_column('NUMBER_12B', 'NUMBER_05B')
-semcom = join(semcom, sem12B, keys='NUMBER_05B')
+sem6.rename_column('NUMBER_0', 'NUMBER_05B')
+semcom = join(semcom, sem6, keys='NUMBER_05B')
+print('Join 7')
+sem7.rename_column('NUMBER_0', 'NUMBER_05B')
+semcom = join(semcom, sem7, keys='NUMBER_05B')
+print('Join 7')
+sem8.rename_column('NUMBER_0', 'NUMBER_05B')
+semcom = join(semcom, sem8, keys='NUMBER_05B')
+print('Join 7')
+sem9.rename_column('NUMBER_0', 'NUMBER_05B')
+semcom = join(semcom, sem9, keys='NUMBER_05B')
 
 #%% Match these with various catalogs to create final tables
 from astropy.coordinates import match_coordinates_sky

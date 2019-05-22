@@ -32,7 +32,7 @@ def min_chi_sq(mag, magerr):
     return chisqmin
 
 def add_chi_err(mag, magerr):
-    testerrchange = np.logspace(1,4,1000) #create array of values to change err by
+    testerrchange = np.linspace(0,10000,10000) #create array of values to change err by
     allmed = np.array([]) #empty array to contain median chi-square values
     n=0 #counter
     for errchange in testerrchange:
@@ -43,6 +43,9 @@ def add_chi_err(mag, magerr):
         if med < 6.346: # 6.346 is 0.5 chi square value for 7 dof and med 
                         # values decrease so stop when its less than this
             # need to check whether the value just above or just below is closer
+            if errchange == 0.0:#this means it is already flat without changes
+                sigma = 0.0
+                break
             possmed = np.array([med,allmed[-1]]) 
             diff = np.abs(possmed - 6.35)
             if diff[0]<diff[1]:
@@ -190,11 +193,11 @@ plt.plot(bins[0:42], allmedexcess, 'k')
 #                                       starflux=newallsmag, stars=True, 
 #                                       chanerr = newallchanmagerr)
 #%% plot errchange with magnitude
-#plt.figure()
-#plt.scatter(bins[0:42], allerrchange)
-#plt.xscale('log')
-#plt.xlabel('Flux')
-#plt.ylabel('Additive Correction')
+plt.figure()
+plt.scatter(bins[0:42], allerrchange)
+plt.xscale('log')
+plt.xlabel('Flux')
+plt.ylabel('Additive Correction')
 
 #meanmagnew = np.mean(newallmag, axis=1)
 #meanchanmagnew = np.mean(newallchanmag, axis=1)
@@ -215,82 +218,82 @@ plt.plot(bins[0:42], allmedexcess, 'k')
 
 #%% Do with times instead of add
 ### Bin data ###
-allerrchange = np.array([])
-allmedexcess = np.array([])
-for n, binedge in enumerate(bins):
-    print(binedge)
-    if n==np.size(bins)-1:
-        break
-    mag, bindata = vari_funcs.fluxbin(binedge, bins[n+1], allmag, tbdata) #bindata
-    magerr = vari_funcs.fluxerr5_stacks(bindata) #make error array
-    errchange, newmagerr = times_chi_err(mag, magerr) #find correction
-    allerrchange = np.append(allerrchange, errchange) #create array of corrections
-    nmag, nmagerr = vari_funcs.normalise_flux_and_errors(mag, newmagerr)
-    excess = vari_funcs.normsigmasq(nmag, nmagerr)
-    medexcess = np.nanmedian(excess)
-    allmedexcess = np.append(allmedexcess, medexcess)
-    
-    ### Apply correction tp stars and X-ray ###
-    chanmag, chanbin = vari_funcs.fluxbin(binedge, bins[n+1], allchanmag, chandata)
-    chanmagerr = vari_funcs.fluxerr5_stacks(chanbin)
-    newchanmagerr = chanmagerr*errchange #change error
-    smag, sbin = vari_funcs.fluxbin(binedge, bins[n+1], allsmag, sdata)
-    smagerr = vari_funcs.fluxerr5_stacks(sbin)
-    newsmagerr = smagerr*errchange #change error
-    
-    #create new arrays
-    if n == 0:
-        newallmag = mag
-        oldallmagerr = magerr
-        newallmagerr = newmagerr
-        newallchanmag = chanmag
-        newallchanmagerr = newchanmagerr
-        newallsmag = smag
-        newallsmagerr = newsmagerr
-    else:
-        newallmag = np.vstack([newallmag, mag])
-        oldallmagerr = np.vstack([oldallmagerr, magerr])
-        newallmagerr = np.vstack([newallmagerr, newmagerr])
-        newallchanmag = np.vstack([newallchanmag, chanmag])
-        newallchanmagerr = np.vstack([newallchanmagerr, newchanmagerr])
-        newallsmag = np.vstack([newallsmag, smag])
-        newallsmagerr = np.vstack([newallsmagerr, newsmagerr])
-
-#%% plot excess variance with new arrays
-_, excess = vari_funcs.flux_variability_plot(newallmag, newallchanmag, 'excess',
-                                       fluxerr = newallmagerr, 
-                                       starfluxerr = newallsmagerr,
-                                       starflux=newallsmag, stars=True, 
-                                       chanerr = newallchanmagerr,
-                                       normalised=True)
-plt.title('Multiplicative correction')
-plt.plot(bins[0:42], allmedexcess, 'k')
-#_, excess2 = vari_funcs.flux_variability_plot(newallmag, newallchanmag, 'excess',
+#allerrchange = np.array([])
+#allmedexcess = np.array([])
+#for n, binedge in enumerate(bins):
+#    print(binedge)
+#    if n==np.size(bins)-1:
+#        break
+#    mag, bindata = vari_funcs.fluxbin(binedge, bins[n+1], allmag, tbdata) #bindata
+#    magerr = vari_funcs.fluxerr5_stacks(bindata) #make error array
+#    errchange, newmagerr = times_chi_err(mag, magerr) #find correction
+#    allerrchange = np.append(allerrchange, errchange) #create array of corrections
+#    nmag, nmagerr = vari_funcs.normalise_flux_and_errors(mag, newmagerr)
+#    excess = vari_funcs.normsigmasq(nmag, nmagerr)
+#    medexcess = np.nanmedian(excess)
+#    allmedexcess = np.append(allmedexcess, medexcess)
+#    
+#    ### Apply correction tp stars and X-ray ###
+#    chanmag, chanbin = vari_funcs.fluxbin(binedge, bins[n+1], allchanmag, chandata)
+#    chanmagerr = vari_funcs.fluxerr5_stacks(chanbin)
+#    newchanmagerr = chanmagerr*errchange #change error
+#    smag, sbin = vari_funcs.fluxbin(binedge, bins[n+1], allsmag, sdata)
+#    smagerr = vari_funcs.fluxerr5_stacks(sbin)
+#    newsmagerr = smagerr*errchange #change error
+#    
+#    #create new arrays
+#    if n == 0:
+#        newallmag = mag
+#        oldallmagerr = magerr
+#        newallmagerr = newmagerr
+#        newallchanmag = chanmag
+#        newallchanmagerr = newchanmagerr
+#        newallsmag = smag
+#        newallsmagerr = newsmagerr
+#    else:
+#        newallmag = np.vstack([newallmag, mag])
+#        oldallmagerr = np.vstack([oldallmagerr, magerr])
+#        newallmagerr = np.vstack([newallmagerr, newmagerr])
+#        newallchanmag = np.vstack([newallchanmag, chanmag])
+#        newallchanmagerr = np.vstack([newallchanmagerr, newchanmagerr])
+#        newallsmag = np.vstack([newallsmag, smag])
+#        newallsmagerr = np.vstack([newallsmagerr, newsmagerr])
+#
+##%% plot excess variance with new arrays
+#_, excess = vari_funcs.flux_variability_plot(newallmag, newallchanmag, 'excess',
 #                                       fluxerr = newallmagerr, 
 #                                       starfluxerr = newallsmagerr,
 #                                       starflux=newallsmag, stars=True, 
-#                                       chanerr = newallchanmagerr)
-#%% plot errchange with magnitude
-#plt.figure()
-#plt.scatter(bins[0:42], allerrchange)
-#plt.xscale('log')
-#plt.xlabel('Flux')
-#plt.ylabel('Multiplicative Error Change')
-
-#%% Plot new chisquared graph
-#meanmagnew = np.mean(newallmag, axis=1)
-#meanchanmagnew = np.mean(newallchanmag, axis=1)
-#meansmagnew = np.mean(newallsmag, axis=1)
-#chisq = min_chi_sq(newallmag, newallmagerr)
-#chanchisq = min_chi_sq(newallchanmag, newallchanmagerr)
-#schisq = min_chi_sq(newallsmag, newallsmagerr)
+#                                       chanerr = newallchanmagerr,
+#                                       normalised=True)
+#plt.title('Multiplicative correction')
+#plt.plot(bins[0:42], allmedexcess, 'k')
+##_, excess2 = vari_funcs.flux_variability_plot(newallmag, newallchanmag, 'excess',
+##                                       fluxerr = newallmagerr, 
+##                                       starfluxerr = newallsmagerr,
+##                                       starflux=newallsmag, stars=True, 
+##                                       chanerr = newallchanmagerr)
+##%% plot errchange with magnitude
+##plt.figure()
+##plt.scatter(bins[0:42], allerrchange)
+##plt.xscale('log')
+##plt.xlabel('Flux')
+##plt.ylabel('Multiplicative Error Change')
 #
-#plt.figure()
-#plt.plot(meansmagnew, schisq, 'm*', markersize=10, mfc='None')
-#plt.plot(meanmagnew, chisq, 'b+')
-#plt.plot(meanchanmagnew, chanchisq, 'ro', markersize=10, mfc='None')
-#plt.yscale('log')
-#plt.xscale('log')
-#plt.xlabel('Mean Flux')
-#plt.ylabel('Chi squared value')
-#plt.title('With Multiplicative Correction')
+##%% Plot new chisquared graph
+##meanmagnew = np.mean(newallmag, axis=1)
+##meanchanmagnew = np.mean(newallchanmag, axis=1)
+##meansmagnew = np.mean(newallsmag, axis=1)
+##chisq = min_chi_sq(newallmag, newallmagerr)
+##chanchisq = min_chi_sq(newallchanmag, newallchanmagerr)
+##schisq = min_chi_sq(newallsmag, newallsmagerr)
+##
+##plt.figure()
+##plt.plot(meansmagnew, schisq, 'm*', markersize=10, mfc='None')
+##plt.plot(meanmagnew, chisq, 'b+')
+##plt.plot(meanchanmagnew, chanchisq, 'ro', markersize=10, mfc='None')
+##plt.yscale('log')
+##plt.xscale('log')
+##plt.xlabel('Mean Flux')
+##plt.ylabel('Chi squared value')
+##plt.title('With Multiplicative Correction')
