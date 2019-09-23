@@ -43,19 +43,20 @@ def month_avg_lightcurve(avgflux, avgfluxerr):
     ticks[~mask] = ''
     
     #Plot graph in new figure
-    plt.figure(figsize=[17,7])
+#    plt.figure(figsize=[17,7])
+    plt.figure(figsize=[13,5])
     plt.xticks(t, ticks, rotation='vertical')
-    plt.errorbar(tdata, avgflux, yerr=avgfluxerr, fmt = 'bo')
+    plt.errorbar(tdata, avgflux, yerr=avgfluxerr, fmt = 'ro')
     plt.xlabel('Month')
     plt.ylabel('K-band flux of object')
-    plt.title('Average Lightcurve')
+#    plt.title('Average Lightcurve')
     plt.tight_layout()
     return
 
 
 
 tbdata = fits.open('mag_flux_tables/month_mag_flux_table.fits')[1].data
-obnum = 102552
+obnum = 173459
 
 
 #mask = fitsdata['NUMBER_1'] == ob
@@ -70,11 +71,11 @@ months = ['sep05','oct05','nov05','dec05', 'jan06', 'dec06', 'jan07',
 
 for month in months:
     if month == 'sep05':
-        flux = obdata['MAG_APER_'+month][:,4]
-        fluxerr = obdata['MAGERR_APER_'+month][:,4]
+        flux = obdata['MAG_APER_'+month][:,3]
+        fluxerr = obdata['MAGERR_APER_'+month][:,3]
     else:
-        flux = np.append(flux, obdata['MAG_APER_'+month][:,4])
-        fluxerr = np.append(fluxerr, obdata['MAGERR_APER_'+month][:,4])
+        flux = np.append(flux, obdata['MAG_APER_'+month][:,3])
+        fluxerr = np.append(fluxerr, obdata['MAGERR_APER_'+month][:,3])
         
 #    if month == 'sep05':
 #        flux = obdata['FLUX_APER_'+month][:,0]
@@ -98,4 +99,4 @@ chisq = vari_funcs.my_chisquare_err([flux], [fluxerr])
 #plt.ylim(ymin=ymid-0.25, ymax=ymid+0.25)
 #plt.title('Light curve for object number %i' % obnum)
 plt.ylabel('K-band magnitude')
-plt.title('Lightcurve of Object '+str(obnum)+' '+r' $\chi^{2} = $'+str(round(chisq[0], 2)))
+#plt.title('Lightcurve of Object '+str(obnum)+' '+r' $\chi^{2} = $'+str(round(chisq[0], 2)))

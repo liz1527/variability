@@ -18,9 +18,9 @@ plt.close('all')
 plt.style.use('dark_background')
 
 ### Get fits files ###
-chandata = fits.open('variable_tables/no06_variables_chi30_chandata_DR11data_restframe.fits')[1].data
-xmmdata = fits.open('variable_tables/no06_variables_chi30_xmmdata_DR11data_restframe.fits')[1].data
-tbdata = fits.open('variable_tables/no06_variables_chi30_DR11data_restframe.fits')[1].data
+chandata = fits.open('variable_tables/no06_variables_chi30_2arcsec_chandata_DR11data_restframe.fits')[1].data
+xmmdata = fits.open('variable_tables/no06_variables_chi30_2arcsec_xmmdata_DR11data_restframe.fits')[1].data
+tbdata = fits.open('variable_tables/no06_variables_chi30_2arcsec_DR11data_restframe.fits')[1].data
 
 ### Remove edges ###
 tbdata = vari_funcs.remove_edges(tbdata)
@@ -46,14 +46,14 @@ plt.plot(nonRA, nonDec, 'bo')
 #plt.plot(xRA, xDec, 'ro', mfc='None', markersize=10)
 plt.plot(chanRA, chanDec, 'ro')
 plt.plot(xmmRA, xmmDec, 'ro')
-#plt.xlim(xmin=34, xmax=34.9)
-#plt.ylim(ymin=-5.6, ymax=-4.65)
-plt.xlim(xmin=34.06, xmax=34.87)
-plt.ylim(ymin=-5.54, ymax=-4.7)
+plt.xlim(xmin=34, xmax=34.9)
+plt.ylim(ymin=-5.55, ymax=-4.65)
+#plt.xlim(xmin=34.06, xmax=34.87)
+#plt.ylim(ymin=-5.54, ymax=-4.7)
 plt.gca().invert_xaxis()
 plt.xlabel('RA')
 plt.ylabel('Dec')
-#plt.savefig('plots/Chi_variables/no06_extra_clean/positions_all.pdf')
+#plt.savefig('plots/Chi_variables/no06_extra_clean/positions_all.png')
 
 print('Full sample')
 print('Total = '+str(len(tbdata)))
@@ -99,32 +99,32 @@ print('X-ray = '+str(len(chanRA)+len(xmmRA)))
 #print('High Flux')
 #print('Total = '+str(len(hightbdata)))
 #print('X-ray = '+str(len(chanRA)+len(xmmRA)))
-##%% Restrict to Chandra region ###
-#tbdata = vari_funcs.chandra_only(tbdata)
-##chandata = vari_funcs.chandra_only(chandata)
-#xmmdata = vari_funcs.chandra_only(xmmdata)
-#
-#nontb = tbdata[~tbdata['X-ray']]
-#
-#### Get positions ###
-#nonRA = nontb['ALPHA_J2000']
-#nonDec = nontb['DELTA_J2000']
-#chanRA = chandata['ALPHA_J2000']
-#chanDec = chandata['DELTA_J2000']
-#xmmRA = xmmdata['ALPHA_J2000']
-#xmmDec = xmmdata['DELTA_J2000']
-#
-#### Plot positions ###
-#plt.figure(figsize=[8,8])
-#plt.plot(nonRA, nonDec, 'bo')
-#plt.plot(chanRA, chanDec, 'ro')
+#%% Restrict to Chandra region ###
+tbdata = vari_funcs.chandra_only(tbdata)
+#chandata = vari_funcs.chandra_only(chandata)
+xmmdata = vari_funcs.chandra_only(xmmdata)
+
+nontb = tbdata#[~tbdata['X-ray']]
+
+### Get positions ###
+nonRA = nontb['ALPHA_J2000']
+nonDec = nontb['DELTA_J2000']
+chanRA = chandata['ALPHA_J2000']
+chanDec = chandata['DELTA_J2000']
+xmmRA = xmmdata['ALPHA_J2000']
+xmmDec = xmmdata['DELTA_J2000']
+
+### Plot positions ###
+plt.figure(figsize=[8,8])
+plt.plot(nonRA, nonDec, 'bo')
+plt.plot(chanRA, chanDec, 'ro')
 #plt.plot(xmmRA, xmmDec, 'ro')
-#plt.xlim(xmin=34, xmax=34.9)
-#plt.ylim(ymin=-5.6, ymax=-4.65)
-#plt.gca().invert_xaxis()
-#plt.xlabel('RA')
-#plt.ylabel('Dec')
-##plt.savefig('plots/Chi_variables/no06_extra_clean/positions_chandra.pdf')
+plt.xlim(xmin=34, xmax=34.9)
+plt.ylim(ymin=-5.55, ymax=-4.65)
+plt.gca().invert_xaxis()
+plt.xlabel('RA')
+plt.ylabel('Dec')
+#plt.savefig('plots/Chi_variables/no06_extra_clean/positions_chandra.png')
 #
 #print('In Chandra')
 #print('Total = '+str(len(tbdata)))

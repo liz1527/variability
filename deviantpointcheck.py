@@ -99,5 +99,5 @@ plt.ylabel('Y')
 plt.tight_layout()
 
 ### save checked table ###
-save30 = Table(newvary)
-save30.write('variable_tables/no06_variables_chi30_2arcsec_deviant.fits')
+#save30 = Table(newvary)
+#save30.write('variable_tables/no06_variables_chi30_2arcsec_deviant.fits')

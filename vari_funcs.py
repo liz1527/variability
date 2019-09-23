@@ -22,6 +22,8 @@ import numpy as np #for handling arrays
 import math
 from astropy.stats import median_absolute_deviation
 from scipy.stats import chisquare
+
+plt.style.use('default')
 font = {'family' : 'DejaVu Sans',
         'weight' : 'normal',
         'size'   : 14}
@@ -184,6 +186,68 @@ def fluxerr4_stacks(tbdata):
                 tbdata['FLUXERR_APER_11B'][:,3],tbdata['FLUXERR_APER_12B'][:,3]], axis=1)
     return fluxerr
 
+def jflux4_stacks(tbdata):
+    ''' Function that takes a catalogue of flux data from the sextracor output
+    and makes a np array containing only the 2 arcsec aperture data for each 
+    epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        flux = an array with 8 columns containing flux values for each year '''
+        
+    flux = np.stack([tbdata['FLUX_APER_05B'][:,3], tbdata['FLUX_APER_06B'][:,3],
+                tbdata['FLUX_APER_07B'][:,3], tbdata['FLUX_APER_08B'][:,3],
+                tbdata['FLUX_APER_10B'][:,3], tbdata['FLUX_APER_11B'][:,3],
+                tbdata['FLUX_APER_12B'][:,3]], axis=1)
+    return flux
+
+def jfluxerr4_stacks(tbdata):
+    ''' Function that takes a catalogue of flux data from the sextracor output
+    and makes a np array containing only the 2 arcsec aperture error data for 
+    each epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        fluxerr = an array with 8 columns containing flux error values for each
+        year '''
+        
+    fluxerr = np.stack([tbdata['FLUXERR_APER_05B'][:,3],tbdata['FLUXERR_APER_06B'][:,3],
+                tbdata['FLUXERR_APER_07B'][:,3],tbdata['FLUXERR_APER_08B'][:,3],
+                tbdata['FLUXERR_APER_10B'][:,3], tbdata['FLUXERR_APER_11B'][:,3],
+                tbdata['FLUXERR_APER_12B'][:,3]], axis=1)
+    return fluxerr
+
+def hflux4_stacks(tbdata):
+    ''' Function that takes a catalogue of flux data from the sextracor output
+    and makes a np array containing only the 2 arcsec aperture data for each 
+    epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        flux = an array with 8 columns containing flux values for each year '''
+        
+    flux = np.stack(([tbdata['FLUX_APER_06B'][:,3],
+                tbdata['FLUX_APER_07B'][:,3], tbdata['FLUX_APER_08B'][:,3],
+                tbdata['FLUX_APER_09B'][:,3], tbdata['FLUX_APER_10B'][:,3], 
+                tbdata['FLUX_APER_11B'][:,3], tbdata['FLUX_APER_12B'][:,3]]), axis=1)
+    return flux
+
+def hfluxerr4_stacks(tbdata):
+    ''' Function that takes a catalogue of flux data from the sextracor output
+    and makes a np array containing only the 2 arcsec aperture error data for 
+    each epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        fluxerr = an array with 8 columns containing flux error values for each
+        year '''
+        
+    fluxerr = np.stack([tbdata['FLUXERR_APER_06B'][:,3],
+                tbdata['FLUXERR_APER_07B'][:,3],tbdata['FLUXERR_APER_08B'][:,3],
+                tbdata['FLUXERR_APER_09B'][:,3],tbdata['FLUXERR_APER_10B'][:,3], 
+                tbdata['FLUXERR_APER_11B'][:,3],tbdata['FLUXERR_APER_12B'][:,3]], axis=1)
+    return fluxerr
+
 def flux5_stacks(tbdata):
     ''' Function that takes a catalogue of flux data from the sextracor output
     and makes a np array containing only the 2 arcsec aperture data for each 
@@ -318,7 +382,100 @@ def fluxerr5_stacks_corr(tbdata):
                 tbdata['FLUXERR_APER_09B_CORR'],tbdata['FLUXERR_APER_10B_CORR'], 
                 tbdata['FLUXERR_APER_11B_CORR'],tbdata['FLUXERR_APER_12B_CORR']], axis=1)
     return fluxerr
+     
+def mag1_stacks(tbdata):
+    ''' Function that takes a catalogue of magnitude data from the sextracor 
+    output and makes a np array containing only the 3 arcsec aperture data for 
+    each epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        flux = an array with 8 columns containing flux values for each year '''
+        
+    flux = np.stack(([tbdata['MAG_APER_05B'][:,0], #tbdata['MAG_APER_06B'][:,0],
+                tbdata['MAG_APER_07B'][:,0], tbdata['MAG_APER_08B'][:,0],
+                tbdata['MAG_APER_09B'][:,0], tbdata['MAG_APER_10B'][:,0], 
+                tbdata['MAG_APER_11B'][:,0], tbdata['MAG_APER_12B'][:,0]]), axis=1)
+    return flux
+
+def magerr1_stacks(tbdata):
+    ''' Function that takes a catalogue of magnitude data from the sextracor 
+    output and makes a np array containing only the 3 arcsec aperture error 
+    data for each epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        fluxerr = an array with 8 columns containing flux error values for each
+        year '''
+        
+    fluxerr = np.stack([tbdata['MAGERR_APER_05B'][:,0],#tbdata['MAGERR_APER_06B'][:,0],
+                tbdata['MAGERR_APER_07B'][:,0],tbdata['MAGERR_APER_08B'][:,0],
+                tbdata['MAGERR_APER_09B'][:,0],tbdata['MAGERR_APER_10B'][:,0], 
+                tbdata['MAGERR_APER_11B'][:,0],tbdata['MAGERR_APER_12B'][:,0]], axis=1)
+    return fluxerr
+    
+def mag2_stacks(tbdata):
+    ''' Function that takes a catalogue of magnitude data from the sextracor 
+    output and makes a np array containing only the 3 arcsec aperture data for 
+    each epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        flux = an array with 8 columns containing flux values for each year '''
+        
+    flux = np.stack(([tbdata['MAG_APER_05B'][:,1], #tbdata['MAG_APER_06B'][:,1],
+                tbdata['MAG_APER_07B'][:,1], tbdata['MAG_APER_08B'][:,1],
+                tbdata['MAG_APER_09B'][:,1], tbdata['MAG_APER_10B'][:,1], 
+                tbdata['MAG_APER_11B'][:,1], tbdata['MAG_APER_12B'][:,1]]), axis=1)
+    return flux
+
+def magerr2_stacks(tbdata):
+    ''' Function that takes a catalogue of magnitude data from the sextracor 
+    output and makes a np array containing only the 3 arcsec aperture error 
+    data for each epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        fluxerr = an array with 8 columns containing flux error values for each
+        year '''
+        
+    fluxerr = np.stack([tbdata['MAGERR_APER_05B'][:,1],#tbdata['MAGERR_APER_06B'][:,1],
+                tbdata['MAGERR_APER_07B'][:,1],tbdata['MAGERR_APER_08B'][:,1],
+                tbdata['MAGERR_APER_09B'][:,1],tbdata['MAGERR_APER_10B'][:,1], 
+                tbdata['MAGERR_APER_11B'][:,1],tbdata['MAGERR_APER_12B'][:,1]], axis=1)
+    return fluxerr
    
+def mag3_stacks(tbdata):
+    ''' Function that takes a catalogue of magnitude data from the sextracor 
+    output and makes a np array containing only the 3 arcsec aperture data for 
+    each epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        flux = an array with 8 columns containing flux values for each year '''
+        
+    flux = np.stack(([tbdata['MAG_APER_05B'][:,2], #tbdata['MAG_APER_06B'][:,2],
+                tbdata['MAG_APER_07B'][:,2], tbdata['MAG_APER_08B'][:,2],
+                tbdata['MAG_APER_09B'][:,2], tbdata['MAG_APER_10B'][:,2], 
+                tbdata['MAG_APER_11B'][:,2], tbdata['MAG_APER_12B'][:,2]]), axis=1)
+    return flux
+
+def magerr3_stacks(tbdata):
+    ''' Function that takes a catalogue of magnitude data from the sextracor 
+    output and makes a np array containing only the 3 arcsec aperture error 
+    data for each epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        fluxerr = an array with 8 columns containing flux error values for each
+        year '''
+        
+    fluxerr = np.stack([tbdata['MAGERR_APER_05B'][:,2],#tbdata['MAGERR_APER_06B'][:,2],
+                tbdata['MAGERR_APER_07B'][:,2],tbdata['MAGERR_APER_08B'][:,2],
+                tbdata['MAGERR_APER_09B'][:,2],tbdata['MAGERR_APER_10B'][:,2], 
+                tbdata['MAGERR_APER_11B'][:,2],tbdata['MAGERR_APER_12B'][:,2]], axis=1)
+    return fluxerr
+
 def mag4_stacks(tbdata):
     ''' Function that takes a catalogue of magnitude data from the sextracor 
     output and makes a np array containing only the 3 arcsec aperture data for 
@@ -344,10 +501,10 @@ def magerr4_stacks(tbdata):
         fluxerr = an array with 8 columns containing flux error values for each
         year '''
         
-    fluxerr = np.stack([tbdata['MAGERR_APER_05B'][:,5],#tbdata['MAGERR_APER_06B'][:,5],
-                tbdata['MAGERR_APER_07B'][:,5],tbdata['MAGERR_APER_08B'][:,5],
-                tbdata['MAGERR_APER_09B'][:,5],tbdata['MAGERR_APER_10B'][:,5], 
-                tbdata['MAGERR_APER_11B'][:,5],tbdata['MAGERR_APER_12B'][:,5]], axis=1)
+    fluxerr = np.stack([tbdata['MAGERR_APER_05B'][:,3],#tbdata['MAGERR_APER_06B'][:,3],
+                tbdata['MAGERR_APER_07B'][:,3],tbdata['MAGERR_APER_08B'][:,3],
+                tbdata['MAGERR_APER_09B'][:,3],tbdata['MAGERR_APER_10B'][:,3], 
+                tbdata['MAGERR_APER_11B'][:,3],tbdata['MAGERR_APER_12B'][:,3]], axis=1)
     return fluxerr
 
 def mag5_stacks(tbdata):
@@ -1474,3 +1631,27 @@ def remove_edges(tbdata):
     tbdata = tbdata[ymask]
     
     return tbdata
+
+def flux_split(tbdata, half):
+    ''' Function to give either the sources greater that 1e4 or less than 1e4'''
+    flux = flux4_stacks(tbdata)
+    meanflux = np.nanmean(flux, axis=1)
+    if half == 'upper':
+        tbdata = tbdata[meanflux >= 8e3]
+    elif half == 'lower':
+        tbdata = tbdata[meanflux < 8e3]
+    else:
+        print('Invalid half string, should be upper or lower')
+    return tbdata
+
+def get_z(tbdata):
+    ''' Get z with spec where possible '''
+    z = tbdata['z_spec']
+    z[z==-1] = tbdata['z_p'][z==-1]
+    return z
+
+def get_jansky_flux(tbdata):
+    ''' Function to get flux in Janskys from the DR11 AB magnitude of an object '''
+    meanmag = tbdata['KMAG_20']
+    meanflux = 10**(23-((meanmag+48.6)/2.5))
+    return meanflux

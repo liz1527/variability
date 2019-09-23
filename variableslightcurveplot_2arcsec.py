@@ -22,7 +22,7 @@ font = {'family' : 'DejaVu Sans',
 plt.rc('font', **font)
 
 ### Open the fits files and get data ###
-varys = fits.open('variable_tables/no06_variables_chi30_2arcsec_deviant.fits')[1].data
+varys = fits.open('variable_tables/no06_variables_chi30_2arcsec.fits')[1].data
 sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06_2arcsec.fits')
 
 #varys = vari_funcs.chandra_only(varys)
@@ -67,8 +67,8 @@ for n in range(len(newvarys)):
         plt.errorbar(x, flux[n,:], yerr=fluxerr[n,:],fmt='o', color='b')
     plt.xlabel('Semester')
     plt.ylabel('K-band flux')
-    plt.title('Lightcurve of Object '+str(newvarys['NUMBER_05B'][n])+' '+r' $\chi^{2} = $'+str(round(chisq[n], 2)))
+#    plt.title('Lightcurve of Object '+str(newvarys['NUMBER_05B'][n])+' '+r' $\chi^{2} = $'+str(round(chisq[n], 2)))
     plt.xticks(t, years)
     plt.tight_layout()
-    plt.savefig('plots/Chi30Lightcurves/2arcsec/flux/deviant/flux_'+str(n))#+str(varys['NUMBER_05B'][n])+'_lightcurve.png')
+#    plt.savefig('plots/Chi30Lightcurves/2arcsec/flux/deviant/flux_'+str(n))#+str(varys['NUMBER_05B'][n])+'_lightcurve.png')
     plt.close('all')

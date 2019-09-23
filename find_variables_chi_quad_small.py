@@ -56,7 +56,7 @@ fig,_ = vari_funcs.flux_variability_plot(flux, fluxchan, 'chisq',
                                        starflux=sflux, starfluxerr=serr,
                                        #normalised=True, 
                                        stars=True, scale='log')
-fig.canvas.mpl_connect('pick_event', vari_funcs.onpickflux)
+fig.canvas.mpl_connect('pick_event', vari_funcs.onpickflux_2arcsec)
 
 ### Calculate chi^2 values ###
 chisq = vari_funcs.my_chisquare_err(flux, fluxerr)
@@ -72,6 +72,7 @@ varydata50 = tbdata[chisq>50]
 plt.hlines(30, 8e1, 1e7,'g', zorder=4,label='Chi=30')
 #plt.hlines(40, 8e1, 1e7,'y', zorder=4,label='Chi>40')
 #plt.hlines(50, 8e1, 1e7,'c', zorder=4,label='Chi>50')
+
 plt.legend()
 plt.tight_layout()
 
@@ -98,3 +99,45 @@ plt.tight_layout()
 #save40.write('variable_tables/no06_variables_chi40.fits')
 #save50 = Table(varydata50)
 #save50.write('variable_tables/no06_variables_chi50.fits')
+#
+##%% checks for false positives ###
+#
+#### Create binedge array ###
+#bins = np.array(sigtb.colnames)
+#binarr = np.empty(int(len(bins)/4))
+#for k, bin in enumerate(bins):
+#    if bin[0] == '1':
+#        binarr[k] = int(bin[2:])
+#        k+=1
+#binarr = binarr.astype(int)
+#
+#binsizes =  np.empty(int(len(binarr)))
+#binmean =  np.empty(int(len(binarr)))
+#for n, binedge in enumerate(binarr):
+#    if binedge==binarr[-1]:
+#        binupp = np.nanmax(flux)
+#    else:
+#        binupp = binarr[n+1]
+#    binflux, bindata = vari_funcs.fluxbin(binedge, binupp, flux, tbdata) #bindata
+##    binsflux, binsdata = vari_funcs.fluxbin(binedge, binupp, sflux, sdata)
+#    binsizes[n] = len(bindata) #+ len(binsdata)
+#    plt.vlines(binedge, 1e-2, 1e4, zorder=4)
+#    binmean[n] = np.nanmean(binflux)
+##    if binsizes[n] < 9:
+##        continue
+#    ### get chi values within bin ###
+##    binflux, binfluxerr, bindata = vari_funcs.create_quad_error_array(sigtb, bindata)
+##    binchisq = vari_funcs.my_chisquare_err(binflux, binfluxerr)
+##    
+#    ### P value of 30 with dof=6 is 0.00003931 ###
+#    ### therefore false positives = binsize * P ###
+#P =  0.00003931#0.001
+#numfalpos = binsizes * P
+#plt.figure(figsize=[8,5])
+#plt.plot(binmean, numfalpos)
+#plt.xscale('log')
+#plt.xlim(8e1,1e7)
+#plt.xlabel('Flux')
+#plt.ylabel('Expected number of sources with $\chi^{2}$ > 30')
+#plt.tight_layout()
+#totalfalpos = np.nansum(numfalpos)

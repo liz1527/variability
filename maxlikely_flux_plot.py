@@ -26,11 +26,11 @@ plt.close('all') #close any open plots
 #from numpy.lib.recfunctions import append_fields
 
 #%% Open the fits files and get data ###
-tbdata = fits.open('mag_flux_tables/mag_flux_table_best_extra_clean_no06.fits')[1].data
-#tbdata = fits.open('variable_tables/no06_variables_chi30_DR11data_restframe.fits')[1].data
+#tbdata = fits.open('mag_flux_tables/mag_flux_table_best_extra_clean_no06.fits')[1].data
+tbdata = fits.open('variable_tables/no06_variables_chi30_2arcsec_DR11data_restframe.fits')[1].data
 #fullxray = fits.open('mag_flux_tables/chanDR11data_restframe_mag_flux_table_best_extra_clean_no06.fits')[1].data
 #chandata = fits.open('variable_tables/no06_variables_chi30_chandata_DR11data_restframe.fits')[1].data
-sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06.fits')
+sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06_2arcsec.fits')
 
 ### Limit to Chandra region for simplicity ###
 #tbdata = vari_funcs.chandra_only(tbdata)
@@ -38,9 +38,9 @@ sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06.fits')
 #chandata = vari_funcs.chandra_only(chandata)
 
 # Extract magnitude table and error table
-flux = vari_funcs.flux5_stacks(tbdata)
+flux = vari_funcs.flux4_stacks(tbdata)
 flux, tbdata = vari_funcs.noneg(flux, tbdata)
-flux, fluxerr, tbdata = vari_funcs.create_quad_error_array(sigtb, tbdata, aper=5)
+flux, fluxerr, tbdata = vari_funcs.create_quad_error_array(sigtb, tbdata, aper=4)
 #chanflux = vari_funcs.flux5_stacks(chandata)
 #chanflux, chandata = vari_funcs.noneg(chanflux, chandata)
 #chanflux, chanerr, chandata = vari_funcs.create_quad_error_array(sigtb, chandata, aper=5)
@@ -74,12 +74,23 @@ out = np.array([vari_funcs.maximum_likelihood(fluxnorm[n,:], fluxerrnorm[n,:],
 mask=tbdata['X-ray'].astype(bool)
 plt.figure(figsize=[7,7])
 meanflux = np.nanmean(flux, axis=1)
-plt.plot(meanflux, out[:,0], 'b+')
+plt.plot(meanflux, out[:,0], 'bo')
 plt.errorbar(meanflux, out[:,0],yerr=out[:,1],fmt='+', color='tab:grey',alpha=0.5, zorder=0)
-plt.plot(meanflux[mask], out[mask,0], 'ro', markersize=10, mfc='None')
+#plt.plot(meanflux[mask], out[mask,0], 'ro')#, markersize=10, mfc='None')
 plt.xscale('log')
 #plt.yscale('log')
 plt.ylabel(r'$\sigma$')
 plt.xlabel('Mean Flux')
+
+plt.figure(figsize=[7,7])
+meanflux = np.nanmean(flux, axis=1)
+plt.plot(meanflux, out[:,0], 'bo')
+plt.errorbar(meanflux, out[:,0],yerr=out[:,1],fmt='+', color='tab:grey',alpha=0.5, zorder=0)
+#plt.plot(meanflux[mask], out[mask,0], 'ro')#, markersize=10, mfc='None')
+plt.xscale('log')
+plt.yscale('log')
+plt.ylabel(r'$\sigma$')
+plt.xlabel('Mean Flux')
+
 end = time.time()
 print(end-start)
