@@ -33,10 +33,10 @@ dev07 = fits.open('variable_tables/no06_variables_chi30_2arcsec_DR11data_restfra
 #deviant = fits.open('variable_tables/no06_variables_chi30_2arcsec_DR11data_restframe_allspecz.fits')[1].data
 
 ### with x/nox split ###
-noxvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_noXray_DR11data_restframe.fits')[1].data
-xvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_Xray_DR11data_restframe.fits')[1].data
-#noxvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_nochanXray_DR11data_restframe.fits')[1].data
-#xvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_chandata_DR11data_restframe.fits')[1].data
+#noxvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_noXray_DR11data_restframe.fits')[1].data
+#xvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_Xray_DR11data_restframe.fits')[1].data
+noxvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_nochanXray_DR11data_restframe.fits')[1].data
+xvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_chandata_DR11data_restframe.fits')[1].data
 
 noxsternvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_DR11data_SpUDSdata_IRAC_noXray_stern.fits')[1].data
 xsternvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_DR11data_SpUDSdata_IRAC_Xray_stern.fits')[1].data
@@ -69,6 +69,8 @@ devz, devm = prep_variables(deviant)
 snz, snm = prep_variables(sn)
 dev07z, dev07m = prep_variables(dev07)
 
+print(str(len(noxz[noxz!=-1]))+' non-x-ray variables')
+print(str(len(xz[xz!=-1]))+' x-ray variables')
 
 ### KS test ###
 from scipy import stats
@@ -135,81 +137,81 @@ plt.tight_layout()
 #plt.tight_layout()
 
 #%% Plot with deviant details ###
-### remove deviants from main sample ###
-mask = np.isin(noxvarydata['NUMBER_1'], deviant['NUMBER_1'])
-noxvarydata = noxvarydata[~mask]
-mask = np.isin(xvarydata['NUMBER_1'], deviant['NUMBER_1'])
-xvarydata = xvarydata[~mask]
-
-noxz, noxm = prep_variables(noxvarydata)
-xz, xm = prep_variables(xvarydata)
-
-### remove 07Bs for talk slide ###
-mask = np.isin(deviant['NUMBER_1'], dev07['NUMBER_1'])
-deviant = deviant[~mask]
-devz, devm = prep_variables(deviant)
-
-#plt.figure(figsize=[9,7])
-plt.figure(figsize=[10,7])
-plt.plot(z, m, '.',markersize=1, color='tab:gray', alpha=0.25, label='Galaxy')
-#plt.plot(allxz, allxm, 'ks', label='X-ray AGN')
-plt.plot(xz, xm, 'ro', label='Variable X-ray AGN')
-plt.plot(noxz, noxm, 'bo', label='Variable Non-X-ray AGN')
-plt.plot(devz, devm, 'gs', markersize=6, label='Deviant')
-plt.plot(snz, snm, 'y*', markersize=12, label='Potential SN')
-#plt.plot(dev07z, dev07m, 'gd', markersize=8, label='Deviant in 07B')
-
-#plt.hlines(2e9,-0.1,4.5,linestyle='dashed')
-
-plt.yscale('log')
-plt.xlim(xmin=-0.1, xmax=4.5)
-plt.ylim(ymin=2e5, ymax=5e11)
-plt.legend(loc='lower right')
-plt.xlabel('Redshift')
-plt.ylabel('Stellar Mass ($M_{\odot}$)')
-#plt.xlabel('z')
-#plt.ylabel('$M_{star}$')
-plt.tight_layout()
-##%% Plot with flux colours ###
-#### get fluxes from mag-flux ###
-##
-##def get_mean_flux(tbdata):
-##    flux = vari_funcs.flux4_stacks(tbdata)
-##    meanflux = np.nanmean(flux, axis=1)
-##    return meanflux
-##
-##def get_jansky_flux(tbdata):
-##    meanmag = tbdata['KMAG_20']
-##    meanflux = 10**(23-((meanmag+48.6)/2.5))
-##    return meanflux
-##    
-##meanflux = get_mean_flux(tbdata)
-##meannoxvary = get_mean_flux(noxvarydata)
-##meanxvary = get_mean_flux(xvarydata)
-##meanvary = get_mean_flux(varydata)
-##
-##### mask flux arrays and make flux colour ###
-##meannoxvary = meannoxvary[noxmask]
-##meanxvary = meanxvary[xmask]
-##
-##### find max and min ###
-##cmax = np.nanmax([np.nanmax(meannoxvary), np.nanmax(meanxvary)])
-##cmin = np.nanmin([np.nanmin(meannoxvary), np.nanmin(meanxvary)])
-##
-##plt.figure(figsize=[10,7])
-##plt.plot(z, m, '.',markersize=1, color='tab:gray', alpha=0.25, label='UDS Galaxy')
-##plt.plot(allxz, allxm, 'k+', label='X-ray Non-Variable')
-###plt.scatter(noxz, noxm, marker='o', c=meannoxvary, label='Non-X-ray Variable', 
-###            norm=colors.LogNorm(vmin=cmin, vmax=cmax), zorder=3)
-###plt.scatter(xz, xm, marker='o', c=meanxvary, label='X-ray Variable', 
-###         norm=colors.LogNorm(vmin=cmin, vmax=cmax), zorder=3)
-###cbar=plt.colorbar()
-###cbar.set_label('Mean 2" Flux')
-##plt.yscale('log')
-##plt.xlim(xmin=-0.1, xmax=4.5)
-##plt.ylim(ymin=1e4, ymax=3e12)
-##plt.legend(loc='lower right')
+#### remove deviants from main sample ###
+#mask = np.isin(noxvarydata['NUMBER_1'], deviant['NUMBER_1'])
+#noxvarydata = noxvarydata[~mask]
+#mask = np.isin(xvarydata['NUMBER_1'], deviant['NUMBER_1'])
+#xvarydata = xvarydata[~mask]
+#
+#noxz, noxm = prep_variables(noxvarydata)
+#xz, xm = prep_variables(xvarydata)
+#
+#### remove 07Bs for talk slide ###
+#mask = np.isin(deviant['NUMBER_1'], dev07['NUMBER_1'])
+#deviant = deviant[~mask]
+#devz, devm = prep_variables(deviant)
+#
+##plt.figure(figsize=[9,7])
+#plt.figure(figsize=[10,7])
+#plt.plot(z, m, '.',markersize=1, color='tab:gray', alpha=0.25, label='Galaxy')
+##plt.plot(allxz, allxm, 'ks', label='X-ray AGN')
+#plt.plot(xz, xm, 'ro', label='Variable X-ray AGN')
+#plt.plot(noxz, noxm, 'bo', label='Variable Non-X-ray AGN')
+#plt.plot(devz, devm, 'gs', markersize=6, label='Deviant')
+#plt.plot(snz, snm, 'y*', markersize=12, label='Potential SN')
+##plt.plot(dev07z, dev07m, 'gd', markersize=8, label='Deviant in 07B')
+#
+##plt.hlines(2e9,-0.1,4.5,linestyle='dashed')
+#
+#plt.yscale('log')
+#plt.xlim(xmin=-0.1, xmax=4.5)
+#plt.ylim(ymin=2e5, ymax=5e11)
+#plt.legend(loc='lower right')
+#plt.xlabel('Redshift')
+#plt.ylabel('Stellar Mass ($M_{\odot}$)')
 ##plt.xlabel('z')
 ##plt.ylabel('$M_{star}$')
-##plt.tight_layout()
-#
+#plt.tight_layout()
+###%% Plot with flux colours ###
+##### get fluxes from mag-flux ###
+###
+###def get_mean_flux(tbdata):
+###    flux = vari_funcs.flux4_stacks(tbdata)
+###    meanflux = np.nanmean(flux, axis=1)
+###    return meanflux
+###
+###def get_jansky_flux(tbdata):
+###    meanmag = tbdata['KMAG_20']
+###    meanflux = 10**(23-((meanmag+48.6)/2.5))
+###    return meanflux
+###    
+###meanflux = get_mean_flux(tbdata)
+###meannoxvary = get_mean_flux(noxvarydata)
+###meanxvary = get_mean_flux(xvarydata)
+###meanvary = get_mean_flux(varydata)
+###
+###### mask flux arrays and make flux colour ###
+###meannoxvary = meannoxvary[noxmask]
+###meanxvary = meanxvary[xmask]
+###
+###### find max and min ###
+###cmax = np.nanmax([np.nanmax(meannoxvary), np.nanmax(meanxvary)])
+###cmin = np.nanmin([np.nanmin(meannoxvary), np.nanmin(meanxvary)])
+###
+###plt.figure(figsize=[10,7])
+###plt.plot(z, m, '.',markersize=1, color='tab:gray', alpha=0.25, label='UDS Galaxy')
+###plt.plot(allxz, allxm, 'k+', label='X-ray Non-Variable')
+####plt.scatter(noxz, noxm, marker='o', c=meannoxvary, label='Non-X-ray Variable', 
+####            norm=colors.LogNorm(vmin=cmin, vmax=cmax), zorder=3)
+####plt.scatter(xz, xm, marker='o', c=meanxvary, label='X-ray Variable', 
+####         norm=colors.LogNorm(vmin=cmin, vmax=cmax), zorder=3)
+####cbar=plt.colorbar()
+####cbar.set_label('Mean 2" Flux')
+###plt.yscale('log')
+###plt.xlim(xmin=-0.1, xmax=4.5)
+###plt.ylim(ymin=1e4, ymax=3e12)
+###plt.legend(loc='lower right')
+###plt.xlabel('z')
+###plt.ylabel('$M_{star}$')
+###plt.tight_layout()
+##
