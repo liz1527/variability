@@ -93,6 +93,37 @@ def fluxerr1_stacks(tbdata):
                 tbdata['FLUXERR_APER_11B'][:,0],tbdata['FLUXERR_APER_12B'][:,0]], axis=1)
     return fluxerr
 
+def jflux1_stacks(tbdata):
+    ''' Function that takes a catalogue of flux data from the sextracor output
+    and makes a np array containing only the 2 arcsec aperture data for each 
+    epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        flux = an array with 8 columns containing flux values for each year '''
+        
+    flux = np.stack([tbdata['FLUX_APER_05B'][:,0], tbdata['FLUX_APER_06B'][:,0],
+                tbdata['FLUX_APER_07B'][:,0], tbdata['FLUX_APER_08B'][:,0],
+                tbdata['FLUX_APER_09B'][:,0], tbdata['FLUX_APER_10B'][:,0], 
+                tbdata['FLUX_APER_11B'][:,0], tbdata['FLUX_APER_12B'][:,0]], axis=1)
+    return flux
+
+def jfluxerr1_stacks(tbdata):
+    ''' Function that takes a catalogue of flux data from the sextracor output
+    and makes a np array containing only the 2 arcsec aperture error data for 
+    each epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        fluxerr = an array with 8 columns containing flux error values for each
+        year '''
+        
+    fluxerr = np.stack([tbdata['FLUXERR_APER_05B'][:,0],tbdata['FLUXERR_APER_06B'][:,0],
+                tbdata['FLUXERR_APER_07B'][:,0],tbdata['FLUXERR_APER_08B'][:,0],
+                tbdata['FLUXERR_APER_09B'][:,0], tbdata['FLUXERR_APER_10B'][:,0], 
+                tbdata['FLUXERR_APER_11B'][:,0], tbdata['FLUXERR_APER_12B'][:,0]], axis=1)
+    return fluxerr
+
 def flux2_stacks(tbdata):
     ''' Function that takes a catalogue of flux data from the sextracor output
     and makes a np array containing only the 3 arcsec aperture data for each 
@@ -124,6 +155,37 @@ def fluxerr2_stacks(tbdata):
                 tbdata['FLUXERR_APER_11B'][:,1],tbdata['FLUXERR_APER_12B'][:,1]], axis=1)
     return fluxerr
 
+def jflux2_stacks(tbdata):
+    ''' Function that takes a catalogue of flux data from the sextracor output
+    and makes a np array containing only the 2 arcsec aperture data for each 
+    epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        flux = an array with 8 columns containing flux values for each year '''
+        
+    flux = np.stack([tbdata['FLUX_APER_05B'][:,1], tbdata['FLUX_APER_06B'][:,1],
+                tbdata['FLUX_APER_07B'][:,1], tbdata['FLUX_APER_08B'][:,1],
+                tbdata['FLUX_APER_09B'][:,1], tbdata['FLUX_APER_10B'][:,1], 
+                tbdata['FLUX_APER_11B'][:,1], tbdata['FLUX_APER_12B'][:,1]], axis=1)
+    return flux
+
+def jfluxerr2_stacks(tbdata):
+    ''' Function that takes a catalogue of flux data from the sextracor output
+    and makes a np array containing only the 2 arcsec aperture error data for 
+    each epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        fluxerr = an array with 8 columns containing flux error values for each
+        year '''
+        
+    fluxerr = np.stack([tbdata['FLUXERR_APER_05B'][:,1],tbdata['FLUXERR_APER_06B'][:,1],
+                tbdata['FLUXERR_APER_07B'][:,1],tbdata['FLUXERR_APER_08B'][:,1],
+                tbdata['FLUXERR_APER_09B'][:,1], tbdata['FLUXERR_APER_10B'][:,1], 
+                tbdata['FLUXERR_APER_11B'][:,1], tbdata['FLUXERR_APER_12B'][:,1]], axis=1)
+    return fluxerr
+
 def flux3_stacks(tbdata):
     ''' Function that takes a catalogue of flux data from the sextracor output
     and makes a np array containing only the 3 arcsec aperture data for each 
@@ -153,6 +215,37 @@ def fluxerr3_stacks(tbdata):
                 tbdata['FLUXERR_APER_07B'][:,2],tbdata['FLUXERR_APER_08B'][:,2],
                 tbdata['FLUXERR_APER_09B'][:,2],tbdata['FLUXERR_APER_10B'][:,2], 
                 tbdata['FLUXERR_APER_11B'][:,2],tbdata['FLUXERR_APER_12B'][:,2]], axis=1)
+    return fluxerr
+
+def jflux3_stacks(tbdata):
+    ''' Function that takes a catalogue of flux data from the sextracor output
+    and makes a np array containing only the 2 arcsec aperture data for each 
+    epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        flux = an array with 8 columns containing flux values for each year '''
+        
+    flux = np.stack([tbdata['FLUX_APER_05B'][:,2], tbdata['FLUX_APER_06B'][:,2],
+                tbdata['FLUX_APER_07B'][:,2], tbdata['FLUX_APER_08B'][:,2],
+                tbdata['FLUX_APER_09B'][:,2], tbdata['FLUX_APER_10B'][:,2], 
+                tbdata['FLUX_APER_11B'][:,2], tbdata['FLUX_APER_12B'][:,2]], axis=1)
+    return flux
+
+def jfluxerr3_stacks(tbdata):
+    ''' Function that takes a catalogue of flux data from the sextracor output
+    and makes a np array containing only the 2 arcsec aperture error data for 
+    each epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        fluxerr = an array with 8 columns containing flux error values for each
+        year '''
+        
+    fluxerr = np.stack([tbdata['FLUXERR_APER_05B'][:,2],tbdata['FLUXERR_APER_06B'][:,3],
+                tbdata['FLUXERR_APER_07B'][:,2],tbdata['FLUXERR_APER_08B'][:,2],
+                tbdata['FLUXERR_APER_09B'][:,2], tbdata['FLUXERR_APER_10B'][:,2], 
+                tbdata['FLUXERR_APER_11B'][:,2], tbdata['FLUXERR_APER_12B'][:,2]], axis=1)
     return fluxerr
 
 def flux4_stacks(tbdata):
@@ -197,8 +290,8 @@ def jflux4_stacks(tbdata):
         
     flux = np.stack([tbdata['FLUX_APER_05B'][:,3], tbdata['FLUX_APER_06B'][:,3],
                 tbdata['FLUX_APER_07B'][:,3], tbdata['FLUX_APER_08B'][:,3],
-                tbdata['FLUX_APER_10B'][:,3], tbdata['FLUX_APER_11B'][:,3],
-                tbdata['FLUX_APER_12B'][:,3]], axis=1)
+                tbdata['FLUX_APER_09B'][:,3], tbdata['FLUX_APER_10B'][:,3], 
+                tbdata['FLUX_APER_11B'][:,3], tbdata['FLUX_APER_12B'][:,3]], axis=1)
     return flux
 
 def jfluxerr4_stacks(tbdata):
@@ -213,8 +306,8 @@ def jfluxerr4_stacks(tbdata):
         
     fluxerr = np.stack([tbdata['FLUXERR_APER_05B'][:,3],tbdata['FLUXERR_APER_06B'][:,3],
                 tbdata['FLUXERR_APER_07B'][:,3],tbdata['FLUXERR_APER_08B'][:,3],
-                tbdata['FLUXERR_APER_10B'][:,3], tbdata['FLUXERR_APER_11B'][:,3],
-                tbdata['FLUXERR_APER_12B'][:,3]], axis=1)
+                tbdata['FLUXERR_APER_09B'][:,3], tbdata['FLUXERR_APER_10B'][:,3], 
+                tbdata['FLUXERR_APER_11B'][:,3], tbdata['FLUXERR_APER_12B'][:,3]], axis=1)
     return fluxerr
 
 def hflux4_stacks(tbdata):
@@ -289,7 +382,9 @@ def jflux5_stacks(tbdata):
         flux = an array with 8 columns containing flux values for each year '''
         
     flux = np.stack([tbdata['FLUX_APER_05B'][:,4], tbdata['FLUX_APER_06B'][:,4],
-                tbdata['FLUX_APER_07B'][:,4], tbdata['FLUX_APER_08B'][:,4]], axis=1)
+                tbdata['FLUX_APER_07B'][:,4], tbdata['FLUX_APER_08B'][:,4],
+                tbdata['FLUX_APER_09B'][:,4], tbdata['FLUX_APER_10B'][:,4], 
+                tbdata['FLUX_APER_11B'][:,4], tbdata['FLUX_APER_12B'][:,4]], axis=1)
     return flux
 
 def jfluxerr5_stacks(tbdata):
@@ -303,7 +398,9 @@ def jfluxerr5_stacks(tbdata):
         year '''
         
     fluxerr = np.stack([tbdata['FLUXERR_APER_05B'][:,4],tbdata['FLUXERR_APER_06B'][:,4],
-                tbdata['FLUXERR_APER_07B'][:,4],tbdata['FLUXERR_APER_08B'][:,4]], axis=1)
+                tbdata['FLUXERR_APER_07B'][:,4],tbdata['FLUXERR_APER_08B'][:,4],
+                tbdata['FLUXERR_APER_09B'][:,4], tbdata['FLUXERR_APER_10B'][:,4], 
+                tbdata['FLUXERR_APER_11B'][:,4], tbdata['FLUXERR_APER_12B'][:,4]], axis=1)
     return fluxerr
 
 def hflux5_stacks(tbdata):
@@ -365,6 +462,37 @@ def fluxerr6_stacks(tbdata):
                 tbdata['FLUXERR_APER_07B'][:,5],tbdata['FLUXERR_APER_08B'][:,5],
                 tbdata['FLUXERR_APER_09B'][:,5],tbdata['FLUXERR_APER_10B'][:,5], 
                 tbdata['FLUXERR_APER_11B'][:,5],tbdata['FLUXERR_APER_12B'][:,5]], axis=1)
+    return fluxerr
+
+def jflux5_stacks(tbdata):
+    ''' Function that takes a catalogue of flux data from the sextracor output
+    and makes a np array containing only the 2 arcsec aperture data for each 
+    epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        flux = an array with 8 columns containing flux values for each year '''
+        
+    flux = np.stack([tbdata['FLUX_APER_05B'][:,5], tbdata['FLUX_APER_06B'][:,5],
+                tbdata['FLUX_APER_07B'][:,5], tbdata['FLUX_APER_08B'][:,5],
+                tbdata['FLUX_APER_09B'][:,5], tbdata['FLUX_APER_10B'][:,5], 
+                tbdata['FLUX_APER_11B'][:,5], tbdata['FLUX_APER_12B'][:,5]], axis=1)
+    return flux
+
+def jfluxerr6_stacks(tbdata):
+    ''' Function that takes a catalogue of flux data from the sextracor output
+    and makes a np array containing only the 2 arcsec aperture error data for 
+    each epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        fluxerr = an array with 8 columns containing flux error values for each
+        year '''
+        
+    fluxerr = np.stack([tbdata['FLUXERR_APER_05B'][:,5],tbdata['FLUXERR_APER_06B'][:,5],
+                tbdata['FLUXERR_APER_07B'][:,5], tbdata['FLUXERR_APER_08B'][:,5],
+                tbdata['FLUXERR_APER_09B'][:,5], tbdata['FLUXERR_APER_10B'][:,5], 
+                tbdata['FLUXERR_APER_11B'][:,5], tbdata['FLUXERR_APER_12B'][:,5]], axis=1)
     return fluxerr
 
 def fluxerr5_stacks_corr(tbdata):
@@ -620,6 +748,110 @@ def create_quad_error_array(sigtb, tbdata, aper=5, quadoutput=False):
             qflux = flux2_stacks(qdata)
         elif aper == 1:
             qflux = flux1_stacks(qdata)
+        avgflux = np.nanmean(qflux, axis=1)
+        qerrarr = np.empty(np.shape(qflux))
+        
+        ### Find values within bins and assign correct sigma ###
+        for m, lower in enumerate(binarr[n,0:-1]):
+            if m == 0:
+                #remove lower values
+                mask = avgflux< lower
+                nanarr = np.full_like(sigtb[str(n+1)+' '+str(int(lower))], np.nan)
+                qflux[mask,:] = nanarr
+                qerrarr[mask,:] = nanarr
+            mask1 = avgflux>lower 
+            if m != len(binarr)-1:
+                mask2 = avgflux<binarr[n,m+1]
+            else:
+                #remove lower values
+                mask = avgflux > 6309573 #max bin
+                nanarr = np.full_like(sigtb[str(n+1)+' '+str(int(lower))], np.nan)
+                qflux[mask,:] = nanarr
+                qerrarr[mask,:] = nanarr
+                mask2 = avgflux < 6309573 #max bin
+            
+            mask = mask1*mask2.astype(bool)
+            qerrarr[mask,:] = sigtb[str(n+1)+' '+str(int(lower))]
+            
+        # remove nans
+        mask = ~np.isnan(qflux).any(axis=1)
+        qflux = qflux[mask]
+        qerrarr = qerrarr[mask]
+        qdata = qdata[mask]
+        
+        if quadoutput == False:
+            ### Define full arrays to use in the rest of the analysis ###
+            if n == 0:
+                flux = np.copy(qflux)
+                errarr = np.copy(qerrarr)
+                newtbdata = np.copy(qdata)
+            else:
+                flux = np.vstack((flux, np.copy(qflux)))
+                errarr = np.vstack((errarr, np.copy(qerrarr)))
+                newtbdata = np.hstack((newtbdata, np.copy(qdata)))
+        
+        else: #this means wants quadrant output
+            quadflux[n] = qflux
+            quaderr[n] = qerrarr
+            newquaddata[n] = qdata
+    
+    if quadoutput == False:
+        if np.isin('X-ray', newtbdata.dtype.names):
+            newtbdata['X-ray'][newtbdata['X-ray']==70] = False 
+            newtbdata['X-ray'][newtbdata['X-ray']==84] = True
+            newtbdata['X-ray'] = newtbdata['X-ray'].astype(bool)
+        return flux, errarr, newtbdata
+    else:
+        return quadflux, quaderr, newquaddata
+
+def create_quad_error_array_J(sigtb, tbdata, aper=5, quadoutput=False):
+    ''' Function that creates an error array from sigma values calculated from
+    data variations within flux bins '''
+    bins = np.array(sigtb.colnames)
+    binarr = np.empty([4,int(len(bins)/4)])
+    k = 0
+    l = 0
+    m = 0
+    n = 0
+    ### Create binedge array for each quadrant ###
+    for bin in bins:
+        if bin[0] == '1':
+            binarr[0,k] = int(bin[2:])
+            k+=1
+        elif bin[0] == '2':
+            binarr[1,l] = int(bin[2:])
+            l+=1
+        elif bin[0] == '3':
+            binarr[2,m] = int(bin[2:])
+            m+=1
+        elif bin[0] == '4':
+            binarr[3,n] = int(bin[2:])
+            n+=1
+    
+    ### Set up empty arrays for data ###
+    flux = np.array([])
+    errarr = np.array([])
+    newtbdata = []
+    quadflux = {}
+    quaderr = {}
+    newquaddata = {}
+    
+    ### Get quadrant data ###
+    quaddata = quadrants(tbdata, '05B')
+    for n, qdata in enumerate(quaddata):
+        ### create flux stacks and find average
+        if aper == 6:
+            qflux = jflux6_stacks(qdata)
+        elif aper == 5:
+            qflux = jflux5_stacks(qdata)
+        elif aper == 4:
+            qflux = jflux4_stacks(qdata)
+        elif aper == 3:
+            qflux = jflux3_stacks(qdata)
+        elif aper == 2:
+            qflux = jflux2_stacks(qdata)
+        elif aper == 1:
+            qflux = jflux1_stacks(qdata)
         avgflux = np.nanmean(qflux, axis=1)
         qerrarr = np.empty(np.shape(qflux))
         
@@ -1139,12 +1371,13 @@ def onpickflux_2arcsec(event):
     the vairiability v flux plot '''
     print('Click registered')
     tbdata = fits.open('mag_flux_tables/mag_flux_table_best_extra_clean_no06.fits')[1].data
-    sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06.fits')
+    sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06_2arcsec.fits')
     tbdata = remove_edges(tbdata)
 
     ### remove values that are +/-99 ###
     fluxn = flux4_stacks(tbdata)
     fluxn, tbdata = noneg(fluxn, tbdata)
+#    fluxn, tbdata = remove_low_flux(fluxn, tbdata)
     flux, fluxerr, tbdata = create_quad_error_array(sigtb, tbdata, aper=4)
     ob = tbdata['NUMBER_05B'][event.ind] #Define the object number from the index of the selected point
 
@@ -1565,6 +1798,53 @@ def plot_median_line_stars(fluxn, tbdata, sflux, sdata, statistic='MAD'):
     plt.plot(bins[0:np.size(bins)-1], allmedstat, 'k--')
     return bins, allmedstat
 
+def plot_median_line_stars_J(fluxn, tbdata, sflux, sdata, statistic='MAD'):
+    bins = np.arange(13,28,0.2)
+    bins = np.append(bins, [28,29,30])
+    
+    bins = 10**((30-bins)/2.5)
+    bins = np.flip(bins, axis=0)
+    #bins = bins[16:44] #because of flux limit
+    
+    ### Bin data ###
+    allmedstat = np.array([])
+    for n, binedge in enumerate(bins):
+    #    print(binedge)
+        if n==np.size(bins)-1:
+            break
+        
+        # bin both set of data
+        gmag, bindata = fluxbin(binedge, bins[n+1], fluxn, tbdata) #bindata
+        smag, sbindata = fluxbin(binedge, bins[n+1], sflux, sdata) #bindata
+        
+        # combine into one array
+        mag = np.vstack((gmag, smag))
+        
+        if statistic == 'excess':
+            gmagerr = jfluxerr4_stacks(bindata) #make error array
+            smagerr = jfluxerr4_stacks(sdata)
+            magerr = np.vstack((gmagerr, smagerr)) #combine
+            
+            nmag, nmagerr = normalise_flux_and_errors(mag, magerr)
+        else:
+            nmag = normalise_flux(mag)
+        
+        if statistic == 'std':
+            binstat = np.std(nmag, axis=1)
+        elif statistic == 'excess':
+            binstat = normsigmasq(nmag, nmagerr)
+        elif statistic == 'MAD':
+            binstat = median_absolute_deviation(nmag, axis=1)
+        elif statistic == 'var':
+            binstat = np.var(nmag, axis=1, ddof=1)
+        else:
+            print('Unrecognised statistic entered')
+            return
+        statmed = np.nanmedian(binstat)
+        allmedstat = np.append(allmedstat, statmed)
+        
+#    plt.plot(bins[0:np.size(bins)-1], allmedstat, 'k--')
+    return bins, allmedstat
 
 def my_chisquare_char(flux, char_var):
     ''' Function that calculates the chi^2 of an object using the characteristic
@@ -1655,3 +1935,14 @@ def get_jansky_flux(tbdata):
     meanmag = tbdata['KMAG_20']
     meanflux = 10**(23-((meanmag+48.6)/2.5))
     return meanflux
+
+
+def remove_low_flux(flux, tbdata):
+    ''' 
+        Function to remove objects that average below the detection limit
+    '''
+    avgflux = np.nanmean(flux, axis=1)
+    mask = avgflux >= 10**((30-25.3)/2.5)
+    flux = flux[mask]
+    tbdata = tbdata[mask]
+    return flux, tbdata

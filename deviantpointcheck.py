@@ -21,8 +21,8 @@ import vari_funcs #my module to help run code neatly
 plt.close('all') #close any open plots
 
 ### Read fits tables ###
-varydata = fits.open('variable_tables/no06_variables_chi30_2arcsec.fits')[1].data
-sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06_2arcsec.fits')
+varydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_neg.fits')[1].data
+sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06_2arcsec_neg.fits')
 
 ### remove edges ###
 varydata = vari_funcs.remove_edges(varydata)
@@ -99,5 +99,5 @@ plt.ylabel('Y')
 plt.tight_layout()
 
 ### save checked table ###
-#save30 = Table(newvary)
-#save30.write('variable_tables/no06_variables_chi30_2arcsec_deviant.fits')
+save30 = Table(newvary)
+save30.write('variable_tables/no06_variables_chi30_2arcsec_deviant_neg.fits')

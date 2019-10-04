@@ -37,9 +37,9 @@ def my_chisquare_epoch(flux, sigsq):
     return chi
 
 ### Open the fits files and get data ###
-tbdata = fits.open('mag_flux_tables/mag_flux_table_best_extra_clean_no06.fits')[1].data
-chandata = fits.open('mag_flux_tables/xray_mag_flux_table_best_extra_clean_no06.fits')[1].data
-sdata = fits.open('mag_flux_tables/stars_mag_flux_table_extra_clean_no06.fits')[1].data
+tbdata = fits.open('mag_flux_tables/J/mag_flux_table_best_J_extra_clean.fits')[1].data
+chandata = fits.open('mag_flux_tables/J/xray_mag_flux_table_best_J_extra_clean.fits')[1].data
+sdata = fits.open('mag_flux_tables/J/stars_mag_flux_table_J_extra_clean.fits')[1].data
 
 ### Split the data into the 4 quadrants ###
 quaddata = vari_funcs.quadrants(tbdata, '05B')
@@ -57,25 +57,25 @@ for m, qtbdata in enumerate(quaddata):
     qsdata = squaddata[m]
     
     ## Create arrays of flux values ###
-    fluxn = vari_funcs.flux4_stacks(qtbdata)
-    fluxchann = vari_funcs.flux4_stacks(qchandata) 
-    sfluxn = vari_funcs.flux4_stacks(qsdata)
+    fluxn = vari_funcs.jflux4_stacks(qtbdata)
+    fluxchann = vari_funcs.jflux4_stacks(qchandata) 
+    sfluxn = vari_funcs.jflux4_stacks(qsdata)
     
     ### remove values that are negative ###
 #    fluxn, qtbdata = vari_funcs.noneg(fluxn, qtbdata)
 #    fluxchann, qchandata = vari_funcs.noneg(fluxchann, qchandata)
 #    sfluxn, qsdata = vari_funcs.noneg(sfluxn, qsdata)
     
-    fluxerr = vari_funcs.fluxerr4_stacks(qtbdata)
-    fluxerrchan = vari_funcs.fluxerr4_stacks(qchandata)
-    sfluxerr = vari_funcs.fluxerr4_stacks(qsdata)
+    fluxerr = vari_funcs.jfluxerr4_stacks(qtbdata)
+    fluxerrchan = vari_funcs.jfluxerr4_stacks(qchandata)
+    sfluxerr = vari_funcs.jfluxerr4_stacks(qsdata)
     
     
-    vari_funcs.flux_variability_plot(fluxn, fluxchann, 'var', starflux=sfluxn, 
-                                     stars=True, normalised=True, scale='symlog')
+#    vari_funcs.flux_variability_plot(fluxn, fluxchann, 'var', starflux=sfluxn, 
+#                                     stars=True, normalised=True, scale='symlog')
     #bins, medvar = vari_funcs.plot_median_line(fluxn, tbdata, statistic='var')
     
-    bins, medvar = vari_funcs.plot_median_line_stars(fluxn, qtbdata, sfluxn, qsdata, statistic='var')
+    bins, medvar = vari_funcs.plot_median_line_stars_J(fluxn, qtbdata, sfluxn, qsdata, statistic='var')
     
     
 #    vari_funcs.flux_variability_plot(fluxn, fluxchann, 'chisq',
@@ -115,7 +115,7 @@ for m, qtbdata in enumerate(quaddata):
             plt.plot(meansflux, schisq, 'm*', zorder=1, mfc='None', markersize=10, label='DR11 Star')
             plt.yscale('log')
             plt.xscale('log')
-            plt.xlim(xmin=8e1, xmax=1e7)
+            plt.xlim(xmin=0, xmax=1e7)
             plt.ylim(ymin=3e-2, ymax=4e4)
             plt.ylabel('Chi Squared')
             plt.xlabel('Mean Flux')
@@ -149,7 +149,7 @@ for m, qtbdata in enumerate(quaddata):
             plt.plot(meansflux, newschisq, 'm*', zorder=1, mfc='None', markersize=10, label='DR11 Star')
             plt.yscale('log')
             plt.xscale('log')
-            plt.xlim(xmin=8e1, xmax=1e7)
+            plt.xlim(xmin=0, xmax=1e7)
             plt.ylim(ymin=3e-2, ymax=4e4)
             plt.ylabel('Chi Squared')
             plt.xlabel('Mean Flux')
@@ -213,7 +213,7 @@ for m, qtbdata in enumerate(quaddata):
             plt.plot(meansflux, newschisq2, 'm*', zorder=1, mfc='None', markersize=10, label='DR11 Star')
             plt.yscale('log')
             plt.xscale('log')
-            plt.xlim(xmin=8e1, xmax=1e7)
+            plt.xlim(xmin=0, xmax=1e7)
             plt.ylim(ymin=3e-2, ymax=4e4)
             plt.ylabel('Chi Squared')
             plt.xlabel('Mean Flux')
@@ -244,7 +244,7 @@ plt.xlabel('Chi Squared')
 
 x = np.logspace(-2.3,4.4,500)
 #x = np.linspace(3e-2,4e4,5000)
-y = stats.chi2.pdf(x,6) #6 dof as 7 variables
+y = stats.chi2.pdf(x,7) #7 dof as 8 variables
 plt.plot(x,y, label=r'Model $\chi^{2}$ with dof=6')
 #plt.vlines(7, 0, 0.12)
 plt.legend()
@@ -253,7 +253,7 @@ varychi = galchisq[galchisq > 24.322]
 
 ### Turn dictionary into astropy table ###
 t = Table(sigdict)
-t.write('quad_epoch_sigma_table_extra_clean_no06_2arcsec_neg.fits')
+t.write('sigma_tables/quad_epoch_sigma_table_extra_clean_2arcsec_J.fits')
 
 
 

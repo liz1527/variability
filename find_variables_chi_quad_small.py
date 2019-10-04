@@ -19,7 +19,15 @@ from scipy import stats
 import vari_funcs #my module to help run code neatly
 #from scipy.stats import chisquare
 plt.close('all') #close any open plots
-
+def remove_low_flux(flux, tbdata):
+    ''' 
+        Function to remove objects that average below the detection limit
+    '''
+    avgflux = np.nanmean(flux, axis=1)
+    mask = avgflux >= 10**((30-25.3)/2.5)
+    flux = flux[mask]
+    tbdata = tbdata[mask]
+    return flux, tbdata
 ### Open the fits files and get data ###
 tbdata = fits.open('mag_flux_tables/mag_flux_table_best_extra_clean_no06.fits')[1].data
 chandata = fits.open('mag_flux_tables/xray_mag_flux_table_best_extra_clean_no06.fits')[1].data
@@ -41,6 +49,10 @@ flux, tbdata = vari_funcs.noneg(flux, tbdata)
 fluxchan, chandata = vari_funcs.noneg(fluxchan, chandata)
 sflux, sdata = vari_funcs.noneg(sflux, sdata)
 
+#flux, tbdata = remove_low_flux(flux, tbdata)
+#fluxchan, chandata = remove_low_flux(fluxchan, chandata)
+#sflux, sdata = remove_low_flux(sflux, sdata)
+
 ### Get error arrays ###
 flux, fluxerr, tbdata = vari_funcs.create_quad_error_array(sigtb, tbdata, aper=4)
 fluxchan, chanerr, chandata = vari_funcs.create_quad_error_array(sigtb, chandata,aper=4)
@@ -58,10 +70,16 @@ fig,_ = vari_funcs.flux_variability_plot(flux, fluxchan, 'chisq',
                                        stars=True, scale='log')
 fig.canvas.mpl_connect('pick_event', vari_funcs.onpickflux_2arcsec)
 
+devdata = fits.open('variable_tables/no06_variables_chi30_2arcsec_deviant_neg.fits')[1].data
+devflux, devfluxerr, devdata = vari_funcs.create_quad_error_array(sigtb, devdata, aper=4)
+devmean = np.nanmean(devflux, axis=1)
+
 ### Calculate chi^2 values ###
 chisq = vari_funcs.my_chisquare_err(flux, fluxerr)
 chanchisq = vari_funcs.my_chisquare_err(fluxchan, chanerr)
+devchisq = vari_funcs.my_chisquare_err(devflux, devfluxerr)
 
+#plt.plot(devmean, devchisq, 'kd', mfc='None', markersize=10)
 ### Select Variables as those with chisq > 22.458 and >50 ###
 varydata24 = tbdata[chisq>22.458]
 varydata30 = tbdata[chisq>30]
@@ -94,15 +112,15 @@ plt.tight_layout()
 #save24 = Table(varydata24)
 #save24.write('variable_tables/no06_variables_chi22.fits')
 #save30 = Table(varydata30)
-#save30.write('variable_tables/no06_variables_chi30_2arcsec.fits')
+#save30.write('variable_tables/no06_variables_chi30_2arcsec_neg.fits')
 #save40 = Table(varydata40)
 #save40.write('variable_tables/no06_variables_chi40.fits')
 #save50 = Table(varydata50)
 #save50.write('variable_tables/no06_variables_chi50.fits')
 #
-##%% checks for false positives ###
-#
-#### Create binedge array ###
+#%% checks for false positives ###
+
+### Create binedge array ###
 #bins = np.array(sigtb.colnames)
 #binarr = np.empty(int(len(bins)/4))
 #for k, bin in enumerate(bins):
@@ -121,7 +139,7 @@ plt.tight_layout()
 #    binflux, bindata = vari_funcs.fluxbin(binedge, binupp, flux, tbdata) #bindata
 ##    binsflux, binsdata = vari_funcs.fluxbin(binedge, binupp, sflux, sdata)
 #    binsizes[n] = len(bindata) #+ len(binsdata)
-#    plt.vlines(binedge, 1e-2, 1e4, zorder=4)
+##    plt.vlines(binedge, 1e-2, 1e4, zorder=4)
 #    binmean[n] = np.nanmean(binflux)
 ##    if binsizes[n] < 9:
 ##        continue

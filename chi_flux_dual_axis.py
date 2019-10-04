@@ -96,7 +96,7 @@ ax2.set_xticks(ticks)
 ax2.set_xticklabels(new_ticks)
 ax2.minorticks_off()
 ax1.minorticks_on()
-ax2.set_xlabel('Mean Magnitude (Vega)')
+ax2.set_xlabel('Mean $K$-band Magnitude (AB)')
 
 
 plt.legend()

@@ -17,7 +17,11 @@ import numpy as np
 sems = ['05B', '06B', '07B', '08B', '09B', '10B', '11B', '12B']
 
 def sem_mag_flux(sem):
-    semtb = Table.read('SE_outputs_yearstacks/'+sem+'_output_H.fits')
+#    semtb = Table.read('SE_outputs_yearstacks/extra_clean_'+sem+'_output_H.fits')
+    if sem == '06B':
+        semtb = Table.read('SE_outputs_yearstacks/cleaned_'+sem+'_output_H.fits')
+    else:
+        semtb = Table.read('SE_outputs_yearstacks/extra_clean_'+sem+'_output_H.fits')
     #extract column names
     cols = np.asarray(semtb.colnames)
     
@@ -135,7 +139,7 @@ xraycol = Column(xray, 'X-ray')
 bestmf.add_column(xraycol)
 
 #%% Save the tables
-semcom.write('mag_flux_tables/mag_flux_table_H.fits')
-bestmf.write('mag_flux_tables/mag_flux_table_best_H.fits')
-starsmf.write('mag_flux_tables/stars_mag_flux_table_H.fits')
-xraymf.write('mag_flux_tables/xray_mag_flux_table_best_H.fits')
+semcom.write('mag_flux_tables/mag_flux_table_H_extra_clean.fits')
+bestmf.write('mag_flux_tables/mag_flux_table_best_H_extra_clean.fits')
+starsmf.write('mag_flux_tables/stars_mag_flux_table_H_extra_clean.fits')
+xraymf.write('mag_flux_tables/xray_mag_flux_table_best_H_extra_clean.fits')
