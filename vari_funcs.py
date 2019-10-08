@@ -322,7 +322,7 @@ def hflux4_stacks(tbdata):
     flux = np.stack(([tbdata['FLUX_APER_06B'][:,3],
                 tbdata['FLUX_APER_07B'][:,3], tbdata['FLUX_APER_08B'][:,3],
                 tbdata['FLUX_APER_09B'][:,3], tbdata['FLUX_APER_10B'][:,3], 
-                tbdata['FLUX_APER_11B'][:,3], tbdata['FLUX_APER_12B'][:,3]]), axis=1)
+                tbdata['FLUX_APER_11B'][:,3]]), axis=1)#, tbdata['FLUX_APER_12B'][:,3]
     return flux
 
 def hfluxerr4_stacks(tbdata):
@@ -338,7 +338,7 @@ def hfluxerr4_stacks(tbdata):
     fluxerr = np.stack([tbdata['FLUXERR_APER_06B'][:,3],
                 tbdata['FLUXERR_APER_07B'][:,3],tbdata['FLUXERR_APER_08B'][:,3],
                 tbdata['FLUXERR_APER_09B'][:,3],tbdata['FLUXERR_APER_10B'][:,3], 
-                tbdata['FLUXERR_APER_11B'][:,3],tbdata['FLUXERR_APER_12B'][:,3]], axis=1)
+                tbdata['FLUXERR_APER_11B'][:,3]], axis=1)#,tbdata['FLUXERR_APER_12B'][:,3]
     return fluxerr
 
 def flux5_stacks(tbdata):

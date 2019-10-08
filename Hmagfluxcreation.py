@@ -18,10 +18,10 @@ sems = ['05B', '06B', '07B', '08B', '09B', '10B', '11B', '12B']
 
 def sem_mag_flux(sem):
 #    semtb = Table.read('SE_outputs_yearstacks/extra_clean_'+sem+'_output_H.fits')
-    if sem == '06B':
+    if sem == '11B':
         semtb = Table.read('SE_outputs_yearstacks/cleaned_'+sem+'_output_H.fits')
     else:
-        semtb = Table.read('SE_outputs_yearstacks/extra_clean_'+sem+'_output_H.fits')
+        semtb = Table.read('SE_outputs_yearstacks/extra_clean_no12B_'+sem+'_output_H.fits')
     #extract column names
     cols = np.asarray(semtb.colnames)
     
@@ -53,7 +53,7 @@ sem08B = sem_mag_flux(sems[3])
 sem09B = sem_mag_flux(sems[4])
 sem10B = sem_mag_flux(sems[5])
 sem11B = sem_mag_flux(sems[6])
-sem12B = sem_mag_flux(sems[7])
+#sem12B = sem_mag_flux(sems[7])
 
 #%% Join these tables using their IDs (will be fine for just this part as numbers alwasy match)
 #print('Join 1')
@@ -75,9 +75,9 @@ semcom = join(semcom, sem10B, keys='NUMBER_06B')
 print('Join 6')
 sem11B.rename_column('NUMBER_11B', 'NUMBER_06B')
 semcom = join(semcom, sem11B, keys='NUMBER_06B')
-print('Join 7')
-sem12B.rename_column('NUMBER_12B', 'NUMBER_06B')
-semcom = join(semcom, sem12B, keys='NUMBER_06B')
+#print('Join 7')
+#sem12B.rename_column('NUMBER_12B', 'NUMBER_06B')
+#semcom = join(semcom, sem12B, keys='NUMBER_06B')
 
 #%% Match these with various catalogs to create final tables
 from astropy.coordinates import match_coordinates_sky
@@ -139,7 +139,7 @@ xraycol = Column(xray, 'X-ray')
 bestmf.add_column(xraycol)
 
 #%% Save the tables
-semcom.write('mag_flux_tables/mag_flux_table_H_extra_clean.fits')
-bestmf.write('mag_flux_tables/mag_flux_table_best_H_extra_clean.fits')
-starsmf.write('mag_flux_tables/stars_mag_flux_table_H_extra_clean.fits')
-xraymf.write('mag_flux_tables/xray_mag_flux_table_best_H_extra_clean.fits')
+semcom.write('mag_flux_tables/H/mag_flux_table_H_extra_clean_no12B.fits')
+bestmf.write('mag_flux_tables/H/mag_flux_table_best_H_extra_clean_no12B.fits')
+starsmf.write('mag_flux_tables/H/stars_mag_flux_table_H_extra_clean_no12B.fits')
+xraymf.write('mag_flux_tables/H/xray_mag_flux_table_best_H_extra_clean_no12B.fits')
