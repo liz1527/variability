@@ -1711,7 +1711,7 @@ def radial_profile(data, center):
                               # dividing by unweighted counts of r values.
     return radialprofile 
 
-def plot_median_line(fluxn, tbdata, statistic='MAD'):
+def plot_median_line(fluxn, tbdata, statistic='MAD',createplot=True):
     bins = np.array([13, 15])
     bins = np.append(bins, np.arange(16,24,0.2))
     bins = np.append(bins, [24])
@@ -1746,11 +1746,12 @@ def plot_median_line(fluxn, tbdata, statistic='MAD'):
             return
         statmed = np.nanmedian(binstat)
         allmedstat = np.append(allmedstat, statmed)
-        
-    plt.plot(bins[0:42], allmedstat, 'k--')
+    
+    if createplot==True:
+        plt.plot(bins[0:42], allmedstat, 'k--')
     return bins, allmedstat
 
-def plot_median_line_stars(fluxn, tbdata, sflux, sdata, statistic='MAD'):
+def plot_median_line_stars(fluxn, tbdata, sflux, sdata, statistic='MAD',createplot=True):
     bins = np.arange(13,25,0.2)
     bins = np.append(bins, [25])
     
@@ -1795,7 +1796,8 @@ def plot_median_line_stars(fluxn, tbdata, sflux, sdata, statistic='MAD'):
         statmed = np.nanmedian(binstat)
         allmedstat = np.append(allmedstat, statmed)
         
-    plt.plot(bins[0:np.size(bins)-1], allmedstat, 'k--')
+    if createplot==True:
+        plt.plot(bins[0:np.size(bins)-1], allmedstat, 'k--')
     return bins, allmedstat
 
 def plot_median_line_stars_J(fluxn, tbdata, sflux, sdata, statistic='MAD'):

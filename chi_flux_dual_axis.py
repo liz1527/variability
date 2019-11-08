@@ -19,11 +19,16 @@ from scipy import stats
 import vari_funcs #my module to help run code neatly
 #from scipy.stats import chisquare
 plt.close('all') #close any open plots
+font = {'family' : 'DejaVu Sans',
+        'weight' : 'normal',
+        'size'   : 16}
+
+plt.rc('font', **font)
 
 ### Open the fits files and get data ###
-tbdata = fits.open('mag_flux_tables/mag_flux_table_best_extra_clean_no06.fits')[1].data
-chandata = fits.open('mag_flux_tables/xray_mag_flux_table_best_extra_clean_no06.fits')[1].data
-sdata = fits.open('mag_flux_tables/stars_mag_flux_table_extra_clean_no06.fits')[1].data
+tbdata = fits.open('mag_flux_tables/K/mag_flux_table_best_extra_clean_no06.fits')[1].data
+chandata = fits.open('mag_flux_tables/K/xray_mag_flux_table_best_extra_clean_no06.fits')[1].data
+sdata = fits.open('mag_flux_tables/K/stars_mag_flux_table_extra_clean_no06.fits')[1].data
 sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06_2arcsec.fits')
 
 ### Remove edges ###
@@ -69,7 +74,7 @@ vary = vari_funcs.my_chisquare_err(flux, fluxerr)
 varychan = vari_funcs.my_chisquare_err(fluxchan, chanerr)
 varystar = vari_funcs.my_chisquare_err(sflux, serr)
 
-ax1.set_ylabel('Chi Squared')
+#ax1.set_ylabel('Chi Squared')
 ### Plot the variability v mean as appropriate ###
 plt.plot(savgfluxperob, varystar, 'm*', mfc = 'none', markersize = 10,
              label='DR11 Star') 
@@ -86,6 +91,7 @@ ax1.set_ylim(3e-2,3e4)
 ax1.set_xlim(8e1, 1e7)
 #    plt.xlim(13,26)
 ax1.set_xlabel('Mean Flux')
+ax1.set_ylabel(r'$\chi^{2}$')
 
 ticks = np.array([1e2, 1e3, 1e4, 1e5, 1e6, 1e7])
 new_ticks = 30 - 2.5*np.log10(ticks)

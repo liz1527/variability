@@ -22,13 +22,13 @@ font = {'family' : 'DejaVu Sans',
 plt.rc('font', **font)
 
 ### Open the fits files and get data ###
-tbdata = fits.open('mag_flux_tables/mag_flux_table_best_extra_clean_no06_DR11data.fits')[1].data
+tbdata = fits.open('mag_flux_tables/K/mag_flux_table_best_extra_clean_no06_DR11data.fits')[1].data
 sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06_2arcsec.fits')
 
-#obnum = 173520 
+obnum = 173520 
 #obnum = 252446
 #obnum = 248383 
-obnum = 223554 
+#obnum = 223554 
 
 tbdata = tbdata[tbdata['NUMBER_1']==obnum]
 
@@ -97,6 +97,7 @@ plt.xticks(t, years)
 #plt.ylim(ymin=21.05,ymax=21.7)
 plt.gca().invert_yaxis()
 plt.tight_layout()
-plt.savefig('plots/Chi30Lightcurves/2arcsec/mag_'+str(obnum)+'_notitle.png')
+#plt.savefig('plots/Chi30Lightcurves/2arcsec/mag_'+str(obnum)+'_notitle.png')
+#plt.savefig('plots/Chi30Lightcurves/2arcsec/mag_'+str(obnum)+'_notitle.eps')
 #    plt.savefig('Chi40Lightcurves/cleaned/no06/mag_'+str(n))#+str(varys['NUMBER_05B'][n])+'_lightcurve.png')
 #plt.close('all')

@@ -51,7 +51,7 @@ noxvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_noXray_DR1
 #    
 #    return I1, I2, z
 
-def get_data(tbdata):
+def get_data(tbdata, I1lim):
     ### get IRAC colours ### 
     I1 = tbdata['mag_ap_36']
     I2 = tbdata['mag_ap_45']
@@ -62,7 +62,7 @@ def get_data(tbdata):
     I4 = tbdata['mag_ap_80']
     
     ### remove 99s ###
-    I1[I1 == 99] = np.nan # remove those with null values
+    I1[I1 == 99] = I1lim#np.nan # remove those with null values
 #    I1[I1 == -99] = np.nan # remove those with null values
     mask1 = ~np.isnan(I1)
     I2[I2 == 99] = np.nan # remove those with null values
@@ -114,22 +114,34 @@ def get_data(tbdata):
 #
 #xvarydatalow = vari_funcs.flux_split(xvarydata, 'lower')
 #noxvarydatalow = vari_funcs.flux_split(noxvarydata, 'lower')
+            
+### Plot distribution of I1 values in full stern cat ###
+#I1 = tbdata['mag_ap_36']
+#I1[I1 == 99] = np.nan # remove those with null values
+#I1 = I1[~np.isnan(I1)]
+#I1mn = np.mean(I1)
+#I1std = np.std(I1)
+#I1lim = I1mn+I1std
+I1lim=np.nan # for when don't want upp lims to be used
+#plt.figure()
+#plt.hist(I1, bins=50)
+#plt.vlines(I1mn+I1std, 0, 18000)
 
 I1minI2, I12uplimsmask, I12lolimsmask, I3minI4, I34uplimsmask, I34lolimsmask, \
-tbdata = get_data(tbdata)
+tbdata = get_data(tbdata, I1lim)
 
 xI1minI2, xI12uplimsmask, xI12lolimsmask, xI3minI4, xI34uplimsmask, \
-xI34lolimsmask, xdata = get_data(xdata)
+xI34lolimsmask, xdata = get_data(xdata, I1lim)
 
 varyI1minI2, varyI12uplimsmask, varyI12lolimsmask, varyI3minI4, \
-varyI34uplimsmask, varyI34lolimsmask, varydata = get_data(varydata)
+varyI34uplimsmask, varyI34lolimsmask, varydata = get_data(varydata, I1lim)
 
 
 xvaryI1minI2, xvaryI12uplimsmask, xvaryI12lolimsmask, xvaryI3minI4, \
-xvaryI34uplimsmask, xvaryI34lolimsmask, xvarydata = get_data(xvarydata)
+xvaryI34uplimsmask, xvaryI34lolimsmask, xvarydata = get_data(xvarydata, I1lim)
 
 noxvaryI1minI2, noxvaryI12uplimsmask, noxvaryI12lolimsmask, noxvaryI3minI4, \
-noxvaryI34uplimsmask, noxvaryI34lolimsmask, noxvarydata = get_data(noxvarydata)
+noxvaryI34uplimsmask, noxvaryI34lolimsmask, noxvarydata = get_data(noxvarydata, I1lim)
 
 #xvaryI1minI2up, xvaryI12uplimsmaskup, xvaryI12lolimsmaskup, xvaryI3minI4up, \
 #xvaryI34uplimsmaskup, xvaryI34lolimsmaskup, xvarydataup = get_data(xvarydataup)
@@ -150,6 +162,10 @@ noxvaryI34uplimsmask, noxvaryI34lolimsmask, noxvarydata = get_data(noxvarydata)
 ### Plot result ###
 #plt.figure(figsize=[11,7])
 plt.figure(figsize=[10,7])
+font = {'family' : 'DejaVu Sans',
+        'weight' : 'normal',
+        'size'   : 18}
+plt.rc('font', **font)
 
 #z = xvarydata['z_spec']
 #z[z==-1] = xvarydata['z_p'][z==-1]
@@ -204,7 +220,7 @@ plt.figure(figsize=[10,7])
 #### plot with lum as colour ####
 plt.plot(I3minI4, I1minI2,'.', color='tab:grey', markersize=1, label='Galaxy', 
          zorder=0, alpha=0.5)
-plt.plot(xI3minI4, xI1minI2,'ks', markersize=5,  label='X-ray AGN',zorder=0)
+plt.plot(xI3minI4, xI1minI2,'ks', markersize=5,  label='Non-Variable X-ray AGN',zorder=0)
 #plt.scatter(I3minI4, I1minI2, c=zcolour, marker='.',vmax=clim, label='Galaxy')#, zorder=0, alpha=0.5)
 #plt.scatter(varyI3minI4, varyI1minI2, c=varyL,
 #            norm=colors.LogNorm(vmin=cmin, vmax=cmax), marker='o')
@@ -234,7 +250,7 @@ plt.xlim(xmin=-0.5,xmax=3.5)
 plt.ylim(ymin=-0.3, ymax=1.5)
 plt.xlabel('5.6 - 8.0')
 plt.ylabel('3.6 - 4.5')
-plt.legend(loc='upper right')
+plt.legend(loc='upper right', fontsize=14)
 #cbar = plt.colorbar()
 #cbar.set_label('2" K Flux')
 #cbar.set_label('$M_{star}$')

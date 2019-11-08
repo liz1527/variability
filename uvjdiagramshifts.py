@@ -23,10 +23,12 @@ plt.close('all') #close any open plots
 #plt.style.use('default')
 
 ### Get data ###
-nontb = Table.read('variable_tables/no06_variables_chi30_2arcsec_noXray_DR11data_restframe.fits')
-xraytb = Table.read('variable_tables/no06_variables_chi30_2arcsec_Xray_DR11data_restframe.fits')
+nontb = fits.open('variable_tables/no06_variables_chi30_2arcsec_nochanXray_DR11data_restframe.fits')[1].data
+xraytb = fits.open('variable_tables/no06_variables_chi30_2arcsec_chandata_DR11data_restframe.fits')[1].data
+#nontb = Table.read('variable_tables/no06_variables_chi30_2arcsec_noXray_DR11data_restframe.fits')
+#xraytb = Table.read('variable_tables/no06_variables_chi30_2arcsec_Xray_DR11data_restframe.fits')
 sc = Table.read('variable_tables/no06_variables_chi30_2arcsec_DR11data_restframe_SC.fits')
-fullxray = Table.read('mag_flux_tables/novarys_chanDR11data_restframe_mag_flux_table_best_extra_clean_no06.fits')
+fullxray = Table.read('mag_flux_tables/K/novarys_chanDR11data_restframe_mag_flux_table_best_extra_clean_no06.fits')
 fullUDS = Table.read('UDS_catalogues/DR11-2arcsec-June24-2018+plusXY_UVJ-SC.fits')
 
 ### Limit to Chandra region for simplicity ###
@@ -124,8 +126,8 @@ cmin = np.nanmin([np.nanmin(noxmean), np.nanmin(xmean)])
 
 #%%
 plt.figure(figsize=[8,8])
-plt.plot(fullv_j, fullu_v, '.',markersize=0.5, color='tab:grey', alpha=0.35, label='Galaxy', zorder=0)
-plt.plot(allxv_j, allxu_v, 's', markersize=5, color='k', label='X-ray AGN', zorder=1)
+plt.plot(fullv_j, fullu_v, '.',markersize=0.5, color='tab:grey', alpha=0.2, label='Galaxy', zorder=0)
+plt.plot(allxv_j, allxu_v, 's', markersize=5, color='k', label='Non-Variable X-ray AGN', zorder=1)
 plt.plot(noxv_j, noxu_v,'bo', label='Variable Non X-ray AGN', zorder=3)
 plt.plot(xv_j, xu_v,'ro', label='Variable X-ray AGN', zorder=3)
 plt.legend()

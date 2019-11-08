@@ -19,17 +19,17 @@ plt.close('all')
 
 
 ### Get fits ###
-tbdata = fits.open('mag_flux_tables/mag_flux_table_best_extra_clean_no06.fits')[1].data
+tbdata = fits.open('mag_flux_tables/K/mag_flux_table_best_extra_clean_no06.fits')[1].data
 dr11 = fits.open('UDS_catalogues/DR11-2arcsec-June24-2018+plusXY_best.fits')[1].data
 varydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_DR11data_restframe.fits')[1].data
 fullxray = Table.read('UDS_catalogues/DR11-2arcsec-June24-2018+plusXY_best_chandra.fits')
 deviant = fits.open('variable_tables/no06_variables_chi30_2arcsec_deviant_DR11data_restframe.fits')[1].data
 
 ### with x/nox split ###
-noxvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_noXray_DR11data_restframe.fits')[1].data
-xvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_Xray_DR11data_restframe.fits')[1].data
-#noxvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_nochanXray_DR11data_restframe.fits')[1].data
-#xvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_chandata_DR11data_restframe.fits')[1].data
+#noxvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_noXray_DR11data_restframe.fits')[1].data
+#xvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_Xray_DR11data_restframe.fits')[1].data
+noxvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_nochanXray_DR11data_restframe.fits')[1].data
+xvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_chandata_DR11data_restframe.fits')[1].data
 
 #%% restrict to just chandra ###
 tbdata = vari_funcs.chandra_only(tbdata)
@@ -153,7 +153,7 @@ plt.hist(allxL, bins, color='k', linestyle='dashed',
 #plt.hist([noxL, xL, devL], bins=50, color=['b','r','y'], 
 #         histtype='step', label=['Variable Non-X-ray','Variable X-ray','deviant'])#,
 plt.legend(loc='upper left')
-plt.xlabel('K-band Absolute Magnitude')
+plt.xlabel(r'$K$-band Absolute Magnitude')
 plt.xlim(xmax=-15)
 plt.ylabel('Normalised Frequency')
 plt.gca().invert_xaxis()

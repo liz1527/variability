@@ -100,7 +100,7 @@ plt.figure(figsize=[8,8])
 
 ### plot those within range
 plt.plot(z, I1minI2,'.', color='tab:grey', markersize=1, label='Galaxy')
-plt.plot(xz, xI1minI2,'ks', markersize=5, label='X-ray AGN')
+plt.plot(xz, xI1minI2,'ks', markersize=5, label='Non-Variable X-ray AGN')
 plt.plot(varyz, varyI1minI2,'bo', label='Variable Non-X-ray AGN')
 plt.plot(xvaryz, xvaryI1minI2,'ro', label='Variable X-ray AGN')
 #plt.plot(devz, devI1minI2,'mx',markersize=10,mfc='None', label='07B')

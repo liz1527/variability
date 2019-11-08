@@ -17,7 +17,7 @@ import numpy as np #for handling arrays
 #from astropy.stats import median_absolute_deviation
 from scipy import stats
 import vari_funcs #my module to help run code neatly
-#from scipy.stats import chisquare
+from scipy.stats import chisquare
 plt.close('all') #close any open plots
 
 def my_chisquare_char(flux, char_var):
@@ -52,7 +52,6 @@ finalchisq = np.array([])
 galchisq = np.array([])
 oldchisq = np.array([])
 for m, qtbdata in enumerate(quaddata):
-    print(len(qtbdata))
     ### get quad arrays for chan and stars ###
     qchandata = chanquaddata[m]
     qsdata = squaddata[m]
@@ -71,11 +70,14 @@ for m, qtbdata in enumerate(quaddata):
     fluxerrchan = vari_funcs.fluxerr4_stacks(qchandata)
     sfluxerr = vari_funcs.fluxerr4_stacks(qsdata)
     
-    ### plot flux vs err ###
-    plt.figure(11)
-    plt.subplot(2,2,m+1)
-    plt.plot(fluxn[:,0], fluxerr[:,0], 'b+')
-    plt.plot(sfluxn[:,0], sfluxerr[:,0], 'm*')
+    print(len(fluxn)+len(sfluxn))
+    
+    if m == 3:
+        ### plot flux vs err ###
+        plt.figure(1)
+#        plt.subplot(2,2,m+1)
+        plt.plot(fluxn[:,6], fluxerr[:,6], 'b+')
+        plt.plot(sfluxn[:,6], sfluxerr[:,6], 'm*')
     
     ### get original chi sq ###
     chisq = vari_funcs.my_chisquare_err(fluxn, fluxerr)
@@ -84,12 +86,14 @@ for m, qtbdata in enumerate(quaddata):
     allchi = np.append(chisq, schisq)
     oldchisq = np.append(oldchisq, allchi)
     
-    vari_funcs.flux_variability_plot(fluxn, fluxchann, 'var', starflux=sfluxn, 
-                                     stars=True, normalised=True, scale='symlog')
+#    vari_funcs.flux_variability_plot(fluxn, fluxchann, 'var', starflux=sfluxn, 
+#                                     stars=True, normalised=True, scale='symlog')
     #bins, medvar = vari_funcs.plot_median_line(fluxn, tbdata, statistic='var')
     
-    bins, medvar = vari_funcs.plot_median_line_stars(fluxn, qtbdata, sfluxn, qsdata, statistic='var')
-    
+    bins, medvar = vari_funcs.plot_median_line_stars(fluxn, qtbdata, sfluxn, 
+                                                     qsdata, statistic='var',
+                                                     createplot=False)
+#    plt.close(2)
     
 #    vari_funcs.flux_variability_plot(fluxn, fluxchann, 'chisq',
 #                                       fluxerr = fluxerr,
@@ -112,7 +116,10 @@ for m, qtbdata in enumerate(quaddata):
         fluxerr = vari_funcs.fluxerr4_stacks(bindata)
         fluxchanerr = vari_funcs.fluxerr4_stacks(binchan)
         sfluxerr = vari_funcs.fluxerr4_stacks(sbindata)
-        print(len(flux))
+        
+        medfluxerr = np.nanmedian(np.append(fluxerr[:,6], sfluxerr[:,6],))
+        
+#        print(len(flux))
         meanflux = np.nanmean(flux, axis=1)
         meanchan = np.nanmean(fluxchan, axis=1)
         meansflux = np.nanmean(sflux, axis=1)
@@ -120,27 +127,6 @@ for m, qtbdata in enumerate(quaddata):
         chisqchan = my_chisquare_char(fluxchan, medvar[n])
         schisq = my_chisquare_char(sflux, medvar[n])
         
-#        ### plot ###
-#        plt.figure(3,figsize=[8,8])    
-#        if n == np.size(bins)-2:
-#            plt.plot(meanflux, chisq, 'b+',zorder=2, label='Galaxy')
-#            plt.plot(meanchan, chisqchan, 'ro', zorder=3, mfc='None', markersize=10, label='X-ray detected')
-#            plt.plot(meansflux, schisq, 'm*', zorder=1, mfc='None', markersize=10, label='DR11 Star')
-#            plt.yscale('log')
-#            plt.xscale('log')
-#            plt.xlim(xmin=8e1, xmax=1e7)
-#            plt.ylim(ymin=3e-2, ymax=4e4)
-#            plt.ylabel('Chi Squared')
-#            plt.xlabel('Mean Flux')
-#            plt.title('1st iteration')
-#            plt.text(5e2, 1e3, r'$\chi^{2} = \sum{\frac{( \,{x_{i} - \bar{x}})^{2} \,}{\sigma_{noise}^{2}}}$')
-#            plt.hlines(22.458,2e2,1e7, label='99.9% confidence level', zorder=4)
-#            plt.legend()
-#        else:
-#            plt.plot(meanflux, chisq, 'b+',zorder=2)
-#            plt.plot(meanchan, chisqchan, 'ro', zorder=3, mfc='None', markersize=10)
-#            plt.plot(meansflux, schisq, 'm*', zorder=1, mfc='None', markersize=10)
-    
         
         ### remove any with chisq > 50 ###
         newgflux = flux[chisq<50,:]
@@ -150,32 +136,13 @@ for m, qtbdata in enumerate(quaddata):
         vary = np.var(newfluxn, axis=1, ddof=1)
         newmedvar[n] = np.nanmedian(vary)
     
+#        print(len(newflux))
+        
         newchisq = my_chisquare_char(flux, newmedvar[n])
         newchisqchan = my_chisquare_char(fluxchan, newmedvar[n])
         newschisq = my_chisquare_char(sflux, newmedvar[n])
         
-#        ## plot new ###
-#        plt.figure(4, figsize=[8,8])
-#        if n == np.size(bins)-2:
-#            plt.plot(meanflux, newchisq, 'b+',zorder=2, label='Galaxy')
-#            plt.plot(meanchan, newchisqchan, 'ro', zorder=3, mfc='None', markersize=10, label='X-ray detected')
-#            plt.plot(meansflux, newschisq, 'm*', zorder=1, mfc='None', markersize=10, label='DR11 Star')
-#            plt.yscale('log')
-#            plt.xscale('log')
-#            plt.xlim(xmin=8e1, xmax=1e7)
-#            plt.ylim(ymin=3e-2, ymax=4e4)
-#            plt.ylabel('Chi Squared')
-#            plt.xlabel('Mean Flux')
-#            plt.title('2nd iteration')
-#            plt.text(5e2, 1e3, r'$\chi^{2} = \sum{\frac{( \,{x_{i} - \bar{x}})^{2} \,}{\sigma_{noise}^{2}}}$')
-#            plt.hlines(22.458,2e2,1e7, label='99.9% confidence level', zorder=4)
-#            plt.legend()
-#        else:
-#            plt.plot(meanflux, newchisq, 'b+',zorder=2)
-#            plt.plot(meanchan, newchisqchan, 'ro', zorder=3, mfc='None', markersize=10)
-#            plt.plot(meansflux, newschisq, 'm*', zorder=1, mfc='None', markersize=10)
-    
-            
+        
     
         ### plot new variance ###
     #    plt.figure(5, figsize=[8,8])
@@ -190,18 +157,7 @@ for m, qtbdata in enumerate(quaddata):
         sigreal = sig - newmedvar[n]
         sigrealchan = sigchan - newmedvar[n]
         ssigreal = ssig - newmedvar[n]
-    #    #plot
-    #    plt.plot(meanflux, sigreal, 'b+', zorder=2)
-    #    plt.plot(meanchan, sigrealchan, 'ro', zorder=3, mfc='None', markersize=10)
-    #    plt.plot(meansflux, ssigreal, 'm*', zorder=1, mfc='None', markersize=10)
-    #    plt.yscale('symlog', linthreshy=0.0001)
-    #    plt.xscale('log')
-    #    plt.ylabel(r'$\sigma^{2}_{real}$')
-    #    plt.xlabel('Mean Flux')
-    #    plt.text(1e5, 1e0, r'$\sigma^{2}_{real} = \sigma^{2} - \sigma_{noise}^{2}$')
-    #    plt.tight_layout()
-    #    finalmed[n] = np.nanmedian(sigreal)
-    
+        
         ### Calculate sigma for each epoch in flux bin ###
 
         avgflux = np.nanmean(newflux, axis=1)
@@ -215,45 +171,61 @@ for m, qtbdata in enumerate(quaddata):
         sigsqdict[dictkey] = np.nansum(top/bot, axis=0)
         sigdict[dictkey] = np.sqrt(sigsqdict[dictkey])
         
-        ### Add point to plot ###
-        plt.figure(11)
-        plt.subplot(2,2,m+1)
-        plt.plot(int(binedge), sig[0], 'go', markersize=10)
-        plt.yscale('log')
-        plt.xscale('log')
+        if m == 3:
+            ### Add point to plot ###
+            plt.figure(1)
+#            plt.subplot(2,2,m+1)
+            plt.plot(int(binedge), sig[6], 'go', markersize=7)
+            plt.yscale('log')
+            plt.xscale('log')
+            plt.xlabel('Flux')
+            plt.ylabel(r'$\sigma_{F}$')
         
         ### Get another new chi-squared with epoch error ###
         newchisq2 = my_chisquare_epoch(flux, sigdict[dictkey])
         newchisqchan2 = my_chisquare_epoch(fluxchan, sigdict[dictkey])
         newschisq2 = my_chisquare_epoch(sflux, sigdict[dictkey])
-        
-#        ### plot new ###
-#        plt.figure(6, figsize=[8,8])    
-#        if n == np.size(bins)-2 and m==3:
-#            plt.plot(meanflux, newchisq2, 'b+',zorder=2, label='Galaxy')
-#            plt.plot(meanchan, newchisqchan2, 'ro', zorder=3, mfc='None', markersize=10, label='X-ray detected')
-#            plt.plot(meansflux, newschisq2, 'm*', zorder=1, mfc='None', markersize=10, label='DR11 Star')
-#            plt.yscale('log')
-#            plt.xscale('log')
-#            plt.xlim(xmin=8e1, xmax=1e7)
-#            plt.ylim(ymin=3e-2, ymax=4e4)
-#            plt.ylabel('Chi Squared')
-#            plt.xlabel('Mean Flux')
-#            plt.title('With quad epoch flux bin errors')
-#            plt.text(5e2, 1e3, r'$\chi^{2} = \sum{\frac{( \,{x_{i} - \bar{x}})^{2} \,}{\sigma_{quad-epoch}^{2}}}$')
-#            plt.hlines(22.458,8e1,1e7, label='99.9% confidence level', zorder=4)
-#            plt.legend()
-#        else:
-#            plt.plot(meanflux, newchisq2, 'b+',zorder=2)
-#            plt.plot(meanchan, newchisqchan2, 'ro', zorder=3, mfc='None', markersize=10)
-#            plt.plot(meansflux, newschisq2, 'm*', zorder=1, mfc='None', markersize=10)
-#    
     
         ### Save final chisq for stars and gals in 1 large array ###
         tempchi = np.hstack([newchisq2, newschisq2])
         finalchisq = np.append(finalchisq, tempchi)
         galchisq = np.append(galchisq, newchisq2)
     
+        if m == 3 and n == 10:
+            ### Plot distribution of flux values ###
+            plt.figure(2)
+            plt.hist(newflux[:,6], bins=30, density=True, 
+                     label='Actual values', color='k')
+            plt.xlabel('Flux')
+            plt.ylabel('Normalised Frequency')
+            
+            print(len(newflux)) # print how many sources included
+            
+            print(np.nanmedian(newflux[:,6]))
+            
+            ### Plot guassian over distribution for our sig ###
+            gaussig = np.sqrt(sig[6])
+            f = np.linspace(np.nanmin(newflux[:,6]), np.nanmax(newflux[:,6]), 100)
+            gaus = stats.norm.pdf(f, np.nanmedian(newflux[:,6]), gaussig)
+            print(gaussig)
+#            gaus = gaus/np.nansum(gaus)
+            plt.plot(f, gaus, 'r-', label='Self-calibrated')
+            
+            ### Plot guassian over distribution for median SE sig ###
+            gausSE = stats.norm.pdf(f, np.nanmedian(newflux[:,6]), medfluxerr)
+            print(medfluxerr)
+#            gausSE = gausSE/np.nansum(gausSE)
+            plt.plot(f, gausSE, 'b--', label='SExtractor')
+            
+            ### Add text saying what the two sigmas are (maybe just put in caption ###
+#            plt.text(100, 0.006, r'Median SExtractor $\sigma_{F}$')
+#            plt.text(100, 0.0057, '= '+str(medfluxerr))
+#            plt.text(100, 0.005, r'Self-calibrated $\sigma_{F}$')
+#            plt.text(100, 0.0047, '= '+str(gaussig))
+            
+#            plt.xlim(xmax=1400)
+            plt.legend(loc='upper right')
+            plt.tight_layout()
 #plt.plot(bins[0:42], finalmed, 'k--',zorder=3)
 #%%
 histbins = np.logspace(-2.3,4.4,100)
@@ -262,7 +234,7 @@ plt.hist(finalchisq, histbins, label='Self-calibrated uncertainties')
 plt.hist(oldchisq, histbins, label='SExtractor Uncertainties')
 plt.xscale('log')
 #plt.yscale('symlog')
-plt.ylabel('Normalised Counts')
+plt.ylabel('Normalised Frequency')
 plt.xlabel(r'$\chi^{2}$ ')
 plt.tight_layout()
 

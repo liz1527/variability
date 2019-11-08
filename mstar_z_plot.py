@@ -20,7 +20,7 @@ plt.close('all')
 
 
 ### Get fits ###
-tbdata = fits.open('mag_flux_tables/mag_flux_table_best_extra_clean_no06.fits')[1].data
+tbdata = fits.open('mag_flux_tables/K/mag_flux_table_best_extra_clean_no06.fits')[1].data
 dr11 = fits.open('UDS_catalogues/DR11-2arcsec-June24-2018+plusXY_best.fits')[1].data
 varydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_DR11data_restframe.fits')[1].data
 fullxray = Table.read('UDS_catalogues/DR11-2arcsec-June24-2018+plusXY_best_chandra.fits')
@@ -94,10 +94,10 @@ from scipy import stats
 #
 #plt.figure(figsize=[9,7])
 plt.figure(figsize=[10,7])
-plt.plot(z, m, '.',markersize=1, color='tab:gray', alpha=0.25, label='Galaxy')
+plt.plot(z, m, '.',markersize=1, color='tab:gray', alpha=0.2, label='Galaxy')
 #plt.plot(allsternz, allsternm, 'm.', label='Stern AGN', alpha=0.5)
-plt.plot(allxz, allxm, 'ks',markersize=5, label='X-ray AGN')
-plt.plot(xz, xm, 'rs', label='Variable X-ray AGN')
+plt.plot(allxz, allxm, 'ks',markersize=5, label='Non-Variable X-ray AGN')
+plt.plot(xz, xm, 'ro', label='Variable X-ray AGN')
 plt.plot(noxz, noxm, 'bo', label='Variable Non-X-ray AGN')
 #plt.plot(noxz, noxm, 'rs',mfc='None', label='Variable AGN')
 #plt.plot(xz, xm, 'rs', mfc='None')
@@ -108,33 +108,37 @@ plt.plot(noxz, noxm, 'bo', label='Variable Non-X-ray AGN')
 
 plt.yscale('log')
 plt.xlim(xmin=-0.1, xmax=4.5)
-plt.ylim(ymin=2e5, ymax=5e11)
+plt.ylim(ymin=2e6, ymax=5e11)
 plt.legend(loc='lower right')
 plt.xlabel('Redshift')
 plt.ylabel('Stellar Mass ($M_{\odot}$)')
 plt.tight_layout()
 
-#### Plot with stern details
-##plt.figure(figsize=[9,7])
-#plt.figure(figsize=[10,7])
-#plt.plot(z, m, '.',markersize=1, color='tab:gray', alpha=0.25, label='Galaxy')
-#plt.plot(allsternz, allsternm, 'k.', label='Stern AGN', alpha=0.5)
-##plt.plot(allxz, allxm, 'k+', label='X-ray Non-Variable')
-##plt.plot(noxsternz, noxsternm, 'bo', label='Non-X-ray Variable')
-##plt.plot(xsternz, xsternm, 'ro', label='X-ray Variable')
-#plt.plot(nosternz, nosternm, 'go', label='Variable Non-Stern AGN')
-##plt.plot(xz, xm, 'go')#, label='X-ray Variable')
-#plt.plot(sternz, sternm, 'mo', label='Variable Stern AGN')
-#
-##plt.hlines(2e9,-0.1,4.5,linestyle='dashed')
-#
-#plt.yscale('log')
-#plt.xlim(xmin=-0.1, xmax=4.5)
-#plt.ylim(ymin=2e5, ymax=5e11)
-#plt.legend(loc='lower right')
-#plt.xlabel('z')
-#plt.ylabel('$M_{star}$')
-#plt.tight_layout()
+### Plot with stern details
+#plt.figure(figsize=[7,5])
+plt.figure(figsize=[10,7])
+font = {'family' : 'DejaVu Sans',
+        'weight' : 'normal',
+        'size'   : 18}
+plt.rc('font', **font)
+plt.plot(z, m, '.',markersize=1, color='tab:gray', alpha=0.2, label='Galaxy')
+plt.plot(allsternz, allsternm, 'k.', label='Non-Variable Stern AGN', alpha=0.5)
+#plt.plot(allxz, allxm, 'k+', label='X-ray Non-Variable')
+#plt.plot(noxsternz, noxsternm, 'bo', label='Non-X-ray Variable')
+#plt.plot(xsternz, xsternm, 'ro', label='X-ray Variable')
+plt.plot(nosternz, nosternm, 'go', label='Variable Non-Stern AGN')
+#plt.plot(xz, xm, 'go')#, label='X-ray Variable')
+plt.plot(sternz, sternm, 'mo', label='Variable Stern AGN')
+
+#plt.hlines(2e9,-0.1,4.5,linestyle='dashed')
+
+plt.yscale('log')
+plt.xlim(xmin=-0.1, xmax=4.5)
+plt.ylim(ymin=2e6, ymax=5e11)
+plt.legend(loc='lower right')
+plt.xlabel('Redshift')
+plt.ylabel('Stellar Mass ($M_{\odot}$)')
+plt.tight_layout()
 
 #%% Plot with deviant details ###
 #### remove deviants from main sample ###
