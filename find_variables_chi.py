@@ -21,15 +21,15 @@ import vari_funcs #my module to help run code neatly
 plt.close('all') #close any open plots
 
 ### Open the fits files and get data ###
-tbdata = fits.open('mag_flux_tables/mag_flux_table_best_extra_clean_no06.fits')[1].data
-chandata = fits.open('mag_flux_tables/xray_mag_flux_table_best_extra_clean_no06.fits')[1].data
-sdata = fits.open('mag_flux_tables/stars_mag_flux_table_extra_clean_no06.fits')[1].data
+tbdata = fits.open('mag_flux_tables/K/mag_flux_table_best_extra_clean_no06.fits')[1].data
+chandata = fits.open('mag_flux_tables/K/xray_mag_flux_table_best_extra_clean_no06.fits')[1].data
+sdata = fits.open('mag_flux_tables/K/stars_mag_flux_table_extra_clean_no06.fits')[1].data
 sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06.fits')
 
 ## Create arrays of flux values ###
-flux = vari_funcs.flux5_stacks(tbdata)
-fluxchan = vari_funcs.flux5_stacks(chandata) 
-sflux = vari_funcs.flux5_stacks(sdata)
+flux = vari_funcs.k_mag_flux.flux_stacks(tbdata, aper=5)
+fluxchan = vari_funcs.k_mag_flux.flux_stacks(chandata, aper=5) 
+sflux = vari_funcs.k_mag_flux.flux_stacks(sdata, aper=5)
 
 ### remove values that are negative ###
 flux, tbdata = vari_funcs.noneg(flux, tbdata)
@@ -73,40 +73,40 @@ plt.legend()
 #save50 = Table(varydata50)
 #save50.write('variable_tables/variables_chi50.fits')
 
-### Isolate top left (RA<34.45, Dec>-5.1) ###
-mask1 = varydata24['ALPHA_J2000_05B'] < 34.45
-mask2 = varydata24['DELTA_J2000_05B'] > -5.1
-mask = mask1*mask2.astype('bool')
-tlvary = varydata24[mask]
-
-mask1 = tbdata['ALPHA_J2000_05B'] < 34.45
-mask2 = tbdata['DELTA_J2000_05B'] > -5.1
-mask = mask1*mask2.astype('bool')
-
-tlflux = flux[mask]
-tlmeanflux = np.nanmean(tlflux, axis=1)
-tlchi = chisq[mask]
-otherflux = flux[~mask]
-othermeanflux = np.nanmean(otherflux, axis=1)
-otherchi = chisq[~mask]
-
-#plt.plot(othermeanflux, otherchi, 'mo')
-plt.plot(tlmeanflux, tlchi, 'yo')
-
-plt.figure()
-plt.hist([otherchi, tlchi], bins=np.logspace(-2,5,50), histtype='step', 
-         normed=True, label=['Other quadrants','Top left quadrant'])
-plt.xscale('log')
-plt.xlabel(r'$\chi^{2}$')
-plt.ylabel('Normalised Counts')
-plt.legend()
-plt.tight_layout()
-
-
-fig = vari_funcs.flux_variability_plot(flux, fluxchan, 'excess', 
-                                       fluxerr=fluxerr, chanerr=chanerr,
-                                       starflux=sflux, starfluxerr=serr,
-                                       normalised=True, stars=True, scale='symlog')
+#### Isolate top left (RA<34.45, Dec>-5.1) ###
+#mask1 = varydata24['ALPHA_J2000_05B'] < 34.45
+#mask2 = varydata24['DELTA_J2000_05B'] > -5.1
+#mask = mask1*mask2.astype('bool')
+#tlvary = varydata24[mask]
+#
+#mask1 = tbdata['ALPHA_J2000_05B'] < 34.45
+#mask2 = tbdata['DELTA_J2000_05B'] > -5.1
+#mask = mask1*mask2.astype('bool')
+#
+#tlflux = flux[mask]
+#tlmeanflux = np.nanmean(tlflux, axis=1)
+#tlchi = chisq[mask]
+#otherflux = flux[~mask]
+#othermeanflux = np.nanmean(otherflux, axis=1)
+#otherchi = chisq[~mask]
+#
+##plt.plot(othermeanflux, otherchi, 'mo')
+#plt.plot(tlmeanflux, tlchi, 'yo')
+#
+#plt.figure()
+#plt.hist([otherchi, tlchi], bins=np.logspace(-2,5,50), histtype='step', 
+#         normed=True, label=['Other quadrants','Top left quadrant'])
+#plt.xscale('log')
+#plt.xlabel(r'$\chi^{2}$')
+#plt.ylabel('Normalised Counts')
+#plt.legend()
+#plt.tight_layout()
+#
+#
+#fig = vari_funcs.flux_variability_plot(flux, fluxchan, 'excess', 
+#                                       fluxerr=fluxerr, chanerr=chanerr,
+#                                       starflux=sflux, starfluxerr=serr,
+#                                       normalised=True, stars=True, scale='symlog')
 
 
 
