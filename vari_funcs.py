@@ -19,7 +19,6 @@ import matplotlib.pyplot as plt #for plotting
 from astropy.io import fits #for handling fits
 from astropy.table import Table #for handling tables
 import numpy as np #for handling arrays
-import math
 from astropy.stats import median_absolute_deviation
 from scipy.stats import chisquare
 
@@ -34,6 +33,15 @@ plt.rc('font', **font)
 import k_mag_flux #for flux and magnitude arrays in K
 import j_mag_flux #for flux and magnitude arrays in J
 import h_mag_flux #for flux and magnitude arrays in H
+
+import field_funcs #for dividing or restricting the area of the field 
+
+import lightcurve_funcs #for plotting lightcurve in various forms
+
+import correction_funcs #for correcting and testing seeing/PSFs
+
+import vary_stats #for variability statistics
+
 
 ### Define Functions ###
 #def flux_stacks(tbdata, aper=5):
@@ -914,120 +922,120 @@ import h_mag_flux #for flux and magnitude arrays in H
 #    else:
 #        return quadflux, quaderr, newquaddata
 
-def lightcurve4(ob, fitsdata)  :
-    ''' Function that plots the light curve of an object in terms of its flux 
-    in an aperture 4 pixels across (i.e. 2 arcsec in diameter) 
-    Inputs:
-        ob = the ID of the object that you want the lightcurve from
-        fitsdata = the original catalogue of data that the curve will be 
-                    plotted from 
-    Output:
-        None '''
-        
-    #Get data for the object called
-    mask = fitsdata['NUMBER_05B'] == ob
-    obdata = fitsdata[mask]
-    if not obdata: #Reject if no object number matches the input value
-        print('error- invalid object number')
-        return
-    
-    #Create arrays of flux values and error values
-    flux = np.array([obdata['FLUX_APER_05B'][:,4],obdata['FLUX_APER_06B'][:,4],
-                    obdata['FLUX_APER_07B'][:,4],obdata['FLUX_APER_08B'][:,4],
-                    obdata['FLUX_APER_09B'][:,4],obdata['FLUX_APER_10B'][:,4], 
-                    obdata['FLUX_APER_11B'][:,4],obdata['FLUX_APER_12B'][:,4]])
-    
-    fluxerr = np.array([obdata['FLUXERR_APER_05B'][:,4],obdata['FLUXERR_APER_06B'][:,4],
-                    obdata['FLUXERR_APER_07B'][:,4],obdata['FLUXERR_APER_08B'][:,4],
-                    obdata['FLUXERR_APER_09B'][:,4],obdata['FLUXERR_APER_10B'][:,4], 
-                    obdata['FLUXERR_APER_11B'][:,4],obdata['FLUXERR_APER_12B'][:,4]])
-    
-    # normalise and correct for seeing
-    flux = psf_correct(flux, flux, 'mean')
-    fluxerr = psf_correct(flux, fluxerr, 'mean')
-    avgflux =np.mean(flux)
-    normflux = flux/avgflux
-    normerr = fluxerr/avgflux
-    
-    #set up time variable for plot
-    t = np.linspace(1, 8, num=8)
-    years = ['05B', '06B', '07B', '08B', '09B', '10B', '11B', '12B']
-    
-    #Plot graph in new figure
-    plt.figure()
-    plt.xticks(t, years)
-    plt.errorbar(t, normflux, yerr=normerr, fmt = 'ro')
-    plt.xlabel('Semester')
-    plt.ylabel('Flux of object')
-    plt.title('Light curve for object number %i' % ob)
-    return
-
-def lightcurve5(ob, fitsdata)  :
-    ''' Function that plots the light curve of an object in terms of its flux 
-    in an aperture 5 pixels across (i.e. 3 arcsec in diameter) 
-    Inputs:
-        ob = the ID of the object that you want the lightcurve from
-        fitsdata = the original catalogue of data that the curve will be 
-                    plotted from 
-    Output:
-        None '''
-        
-    #Get data for the object called
-    mask = fitsdata['NUMBER_05B'] == ob
-    obdata = fitsdata[mask]
-    if not obdata: #Reject if no object number matches the input value
-        print('error- '+str(ob)+' is an invalid object number')
-        return
-    
-    #Create arrays of flux values and error values
-    flux = np.array([obdata['MAG_APER_05B'][:,4],obdata['MAG_APER_06B'][:,4],
-                    obdata['MAG_APER_07B'][:,4],obdata['MAG_APER_08B'][:,4],
-                    obdata['MAG_APER_09B'][:,4],obdata['MAG_APER_10B'][:,4], 
-                    obdata['MAG_APER_11B'][:,4],obdata['MAG_APER_12B'][:,4]])
-    
-    fluxerr = np.array([obdata['MAGERR_APER_05B'][:,4],obdata['MAGERR_APER_06B'][:,4],
-                    obdata['MAGERR_APER_07B'][:,4],obdata['MAGERR_APER_08B'][:,4],
-                    obdata['MAGERR_APER_09B'][:,4],obdata['MAGERR_APER_10B'][:,4], 
-                    obdata['MAGERR_APER_11B'][:,4],obdata['MAGERR_APER_12B'][:,4]])
-
-    
-    #set up time variable for plot
-    t = np.linspace(1, 8, num=8)
-    years = ['05B', '06B', '07B', '08B', '09B', '10B', '11B', '12B']
-    
-    #Plot graph in new figure
-    plt.figure()
-    plt.xticks(t, years)
-    plt.errorbar(t, flux, yerr=fluxerr, fmt = 'ro')
-    plt.xlabel('Semester')
-    plt.ylabel('K-band magnitude of object')
-    plt.title('Light curve for object number %i' % ob)
-    return
-
-def lightcurveflux5(ob, fitsdata, corrected=False, new_fig=True) :
-    ''' Function that plots the light curve of an object in terms of its flux 
-    in an aperture 5 pixels across (i.e. 3 arcsec in diameter) 
-    Inputs:
-        ob = the ID of the object that you want the lightcurve from
-        fitsdata = the original catalogue of data that the curve will be 
-                    plotted from 
-    Output:
-        None '''
-    sigtb = Table.read('quad_epoch_sigma_table_extra_clean.fits')
-
-    #Get data for the object called
-    mask = fitsdata['NUMBER_05B'] == ob
-    obdata = fitsdata[mask]
-    if not obdata: #Reject if no object number matches the input value
-        print('error- invalid object number')
-        return
-    
-    #Create arrays of flux values and error values
-    flux = np.array([obdata['FLUX_APER_05B'][:,4],#obdata['FLUX_APER_06B'][:,4],
-                    obdata['FLUX_APER_07B'][:,4],obdata['FLUX_APER_08B'][:,4],
-                    obdata['FLUX_APER_09B'][:,4],obdata['FLUX_APER_10B'][:,4], 
-                    obdata['FLUX_APER_11B'][:,4],obdata['FLUX_APER_12B'][:,4]])
-    flux, fluxerr, obdata = create_quad_error_array(sigtb, obdata)
+#def lightcurve4(ob, fitsdata)  :
+#    ''' Function that plots the light curve of an object in terms of its flux 
+#    in an aperture 4 pixels across (i.e. 2 arcsec in diameter) 
+#    Inputs:
+#        ob = the ID of the object that you want the lightcurve from
+#        fitsdata = the original catalogue of data that the curve will be 
+#                    plotted from 
+#    Output:
+#        None '''
+#        
+#    #Get data for the object called
+#    mask = fitsdata['NUMBER_05B'] == ob
+#    obdata = fitsdata[mask]
+#    if not obdata: #Reject if no object number matches the input value
+#        print('error- invalid object number')
+#        return
+#    
+#    #Create arrays of flux values and error values
+#    flux = np.array([obdata['FLUX_APER_05B'][:,4],obdata['FLUX_APER_06B'][:,4],
+#                    obdata['FLUX_APER_07B'][:,4],obdata['FLUX_APER_08B'][:,4],
+#                    obdata['FLUX_APER_09B'][:,4],obdata['FLUX_APER_10B'][:,4], 
+#                    obdata['FLUX_APER_11B'][:,4],obdata['FLUX_APER_12B'][:,4]])
+#    
+#    fluxerr = np.array([obdata['FLUXERR_APER_05B'][:,4],obdata['FLUXERR_APER_06B'][:,4],
+#                    obdata['FLUXERR_APER_07B'][:,4],obdata['FLUXERR_APER_08B'][:,4],
+#                    obdata['FLUXERR_APER_09B'][:,4],obdata['FLUXERR_APER_10B'][:,4], 
+#                    obdata['FLUXERR_APER_11B'][:,4],obdata['FLUXERR_APER_12B'][:,4]])
+#    
+#    # normalise and correct for seeing
+#    flux = psf_correct(flux, flux, 'mean')
+#    fluxerr = psf_correct(flux, fluxerr, 'mean')
+#    avgflux =np.mean(flux)
+#    normflux = flux/avgflux
+#    normerr = fluxerr/avgflux
+#    
+#    #set up time variable for plot
+#    t = np.linspace(1, 8, num=8)
+#    years = ['05B', '06B', '07B', '08B', '09B', '10B', '11B', '12B']
+#    
+#    #Plot graph in new figure
+#    plt.figure()
+#    plt.xticks(t, years)
+#    plt.errorbar(t, normflux, yerr=normerr, fmt = 'ro')
+#    plt.xlabel('Semester')
+#    plt.ylabel('Flux of object')
+#    plt.title('Light curve for object number %i' % ob)
+#    return
+#
+#def lightcurve5(ob, fitsdata)  :
+#    ''' Function that plots the light curve of an object in terms of its flux 
+#    in an aperture 5 pixels across (i.e. 3 arcsec in diameter) 
+#    Inputs:
+#        ob = the ID of the object that you want the lightcurve from
+#        fitsdata = the original catalogue of data that the curve will be 
+#                    plotted from 
+#    Output:
+#        None '''
+#        
+#    #Get data for the object called
+#    mask = fitsdata['NUMBER_05B'] == ob
+#    obdata = fitsdata[mask]
+#    if not obdata: #Reject if no object number matches the input value
+#        print('error- '+str(ob)+' is an invalid object number')
+#        return
+#    
+#    #Create arrays of flux values and error values
+#    flux = np.array([obdata['MAG_APER_05B'][:,4],obdata['MAG_APER_06B'][:,4],
+#                    obdata['MAG_APER_07B'][:,4],obdata['MAG_APER_08B'][:,4],
+#                    obdata['MAG_APER_09B'][:,4],obdata['MAG_APER_10B'][:,4], 
+#                    obdata['MAG_APER_11B'][:,4],obdata['MAG_APER_12B'][:,4]])
+#    
+#    fluxerr = np.array([obdata['MAGERR_APER_05B'][:,4],obdata['MAGERR_APER_06B'][:,4],
+#                    obdata['MAGERR_APER_07B'][:,4],obdata['MAGERR_APER_08B'][:,4],
+#                    obdata['MAGERR_APER_09B'][:,4],obdata['MAGERR_APER_10B'][:,4], 
+#                    obdata['MAGERR_APER_11B'][:,4],obdata['MAGERR_APER_12B'][:,4]])
+#
+#    
+#    #set up time variable for plot
+#    t = np.linspace(1, 8, num=8)
+#    years = ['05B', '06B', '07B', '08B', '09B', '10B', '11B', '12B']
+#    
+#    #Plot graph in new figure
+#    plt.figure()
+#    plt.xticks(t, years)
+#    plt.errorbar(t, flux, yerr=fluxerr, fmt = 'ro')
+#    plt.xlabel('Semester')
+#    plt.ylabel('K-band magnitude of object')
+#    plt.title('Light curve for object number %i' % ob)
+#    return
+#
+#def lightcurveflux5(ob, fitsdata, corrected=False, new_fig=True) :
+#    ''' Function that plots the light curve of an object in terms of its flux 
+#    in an aperture 5 pixels across (i.e. 3 arcsec in diameter) 
+#    Inputs:
+#        ob = the ID of the object that you want the lightcurve from
+#        fitsdata = the original catalogue of data that the curve will be 
+#                    plotted from 
+#    Output:
+#        None '''
+#    sigtb = Table.read('quad_epoch_sigma_table_extra_clean.fits')
+#
+#    #Get data for the object called
+#    mask = fitsdata['NUMBER_05B'] == ob
+#    obdata = fitsdata[mask]
+#    if not obdata: #Reject if no object number matches the input value
+#        print('error- invalid object number')
+#        return
+#    
+#    #Create arrays of flux values and error values
+#    flux = np.array([obdata['FLUX_APER_05B'][:,4],#obdata['FLUX_APER_06B'][:,4],
+#                    obdata['FLUX_APER_07B'][:,4],obdata['FLUX_APER_08B'][:,4],
+#                    obdata['FLUX_APER_09B'][:,4],obdata['FLUX_APER_10B'][:,4], 
+#                    obdata['FLUX_APER_11B'][:,4],obdata['FLUX_APER_12B'][:,4]])
+#    flux, fluxerr, obdata = create_quad_error_array(sigtb, obdata)
 #    if corrected == False:
 #        fluxerr = np.array([obdata['FLUXERR_APER_05B'][:,4],obdata['FLUXERR_APER_06B'][:,4],
 #                            obdata['FLUXERR_APER_07B'][:,4],obdata['FLUXERR_APER_08B'][:,4],
@@ -1038,246 +1046,246 @@ def lightcurveflux5(ob, fitsdata, corrected=False, new_fig=True) :
 #                            obdata['FLUXERR_APER_07B_CORR'],obdata['FLUXERR_APER_08B_CORR'],
 #                            obdata['FLUXERR_APER_09B_CORR'],obdata['FLUXERR_APER_10B_CORR'], 
 #                            obdata['FLUXERR_APER_11B_CORR'],obdata['FLUXERR_APER_12B_CORR']])
+#    
+#    #set up time variable for plot
+#    t = np.linspace(1, 8, num=8)
+#    years = ['05B', '06B', '07B', '08B', '09B', '10B', '11B', '12B']
+#    x = [1,3,4,5,6,7,8]
+#    print('Plotting lightcurve')
+#    
+#    #Plot graph in new figure
+#    if new_fig == True:
+#        plt.figure()
+#    plt.xticks(t, years)
+#    plt.errorbar(x, flux, yerr=fluxerr, fmt = 'ro')
+#    plt.xlabel('Semester')
+#    plt.ylabel('K-band flux of object')
+#    plt.title('Light curve for object number %i' % ob)
+#    return
+#
+#def chandra_only(tbdata):
+#    ''' Function that restricts the objects included in analysis to only 
+#    those within the Chandra footprint 
+#    Input:
+#        tbdata = original catalogue of data 
+#    Output:
+#        newtbdata = new catalogue of data which only includes objects within 
+#                    the chandra footprint '''
+#    ### Restrict objects to those in the Chandra field ###
+#    mask1 = tbdata['DELTA_J2000_05B'] < -4.93 #max Dec
+#    mask2 = tbdata['DELTA_J2000_05B'] > -5.403 #min Dec
+#    mask3 = tbdata['ALPHA_J2000_05B'] < 34.72 #max RA
+#    mask4 = tbdata['ALPHA_J2000_05B'] > 34.07 #min RA
+#    mask = mask1 * mask2 * mask3 * mask4
+#    newtbdata = tbdata[mask]
+#    return newtbdata
     
-    #set up time variable for plot
-    t = np.linspace(1, 8, num=8)
-    years = ['05B', '06B', '07B', '08B', '09B', '10B', '11B', '12B']
-    x = [1,3,4,5,6,7,8]
-    print('Plotting lightcurve')
-    
-    #Plot graph in new figure
-    if new_fig == True:
-        plt.figure()
-    plt.xticks(t, years)
-    plt.errorbar(x, flux, yerr=fluxerr, fmt = 'ro')
-    plt.xlabel('Semester')
-    plt.ylabel('K-band flux of object')
-    plt.title('Light curve for object number %i' % ob)
-    return
-
-def chandra_only(tbdata):
-    ''' Function that restricts the objects included in analysis to only 
-    those within the Chandra footprint 
-    Input:
-        tbdata = original catalogue of data 
-    Output:
-        newtbdata = new catalogue of data which only includes objects within 
-                    the chandra footprint '''
-    ### Restrict objects to those in the Chandra field ###
-    mask1 = tbdata['DELTA_J2000_05B'] < -4.93 #max Dec
-    mask2 = tbdata['DELTA_J2000_05B'] > -5.403 #min Dec
-    mask3 = tbdata['ALPHA_J2000_05B'] < 34.72 #max RA
-    mask4 = tbdata['ALPHA_J2000_05B'] > 34.07 #min RA
-    mask = mask1 * mask2 * mask3 * mask4
-    newtbdata = tbdata[mask]
-    return newtbdata
-    
-#Calculate varience for each row
-def sigmasq(flux, baseerr):
-    ''' Function that calculates the excess varience value for each row in an 
-    array 
-    Inputs:
-        flux = array of fluxes from objects in a number of epochs 
-        baseerr = array of errors that the mean error should be calculated from
-    Output:
-        sig = array of excess variance values for every object '''
-    avgflux = np.nanmean(flux, axis=1)
-#    meanerr = np.nanmean(baseerr, axis=1)
-#    meanerrsq = np.square(meanerr)
-    N = np.size(flux, axis=1)
-    numobs = np.size(flux, axis=0)
-    sig = [((flux[n, :]- avgflux[n])**2 - (baseerr[n,:])**2) for n in range(numobs)]# 
-    sigsum = np.nansum(sig, axis=1)
-    normsig = sigsum/(N)
-    return normsig
-
-def normsigmasq(flux, baseerr):
-    ''' Function that calculates the excess varience value for each row in an 
-    array 
-    Inputs:
-        flux = array of fluxes from objects in a number of epochs 
-        baseerr = array of errors that the mean error should be calculated from
-    Output:
-        sig = array of excess variance values for every object '''
-    if np.shape(flux) == (0,8):
-        return np.array([])
-    avgflux = np.nanmean(flux, axis=1)
-    N = np.size(flux, axis=1)
-    numobs = np.size(flux, axis=0)
-    sig = [((flux[n, :]- avgflux[n])**2 - (baseerr[n,:])**2) for n in range(numobs)]# 
-    sigsum = np.nansum(sig, axis=1)
-    normsig = sigsum/(N)
-    return normsig
-
-def maximum_likelihood_fig(testmag, testmagerr, meanmag, posvar):
-
-    # Calculate likelihood curve
-    L = np.array([np.nanprod((np.exp((-0.5*((testmag - meanmag)**2))/(
-            testmagerr**2 + testsig**2)))/(((2*np.pi)**0.5)*
-            (testmagerr**2 + testsig**2)**0.5)) for testsig in posvar])
-    sig = float(posvar[L==np.nanmax(L)][0]) #sigma value at max L
-#    Lstd = np.std(L)
-#    idx = (np.abs(L+Lstd).argmin())
-#    sigstd = posvar[idx]
-#    err = np.abs(sig+sigstd)
-    err = np.sqrt(np.average((posvar-np.average(posvar, weights=L))**2, weights=L))
-    plt.figure()
-    plt.plot(posvar, L)
-    plt.vlines(sig, np.min(L), np.max(L))
-    plt.vlines(sig+err, np.min(L), np.max(L))
-    return sig, err
-
-def maximum_likelihood(testmag, testmagerr, meanmag, posvar, n=None, printn=10):
-    if n != None and n%printn == 0:
-        print(n)
-    # Calculate likelihood curve
-    L = np.array([np.nanprod((np.exp((-0.5*((testmag - meanmag)**2))/(
-            testmagerr**2 + testsig**2)))/(((2*np.pi)**0.5)*
-            (testmagerr**2 + testsig**2)**0.5)) for testsig in posvar])
-    sig = float(posvar[L==np.nanmax(L)][0]) #sigma value at max L
-    if np.sum(L) == 0:
-        return sig, np.nan
-    else:
-        err = np.sqrt(np.average((posvar-np.average(posvar, weights=L))**2, weights=L))
-        return sig, err
-
-
-
-def fluxbin(min, max, flux, tbdata):
-    ''' Separate a flux array into a bin depending on the average flux of the
-    object 
-    Inputs:
-        min = the minimum flux value for the bin
-        max = the maximum flux value for the bin
-        flux = the array for fluxes for the object
-    Output:
-        fluxbin = the array of fluxes for objects whose average flux is within 
-                    the limits of the bin '''
-    avgflux = np.mean(flux, axis=1)
-    bina = avgflux >= min
-    binb = avgflux < max
-    bin = bina*binb
-    fluxbin = flux[bin]
-    tbdata = tbdata[bin]
-    return fluxbin, tbdata
-
-def fluxbinerr(min, max, flux, fluxerr):
-    ''' Separate a flux array into a bin depending on the average flux of the
-    object 
-    Inputs:
-        min = the minimum flux value for the bin
-        max = the maximum flux value for the bin
-        flux = the array for fluxes for the object
-        fluxerr = the array for flux errors for the object
-    Output:
-        fluxbin = the array of fluxes for objects whose average flux is within 
-                    the limits of the bin 
-        fluxerrbin = the array of flux errors for objects whose average flux is 
-                    within the limits of the bin '''
-    avgflux = np.mean(flux, axis=1)
-    bina = avgflux >= min
-    binb = avgflux < max
-    bin = bina*binb
-    fluxbin = flux[bin]
-    fluxerrbin = fluxerr[bin]
-    return fluxbin, fluxerrbin
-
-def avg_lightcurve(avgfluxarr, errarr=[], shape='o', size=None, label=None):
-    ''' Plot light curves for a provided set of fluxes rather than extracting
-    a certain objects fluxes from a larger array.
-    Input:
-        avgfluxarr = array of 8 semester flux values
-    Output:
-        ax = axes handle so the plot can be added to if necessary '''
-        
-    #Check the array has values
-    if math.isnan(avgfluxarr[0]):
-        print('Array is empty')
-        return
-    #set up time variable for plot
-    t = np.linspace(1, 8, num=8)
-    years = ['05B', '06B', '07B', '08B', '09B', '10B', '11B', '12B']
-    
-    #Plot graph in new figure
+##Calculate varience for each row
+#def sigmasq(flux, baseerr):
+#    ''' Function that calculates the excess varience value for each row in an 
+#    array 
+#    Inputs:
+#        flux = array of fluxes from objects in a number of epochs 
+#        baseerr = array of errors that the mean error should be calculated from
+#    Output:
+#        sig = array of excess variance values for every object '''
+#    avgflux = np.nanmean(flux, axis=1)
+##    meanerr = np.nanmean(baseerr, axis=1)
+##    meanerrsq = np.square(meanerr)
+#    N = np.size(flux, axis=1)
+#    numobs = np.size(flux, axis=0)
+#    sig = [((flux[n, :]- avgflux[n])**2 - (baseerr[n,:])**2) for n in range(numobs)]# 
+#    sigsum = np.nansum(sig, axis=1)
+#    normsig = sigsum/(N)
+#    return normsig
+#
+#def normsigmasq(flux, baseerr):
+#    ''' Function that calculates the excess varience value for each row in an 
+#    array 
+#    Inputs:
+#        flux = array of fluxes from objects in a number of epochs 
+#        baseerr = array of errors that the mean error should be calculated from
+#    Output:
+#        sig = array of excess variance values for every object '''
+#    if np.shape(flux) == (0,8):
+#        return np.array([])
+#    avgflux = np.nanmean(flux, axis=1)
+#    N = np.size(flux, axis=1)
+#    numobs = np.size(flux, axis=0)
+#    sig = [((flux[n, :]- avgflux[n])**2 - (baseerr[n,:])**2) for n in range(numobs)]# 
+#    sigsum = np.nansum(sig, axis=1)
+#    normsig = sigsum/(N)
+#    return normsig
+#
+#def maximum_likelihood_fig(testmag, testmagerr, meanmag, posvar):
+#
+#    # Calculate likelihood curve
+#    L = np.array([np.nanprod((np.exp((-0.5*((testmag - meanmag)**2))/(
+#            testmagerr**2 + testsig**2)))/(((2*np.pi)**0.5)*
+#            (testmagerr**2 + testsig**2)**0.5)) for testsig in posvar])
+#    sig = float(posvar[L==np.nanmax(L)][0]) #sigma value at max L
+##    Lstd = np.std(L)
+##    idx = (np.abs(L+Lstd).argmin())
+##    sigstd = posvar[idx]
+##    err = np.abs(sig+sigstd)
+#    err = np.sqrt(np.average((posvar-np.average(posvar, weights=L))**2, weights=L))
 #    plt.figure()
-    ax = plt.axes()
-    plt.xticks(t, years)
-    if errarr == []:
-        ax.plot(t, avgfluxarr, shape, markersize=size, label=label)
-    else:
-        ax.errorbar(t, avgfluxarr, errarr, fmt=shape, label=label)
-    plt.xlabel('Semester')
-    plt.ylabel('Flux of object')
-    plt.title('Average light curve')
-#    plt.ylim(ymin = 6.3, ymax=7.2)
-    return ax
+#    plt.plot(posvar, L)
+#    plt.vlines(sig, np.min(L), np.max(L))
+#    plt.vlines(sig+err, np.min(L), np.max(L))
+#    return sig, err
+#
+#def maximum_likelihood(testmag, testmagerr, meanmag, posvar, n=None, printn=10):
+#    if n != None and n%printn == 0:
+#        print(n)
+#    # Calculate likelihood curve
+#    L = np.array([np.nanprod((np.exp((-0.5*((testmag - meanmag)**2))/(
+#            testmagerr**2 + testsig**2)))/(((2*np.pi)**0.5)*
+#            (testmagerr**2 + testsig**2)**0.5)) for testsig in posvar])
+#    sig = float(posvar[L==np.nanmax(L)][0]) #sigma value at max L
+#    if np.sum(L) == 0:
+#        return sig, np.nan
+#    else:
+#        err = np.sqrt(np.average((posvar-np.average(posvar, weights=L))**2, weights=L))
+#        return sig, err
 
-def normalise_flux(flux):
-    ''' Normalise each objects flux to its average value
-    Input:
-        flux = array of object flux values 
-    Output:
-        array of object flux values normalised to the average flux of the 
-        object '''
-    avgflux = np.mean(flux, axis=1)
-    return flux / avgflux[:,None]
 
-def normalise_flux_and_errors(flux, fluxerr):
-    ''' Normalise each objects flux to its average value
-    Input:
-        flux = array of object flux values 
-    Output:
-        array of object flux values normalised to the average flux of the 
-        object '''
-    avgflux = np.mean(flux, axis=1)
-    flux = flux/avgflux[:,None]
-    fluxerr = fluxerr/avgflux[:,None]
-    return flux, fluxerr
-
-def normalise_mag(mag):
-    ''' Normalise each objects flux to its average value
-    Input:
-        flux = array of object flux values 
-    Output:
-        array of object flux values normalised to the average flux of the 
-        object '''
-    avgflux = np.mean(mag, axis=1)
-    diff = avgflux - 1
-    return mag - diff[:,None]
-
-def no99(fluxn, tbdata):
-    fluxn[fluxn == 99] = np.nan
-    mask = ~np.isnan(fluxn).any(axis=1)
-    fluxn = fluxn[mask]
-    tbdata = tbdata[mask]
-    return fluxn, tbdata
-
-def noneg(fluxn, tbdata):
-    fluxn[fluxn <= 0] = np.nan
-    mask = ~np.isnan(fluxn).any(axis=1)
-    fluxn = fluxn[mask]
-    tbdata = tbdata[mask]
-    return fluxn, tbdata
-
-def fluxlim(fluxn, tbdata, lim=3527):
-    fluxn, tbdata = noneg(fluxn, tbdata) #remove negative values first
-    avgflux = np.mean(fluxn, axis=1) #find average so only remove those whose average is less than limit
-    fluxn[avgflux <= lim] = np.nan
-    mask = ~np.isnan(fluxn).any(axis=1)
-    fluxn = fluxn[mask]
-    tbdata = tbdata[mask]
-    return fluxn, tbdata
-
-def semfluxlim(fluxn, tbdata):
+#
+#def fluxbin(min, max, flux, tbdata):
+#    ''' Separate a flux array into a bin depending on the average flux of the
+#    object 
+#    Inputs:
+#        min = the minimum flux value for the bin
+#        max = the maximum flux value for the bin
+#        flux = the array for fluxes for the object
+#    Output:
+#        fluxbin = the array of fluxes for objects whose average flux is within 
+#                    the limits of the bin '''
+#    avgflux = np.mean(flux, axis=1)
+#    bina = avgflux >= min
+#    binb = avgflux < max
+#    bin = bina*binb
+#    fluxbin = flux[bin]
+#    tbdata = tbdata[bin]
+#    return fluxbin, tbdata
+#
+#def fluxbinerr(min, max, flux, fluxerr):
+#    ''' Separate a flux array into a bin depending on the average flux of the
+#    object 
+#    Inputs:
+#        min = the minimum flux value for the bin
+#        max = the maximum flux value for the bin
+#        flux = the array for fluxes for the object
+#        fluxerr = the array for flux errors for the object
+#    Output:
+#        fluxbin = the array of fluxes for objects whose average flux is within 
+#                    the limits of the bin 
+#        fluxerrbin = the array of flux errors for objects whose average flux is 
+#                    within the limits of the bin '''
+#    avgflux = np.mean(flux, axis=1)
+#    bina = avgflux >= min
+#    binb = avgflux < max
+#    bin = bina*binb
+#    fluxbin = flux[bin]
+#    fluxerrbin = fluxerr[bin]
+#    return fluxbin, fluxerrbin
+#
+#def avg_lightcurve(avgfluxarr, errarr=[], shape='o', size=None, label=None):
+#    ''' Plot light curves for a provided set of fluxes rather than extracting
+#    a certain objects fluxes from a larger array.
+#    Input:
+#        avgfluxarr = array of 8 semester flux values
+#    Output:
+#        ax = axes handle so the plot can be added to if necessary '''
+#        
+#    #Check the array has values
+#    if math.isnan(avgfluxarr[0]):
+#        print('Array is empty')
+#        return
+#    #set up time variable for plot
+#    t = np.linspace(1, 8, num=8)
+#    years = ['05B', '06B', '07B', '08B', '09B', '10B', '11B', '12B']
+#    
+#    #Plot graph in new figure
+##    plt.figure()
+#    ax = plt.axes()
+#    plt.xticks(t, years)
+#    if errarr == []:
+#        ax.plot(t, avgfluxarr, shape, markersize=size, label=label)
+#    else:
+#        ax.errorbar(t, avgfluxarr, errarr, fmt=shape, label=label)
+#    plt.xlabel('Semester')
+#    plt.ylabel('Flux of object')
+#    plt.title('Average light curve')
+##    plt.ylim(ymin = 6.3, ymax=7.2)
+#    return ax
+#
+#def normalise_flux(flux):
+#    ''' Normalise each objects flux to its average value
+#    Input:
+#        flux = array of object flux values 
+#    Output:
+#        array of object flux values normalised to the average flux of the 
+#        object '''
+#    avgflux = np.mean(flux, axis=1)
+#    return flux / avgflux[:,None]
+#
+#def normalise_flux_and_errors(flux, fluxerr):
+#    ''' Normalise each objects flux to its average value
+#    Input:
+#        flux = array of object flux values 
+#    Output:
+#        array of object flux values normalised to the average flux of the 
+#        object '''
+#    avgflux = np.mean(flux, axis=1)
+#    flux = flux/avgflux[:,None]
+#    fluxerr = fluxerr/avgflux[:,None]
+#    return flux, fluxerr
+#
+#def normalise_mag(mag):
+#    ''' Normalise each objects flux to its average value
+#    Input:
+#        flux = array of object flux values 
+#    Output:
+#        array of object flux values normalised to the average flux of the 
+#        object '''
+#    avgflux = np.mean(mag, axis=1)
+#    diff = avgflux - 1
+#    return mag - diff[:,None]
+#
+#def no99(fluxn, tbdata):
+#    fluxn[fluxn == 99] = np.nan
+#    mask = ~np.isnan(fluxn).any(axis=1)
+#    fluxn = fluxn[mask]
+#    tbdata = tbdata[mask]
+#    return fluxn, tbdata
+#
+#def noneg(fluxn, tbdata):
+#    fluxn[fluxn <= 0] = np.nan
+#    mask = ~np.isnan(fluxn).any(axis=1)
+#    fluxn = fluxn[mask]
+#    tbdata = tbdata[mask]
+#    return fluxn, tbdata
+#
+#def fluxlim(fluxn, tbdata, lim=3527):
 #    fluxn, tbdata = noneg(fluxn, tbdata) #remove negative values first
-    limits = [2920.74, 6917.62, 4023.65, 5613.71, 
-              1985.52, 2725.65, 2111.91, 1915.96]
-    for n, lim in enumerate(limits):
-        fluxn[:,n][fluxn[:,n] < lim] = np.nan        
-    mask = ~np.isnan(fluxn).any(axis=1)
-    fluxn = fluxn[mask]
-    tbdata = tbdata[mask]
-    return fluxn, tbdata
+#    avgflux = np.mean(fluxn, axis=1) #find average so only remove those whose average is less than limit
+#    fluxn[avgflux <= lim] = np.nan
+#    mask = ~np.isnan(fluxn).any(axis=1)
+#    fluxn = fluxn[mask]
+#    tbdata = tbdata[mask]
+#    return fluxn, tbdata
+#
+#def semfluxlim(fluxn, tbdata):
+##    fluxn, tbdata = noneg(fluxn, tbdata) #remove negative values first
+#    limits = [2920.74, 6917.62, 4023.65, 5613.71, 
+#              1985.52, 2725.65, 2111.91, 1915.96]
+#    for n, lim in enumerate(limits):
+#        fluxn[:,n][fluxn[:,n] < lim] = np.nan        
+#    mask = ~np.isnan(fluxn).any(axis=1)
+#    fluxn = fluxn[mask]
+#    tbdata = tbdata[mask]
+#    return fluxn, tbdata
 
 def onpickchanonly(event):
     ''' Function that plots the lightcurve of an object when it is clicked on 
@@ -1588,93 +1596,93 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
     return fig, vary
 
 
-def psf_correct_flux(baseflux, initflux, avgtype):
-    ''' Function that applies a fractional PSF correction to initflux, based on
-    the constant required to correct an epochs average flux to the overall 
-    average flux in the baseflux array.
-    i.e. if doing a correction based on all objects for objects in the chandra
-    data then baseflux = flux and initflux = fluxchan.
-    If doing a correction based on the stellar fluxes for all objects in the 
-    field then baseflux = sflux and initflux = flux. 
-    Basetype must be defined as either 'all' or 'star' so that the mean value
-    can be used for all objects and the median value can be used for stellar 
-    objects 
-    Inputs:
-        baseflux = flux array to base the corrections on
-        initflux = flux array to be corrected
-        basetype = either 'mean' or 'median' which dictate if the mean or 
-                    median value is used for the correction 
-    Output:
-        Flux array with values crudely corrected for differences in seeing
-        (average flux should now be the same for each epoch). '''
-    if avgtype == 'mean':
-        avgfluxperepoch = np.mean(baseflux, axis=0)#for UDS
-        avgflux = np.mean(baseflux)
-        const = avgflux/avgfluxperepoch
-    elif avgtype == 'median':
-        avgfluxperepoch = np.median(baseflux, axis=0)#for UDS
-        avgflux = np.median(baseflux)
-        const = avgflux/avgfluxperepoch
-    else:
-        print('Invalid basetype')
-        return
-    return initflux * const[None,:]
-
-def psf_correct_mag(basemag, initmag, avgtype):
-    ''' Function that applies a fractional PSF correction to initflux, based on
-    the constant required to correct an epochs average flux to the overall 
-    average flux in the baseflux array.
-    i.e. if doing a correction based on all objects for objects in the chandra
-    data then baseflux = flux and initflux = fluxchan.
-    If doing a correction based on the stellar fluxes for all objects in the 
-    field then baseflux = sflux and initflux = flux. 
-    Basetype must be defined as either 'all' or 'star' so that the mean value
-    can be used for all objects and the median value can be used for stellar 
-    objects 
-    Inputs:
-        baseflux = flux array to base the corrections on
-        initflux = flux array to be corrected
-        basetype = either 'mean' or 'median' which dictate if the mean or 
-                    median value is used for the correction 
-    Output:
-        Flux array with values crudely corrected for differences in seeing
-        (average flux should now be the same for each epoch). '''
-    if avgtype == 'mean':
-        avgfluxperepoch = np.mean(basemag, axis=0)#for UDS
-        avgflux = np.mean(basemag)
-        const = avgflux-avgfluxperepoch
-    elif avgtype == 'median':
-        avgfluxperepoch = np.median(basemag, axis=0)#for UDS
-        avgflux = np.median(basemag)
-        const = avgflux-avgfluxperepoch
-    else:
-        print('Invalid basetype')
-        return
-    return initmag + const[None,:]
-
-def err_correct(flux, fluxerr, fluxnew):
-    ''' Function that applies a correction to the array of error values that 
-    matches the correction applied to the corresponding array of fluxes.
-    Inputs:
-        flux = initial flux array before any corrections were applied
-        fluxerr = initial flux err array
-        fluxcorr = array of fluxes that have been corrected
-    Output:
-        Flux error array with values crudely corrected '''
-        
-    return fluxnew * (fluxerr/flux)
-
-def err_correct_flux(oldflux, fluxerr):
-    ''' Function that applies a correction to the array of error values that 
-    matches the correction applied to the corresponding array of fluxes.
-    Inputs:
-        flux = initial flux array before any corrections were applied
-        fluxerr = initial flux err array
-        fluxcorr = array of fluxes that have been corrected
-    Output:
-        Flux error array with values crudely corrected '''
-    avgflux = np.mean(oldflux, axis=1)
-    return fluxerr/avgflux[:,None]
+#def psf_correct_flux(baseflux, initflux, avgtype):
+#    ''' Function that applies a fractional PSF correction to initflux, based on
+#    the constant required to correct an epochs average flux to the overall 
+#    average flux in the baseflux array.
+#    i.e. if doing a correction based on all objects for objects in the chandra
+#    data then baseflux = flux and initflux = fluxchan.
+#    If doing a correction based on the stellar fluxes for all objects in the 
+#    field then baseflux = sflux and initflux = flux. 
+#    Basetype must be defined as either 'all' or 'star' so that the mean value
+#    can be used for all objects and the median value can be used for stellar 
+#    objects 
+#    Inputs:
+#        baseflux = flux array to base the corrections on
+#        initflux = flux array to be corrected
+#        basetype = either 'mean' or 'median' which dictate if the mean or 
+#                    median value is used for the correction 
+#    Output:
+#        Flux array with values crudely corrected for differences in seeing
+#        (average flux should now be the same for each epoch). '''
+#    if avgtype == 'mean':
+#        avgfluxperepoch = np.mean(baseflux, axis=0)#for UDS
+#        avgflux = np.mean(baseflux)
+#        const = avgflux/avgfluxperepoch
+#    elif avgtype == 'median':
+#        avgfluxperepoch = np.median(baseflux, axis=0)#for UDS
+#        avgflux = np.median(baseflux)
+#        const = avgflux/avgfluxperepoch
+#    else:
+#        print('Invalid basetype')
+#        return
+#    return initflux * const[None,:]
+#
+#def psf_correct_mag(basemag, initmag, avgtype):
+#    ''' Function that applies a fractional PSF correction to initflux, based on
+#    the constant required to correct an epochs average flux to the overall 
+#    average flux in the baseflux array.
+#    i.e. if doing a correction based on all objects for objects in the chandra
+#    data then baseflux = flux and initflux = fluxchan.
+#    If doing a correction based on the stellar fluxes for all objects in the 
+#    field then baseflux = sflux and initflux = flux. 
+#    Basetype must be defined as either 'all' or 'star' so that the mean value
+#    can be used for all objects and the median value can be used for stellar 
+#    objects 
+#    Inputs:
+#        baseflux = flux array to base the corrections on
+#        initflux = flux array to be corrected
+#        basetype = either 'mean' or 'median' which dictate if the mean or 
+#                    median value is used for the correction 
+#    Output:
+#        Flux array with values crudely corrected for differences in seeing
+#        (average flux should now be the same for each epoch). '''
+#    if avgtype == 'mean':
+#        avgfluxperepoch = np.mean(basemag, axis=0)#for UDS
+#        avgflux = np.mean(basemag)
+#        const = avgflux-avgfluxperepoch
+#    elif avgtype == 'median':
+#        avgfluxperepoch = np.median(basemag, axis=0)#for UDS
+#        avgflux = np.median(basemag)
+#        const = avgflux-avgfluxperepoch
+#    else:
+#        print('Invalid basetype')
+#        return
+#    return initmag + const[None,:]
+#
+#def err_correct(flux, fluxerr, fluxnew):
+#    ''' Function that applies a correction to the array of error values that 
+#    matches the correction applied to the corresponding array of fluxes.
+#    Inputs:
+#        flux = initial flux array before any corrections were applied
+#        fluxerr = initial flux err array
+#        fluxcorr = array of fluxes that have been corrected
+#    Output:
+#        Flux error array with values crudely corrected '''
+#        
+#    return fluxnew * (fluxerr/flux)
+#
+#def err_correct_flux(oldflux, fluxerr):
+#    ''' Function that applies a correction to the array of error values that 
+#    matches the correction applied to the corresponding array of fluxes.
+#    Inputs:
+#        flux = initial flux array before any corrections were applied
+#        fluxerr = initial flux err array
+#        fluxcorr = array of fluxes that have been corrected
+#    Output:
+#        Flux error array with values crudely corrected '''
+#    avgflux = np.mean(oldflux, axis=1)
+#    return fluxerr/avgflux[:,None]
 
 def mod_z_score(arr):
     medx = np.median(arr)

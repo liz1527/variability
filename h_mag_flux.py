@@ -12,7 +12,7 @@ Created as part of a restucture of my code to make functions easier to find
 @author: ppxee
 """
 import numpy as np #for handling arrays
-import quad_funcs
+import field_funcs # to allow error creation by quadrant
 
 
 def flux_stacks(tbdata, aper=5):
@@ -189,8 +189,8 @@ def flux4_stacks(tbdata):
     Output:
         flux = an array with 8 columns containing flux values for each year '''
         
-    flux = np.stack(([#tbdata['FLUX_APER_05B'][:,3], t
-                      bdata['FLUX_APER_06B'][:,3],
+    flux = np.stack(([#tbdata['FLUX_APER_05B'][:,3], 
+                      tbdata['FLUX_APER_06B'][:,3],
                 tbdata['FLUX_APER_07B'][:,3], tbdata['FLUX_APER_08B'][:,3],
                 tbdata['FLUX_APER_09B'][:,3], tbdata['FLUX_APER_10B'][:,3], 
                 tbdata['FLUX_APER_11B'][:,3], tbdata['FLUX_APER_12B'][:,3]]), axis=1)
@@ -307,7 +307,7 @@ def create_quad_error_array_H(sigtb, tbdata, aper=5, quadoutput=False):
     newquaddata = {}
     
     ### Get quadrant data ###
-    quaddata = quad_funcs.quadrants(tbdata, '05B')
+    quaddata = field_funcs.quadrants(tbdata, '05B')
     for n, qdata in enumerate(quaddata):
         ### create flux stacks and find average
         qflux = flux_stacks(qdata, aper)

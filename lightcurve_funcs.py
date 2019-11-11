@@ -10,6 +10,8 @@ Module containing functions that plot lightcurves
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.table import Table #for handling tables
+import correction_funcs
+import k_mag_flux
 
 def lightcurve4(ob, fitsdata)  :
     ''' Function that plots the light curve of an object in terms of its flux 
@@ -40,8 +42,8 @@ def lightcurve4(ob, fitsdata)  :
                     obdata['FLUXERR_APER_11B'][:,4],obdata['FLUXERR_APER_12B'][:,4]])
     
     # normalise and correct for seeing
-    flux = psf_correct(flux, flux, 'mean')
-    fluxerr = psf_correct(flux, fluxerr, 'mean')
+    flux = correction_funcs.psf_correct_flux(flux, flux, 'mean')
+    fluxerr = correction_funcs.psf_correct_flux(flux, fluxerr, 'mean')
     avgflux =np.mean(flux)
     normflux = flux/avgflux
     normerr = fluxerr/avgflux
@@ -101,15 +103,19 @@ def lightcurve5(ob, fitsdata)  :
     plt.title('Light curve for object number %i' % ob)
     return
 
-def lightcurveflux5(ob, fitsdata, corrected=False, new_fig=True) :
+def lightcurveflux5(ob, fitsdata, new_fig=True) :
     ''' Function that plots the light curve of an object in terms of its flux 
-    in an aperture 5 pixels across (i.e. 3 arcsec in diameter) 
+    in an aperture 5 pixels across (i.e. 3 arcsec in diameter) in the K-band
     Inputs:
         ob = the ID of the object that you want the lightcurve from
         fitsdata = the original catalogue of data that the curve will be 
                     plotted from 
+        new_fig = bool, indicates whether to open a new figure or plot in the 
+                  most recently used figure. Default is True, i.e. plot in new
+                  figure
     Output:
-        None '''
+        None 
+        '''
     sigtb = Table.read('quad_epoch_sigma_table_extra_clean.fits')
 
     #Get data for the object called
@@ -124,17 +130,8 @@ def lightcurveflux5(ob, fitsdata, corrected=False, new_fig=True) :
                     obdata['FLUX_APER_07B'][:,4],obdata['FLUX_APER_08B'][:,4],
                     obdata['FLUX_APER_09B'][:,4],obdata['FLUX_APER_10B'][:,4], 
                     obdata['FLUX_APER_11B'][:,4],obdata['FLUX_APER_12B'][:,4]])
-    flux, fluxerr, obdata = create_quad_error_array(sigtb, obdata)
-#    if corrected == False:
-#        fluxerr = np.array([obdata['FLUXERR_APER_05B'][:,4],obdata['FLUXERR_APER_06B'][:,4],
-#                            obdata['FLUXERR_APER_07B'][:,4],obdata['FLUXERR_APER_08B'][:,4],
-#                            obdata['FLUXERR_APER_09B'][:,4],obdata['FLUXERR_APER_10B'][:,4], 
-#                            obdata['FLUXERR_APER_11B'][:,4],obdata['FLUXERR_APER_12B'][:,4]])
-#    else:
-#        fluxerr = np.array([obdata['FLUXERR_APER_05B_CORR'],obdata['FLUXERR_APER_06B_CORR'],
-#                            obdata['FLUXERR_APER_07B_CORR'],obdata['FLUXERR_APER_08B_CORR'],
-#                            obdata['FLUXERR_APER_09B_CORR'],obdata['FLUXERR_APER_10B_CORR'], 
-#                            obdata['FLUXERR_APER_11B_CORR'],obdata['FLUXERR_APER_12B_CORR']])
+    
+    flux, fluxerr, obdata = k_mag_flux.create_quad_error_array(sigtb, obdata)
     
     #set up time variable for plot
     t = np.linspace(1, 8, num=8)
@@ -151,3 +148,38 @@ def lightcurveflux5(ob, fitsdata, corrected=False, new_fig=True) :
     plt.ylabel('K-band flux of object')
     plt.title('Light curve for object number %i' % ob)
     return
+
+def avg_lightcurve(avgfluxarr, errarr=[], shape='o', size=None, label=None):
+    ''' Plot light curves for a provided set of fluxes rather than extracting
+    a certain objects fluxes from a larger array.
+    Input:
+        avgfluxarr = array of flux values
+        errarr = array of flux errors. Default is empty so not required
+        shape = shape of marker on plot. Default is filled circle
+        size = size of marker on plot. Default is None so that normal is used
+        label = label to go in legend of plot. Default is None
+    Output:
+        ax = axes handle so the plot can be added to if necessary 
+    '''
+        
+    #Check the array has values
+    if np.isnan(avgfluxarr[0]):
+        print('Array is empty')
+        return
+    #set up time variable for plot
+    t = np.linspace(1, 8, num=8)
+    years = ['05B', '06B', '07B', '08B', '09B', '10B', '11B', '12B']
+    
+    #Plot graph in new figure
+#    plt.figure()
+    ax = plt.axes()
+    plt.xticks(t, years)
+    if errarr == []:
+        ax.plot(t, avgfluxarr, shape, markersize=size, label=label)
+    else:
+        ax.errorbar(t, avgfluxarr, errarr, fmt=shape, label=label)
+    plt.xlabel('Semester')
+    plt.ylabel('Flux of object')
+    plt.title('Average light curve')
+#    plt.ylim(ymin = 6.3, ymax=7.2)
+    return ax

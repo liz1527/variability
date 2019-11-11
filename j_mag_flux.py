@@ -11,8 +11,8 @@ Created as part of a restucture of my code to make functions easier to find
 
 @author: ppxee
 """
-import numpy as np #for handling arrays
-import quad_funcs
+import numpy as np # for handling arrays
+import field_funcs # to allow error creation by quadrant
 
 def flux_stacks(tbdata, aper=5):
     ''' Function that takes a catalogue of flux data from the sextracor output
@@ -292,7 +292,7 @@ def create_quad_error_array_J(sigtb, tbdata, aper=5, quadoutput=False):
     newquaddata = {}
     
     ### Get quadrant data ###
-    quaddata = quad_funcs.quadrants(tbdata, '05B')
+    quaddata = field_funcs.quadrants(tbdata, '05B')
     for n, qdata in enumerate(quaddata):
         ### create flux stacks and find average
         qflux = flux_stacks(qdata, aper)
