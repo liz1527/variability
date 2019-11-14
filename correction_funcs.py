@@ -109,3 +109,25 @@ def err_correct_flux(oldflux, fluxerr):
         Flux error array with values crudely corrected '''
     avgflux = np.mean(oldflux, axis=1)
     return fluxerr/avgflux[:,None]
+
+def radial_profile(data, center):
+    ''' Function to find the radial profile of a PSF. This can be used to 
+    determine the sigma for the convolution kernel.
+    Inputs:
+        data = array of PSF data
+        center = where the centre of the radial profile should be
+    Outputs:
+        radialprofile = the radial profile of that image, i.e. average flux at
+                        specific radii of the image
+    '''
+    y, x = np.indices((data.shape)) #create coordinate grid
+    r = np.sqrt((x - center[0])**2 + (y - center[1])**2) #get radius values for grid
+    r = r.astype(np.int)
+
+    tbin = np.bincount(r.ravel(), data.ravel()) # counts number of times value
+                                                # of radius occurs in the psf
+                                                # weighted by the data
+    nr = np.bincount(r.ravel()) # counts number of radii values in psf
+    radialprofile = tbin / nr # as weighted is r*data then get profile by 
+                              # dividing by unweighted counts of r values.
+    return radialprofile 

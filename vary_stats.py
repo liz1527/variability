@@ -10,7 +10,9 @@ Module containing functions for the variability statisitics used
 
 import numpy as np
 import matplotlib.pyplot as plt
+from astropy.stats import median_absolute_deviation
 
+import flux_funcs #for binning/editting flux arrays
 
 def sigmasq(flux, baseerr):
     ''' Function that calculates the excess varience value for each row in an 
@@ -103,3 +105,70 @@ def maximum_likelihood(testmag, testmagerr, meanmag, posvar, n=None, printn=10):
     else:
         err = np.sqrt(np.average((posvar-np.average(posvar, weights=L))**2, weights=L))
         return sig, err
+
+def my_chisquare_err(flux, fluxerr):
+    ''' Function that finds the chi square value of each light curve when passed
+    an array of flux values and corresponding array of flux errors. It assumes
+    each row is a single lightcurves and tests against the null hypothesis that 
+    the light curve is flat with a value equal to the mean value of the actual 
+    lightcurve.
+    Inputs:
+        flux = a 2D array of flux values where each row is a lightcurve for a 
+               single object
+        fluxerr = a 2D array of flux errors that correspond to the flux array
+    Outputs:
+        chi = a 1D array of chi sq values for each row in the flux arrays
+    '''
+#    flux, fluxerr = normalise_flux_and_errors(flux, fluxerr)
+    meanflux = np.nanmean(flux, axis=1)
+    top = np.square(flux-meanflux[:,None])
+    bot = np.square(fluxerr)
+    chi = np.nansum(top/bot, axis=1)
+    return chi
+
+def mod_z_score(arr):
+    '''Function to find the modified z score of a given array, used to find
+    variables in my first pass at this project
+    Inputs:
+        arr = array to find mod-z of
+    Outputs:
+        zvalues = array of z-values for that array
+    '''
+    medx = np.median(arr)
+    mad = median_absolute_deviation(arr)
+    zvalues = np.array([(0.6745*(x-medx))/mad for x in arr])
+    return zvalues
+
+def find_outliers(flux, tbdata, bins, threshold=6):
+    '''Function used to find outliers when using MAD to select variables. It 
+    splits the data into flux bins, calulates all the MAD values in that bin
+    and then uses the modified z score to find which objects had disproportionately
+    high MAD values for that bin. Anything above a given threshold was said to
+    be an outlier.
+    Inputs:
+        flux = a 2D array of flux values where each row is a lightcurve for a 
+               single object
+        tbdata = original data table for those flux values
+        bins = array of bin edges
+        threshold = threshold at which everything with a mod-z score above that 
+                    value is said to be an outlier. Default is 6
+    Outputs:
+        outliers = bool array defining which objects are outliers
+        tbnew = table of data in the same order as outliers and allmodz so easy
+                to compare/apply the boolean
+        allmodz = array of z values for all the objects
+    '''
+    ### Bin data ###
+    allmodz = []
+    tbnew = np.recarray([0], dtype=tbdata.dtype, formats=tbdata.formats)
+    for n, binedge in enumerate(bins):
+        if n==np.size(bins)-1:
+            break
+        fluxbin1, tbbin1 = flux_funcs.fluxbin(binedge, bins[n+1], flux, tbdata)
+        #calulate mad values in the bins
+        mad1 = median_absolute_deviation(fluxbin1, axis=1) #for UDS
+        modz = mod_z_score(mad1)
+        tbnew = np.hstack([tbnew, tbbin1])
+        allmodz = np.append(allmodz, modz)
+    outliers = allmodz>=threshold
+    return outliers, tbnew, allmodz
