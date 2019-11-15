@@ -73,3 +73,29 @@ def chandra_only(tbdata):
     newtbdata = tbdata[mask]
     
     return newtbdata
+
+
+def remove_edges(tbdata):
+    ''' Function that masks the edges of the image as there were a large number
+    of variable in this area originally so must be too much noise here.
+    Inputs:
+        tbdata = orginal table of data covering the whole field
+    Ouputs:
+        tbdata = table of date with objects need the edges removed
+    '''
+    
+    ### Set X limits ###
+    x = tbdata['X_IMAGE_05B']
+    xmask1 = x > 1000
+    xmask2 = x < 24000
+    xmask = xmask1 * xmask2.astype(bool)
+    tbdata = tbdata[xmask]
+    
+    ### Set Y limits ###
+    y = tbdata['Y_IMAGE_05B']
+    ymask1 = y > 2000
+    ymask2 = y < 24500
+    ymask = ymask1 * ymask2.astype(bool)
+    tbdata = tbdata[ymask]
+    
+    return tbdata

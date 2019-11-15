@@ -46,6 +46,32 @@ import flux_funcs #for changes to flux/mag stacks
 
 import selection_plot_funcs #for plotting main selection plot + onclicks
 
+### Define miscellanseous functions that don't fit in a sub-module ###
+def get_z(tbdata):
+    ''' Get z with spectroscopic data where possible 
+    Inputs:
+        tbdata = table of data for all the objects we want z for (should contain
+                 DR11 data in order to get z)
+    Outputs:
+        z = array of redshifts with spectroscopic redshifts where possible and 
+            z_p where spec is not available.
+    '''
+    z = tbdata['z_spec']
+    z[z==-1] = tbdata['z_p'][z==-1]
+    return z
+
+def get_jansky_flux(tbdata):
+    ''' Function to get flux in Janskys from the DR11 AB magnitude of an object 
+    Inputs:
+        tbdata = table of DR11 data for the objects you want Janksy fluxes for
+    Outputs:
+        meanflux = flux in Janksky calculated from the AB magnitude in 2 arcsec
+                   aperture from teh DR11 catalogue.
+    '''
+    meanmag = tbdata['KMAG_20']
+    meanflux = 10**(23-((meanmag+48.6)/2.5))
+    return meanflux
+
 ### Define Functions ###
 #def flux_stacks(tbdata, aper=5):
 #    ''' Function that takes a catalogue of flux data from the sextracor output
@@ -1864,25 +1890,25 @@ def no_ticks():
 #        
 ##    plt.plot(bins[0:np.size(bins)-1], allmedstat, 'k--')
 #    return bins, allmedstat
-
-def my_chisquare_char(flux, char_var):
-    ''' Function that calculates the chi^2 of an object using the characteristic
-    variance for its average flux as the error '''
-    fluxn = normalise_flux(flux)
-    meanflux = np.nanmean(fluxn, axis=1)
-    top = np.square(fluxn-meanflux[:,None])
-    chi = np.nansum(top/char_var, axis=1)
-    return chi
-
-def my_chisquare_epoch(flux, sigsq):
-    ''' Function that calculates the chi^2 of an object using the sigma 
-    calculated from the spread of data points for its average flux as the error '''
-    sigsqn = np.tile(sigsq, [len(flux), 1])
-    fluxn, sigsqn = normalise_flux_and_errors(flux, sigsqn)
-    meanflux = np.nanmean(fluxn, axis=1)
-    top = np.square(fluxn-meanflux[:,None])
-    chi = np.nansum(top/(sigsqn**2), axis=1)
-    return chi
+#
+#def my_chisquare_char(flux, char_var):
+#    ''' Function that calculates the chi^2 of an object using the characteristic
+#    variance for its average flux as the error '''
+#    fluxn = normalise_flux(flux)
+#    meanflux = np.nanmean(fluxn, axis=1)
+#    top = np.square(fluxn-meanflux[:,None])
+#    chi = np.nansum(top/char_var, axis=1)
+#    return chi
+#
+#def my_chisquare_epoch(flux, sigsq):
+#    ''' Function that calculates the chi^2 of an object using the sigma 
+#    calculated from the spread of data points for its average flux as the error '''
+#    sigsqn = np.tile(sigsq, [len(flux), 1])
+#    fluxn, sigsqn = normalise_flux_and_errors(flux, sigsqn)
+#    meanflux = np.nanmean(fluxn, axis=1)
+#    top = np.square(fluxn-meanflux[:,None])
+#    chi = np.nansum(top/(sigsqn**2), axis=1)
+#    return chi
 
 
 #def quadrants(initdata,sem):
@@ -1912,56 +1938,45 @@ def my_chisquare_epoch(flux, sigsq):
 #    quad4data = initdata[mask1*mask2]
 #    
 #    return quad1data, quad2data, quad3data, quad4data
-
-def remove_edges(tbdata):
-    
-    ### Set X limits ###
-    x = tbdata['X_IMAGE_05B']
-    xmask1 = x > 1000
-    xmask2 = x < 24000
-    xmask = xmask1 * xmask2.astype(bool)
-    tbdata = tbdata[xmask]
-    
-    ### Set Y limits ###
-    y = tbdata['Y_IMAGE_05B']
-    ymask1 = y > 2000
-    ymask2 = y < 24500
-    ymask = ymask1 * ymask2.astype(bool)
-    tbdata = tbdata[ymask]
-    
-    return tbdata
-
-def flux_split(tbdata, half):
-    ''' Function to give either the sources greater that 1e4 or less than 1e4'''
-    flux = flux4_stacks(tbdata)
-    meanflux = np.nanmean(flux, axis=1)
-    if half == 'upper':
-        tbdata = tbdata[meanflux >= 8e3]
-    elif half == 'lower':
-        tbdata = tbdata[meanflux < 8e3]
-    else:
-        print('Invalid half string, should be upper or lower')
-    return tbdata
-
-def get_z(tbdata):
-    ''' Get z with spec where possible '''
-    z = tbdata['z_spec']
-    z[z==-1] = tbdata['z_p'][z==-1]
-    return z
-
-def get_jansky_flux(tbdata):
-    ''' Function to get flux in Janskys from the DR11 AB magnitude of an object '''
-    meanmag = tbdata['KMAG_20']
-    meanflux = 10**(23-((meanmag+48.6)/2.5))
-    return meanflux
+#
+#def remove_edges(tbdata):
+#    
+#    ### Set X limits ###
+#    x = tbdata['X_IMAGE_05B']
+#    xmask1 = x > 1000
+#    xmask2 = x < 24000
+#    xmask = xmask1 * xmask2.astype(bool)
+#    tbdata = tbdata[xmask]
+#    
+#    ### Set Y limits ###
+#    y = tbdata['Y_IMAGE_05B']
+#    ymask1 = y > 2000
+#    ymask2 = y < 24500
+#    ymask = ymask1 * ymask2.astype(bool)
+#    tbdata = tbdata[ymask]
+#    
+#    return tbdata
+#
+#def flux_split(tbdata, half):
+#    ''' Function to give either the sources greater that 1e4 or less than 1e4'''
+#    flux = flux4_stacks(tbdata)
+#    meanflux = np.nanmean(flux, axis=1)
+#    if half == 'upper':
+#        tbdata = tbdata[meanflux >= 8e3]
+#    elif half == 'lower':
+#        tbdata = tbdata[meanflux < 8e3]
+#    else:
+#        print('Invalid half string, should be upper or lower')
+#    return tbdata
 
 
-def remove_low_flux(flux, tbdata):
-    ''' 
-        Function to remove objects that average below the detection limit
-    '''
-    avgflux = np.nanmean(flux, axis=1)
-    mask = avgflux >= 10**((30-25.3)/2.5)
-    flux = flux[mask]
-    tbdata = tbdata[mask]
-    return flux, tbdata
+#
+#def remove_low_flux(flux, tbdata):
+#    ''' 
+#        Function to remove objects that average below the detection limit
+#    '''
+#    avgflux = np.nanmean(flux, axis=1)
+#    mask = avgflux >= 10**((30-25.3)/2.5)
+#    flux = flux[mask]
+#    tbdata = tbdata[mask]
+#    return flux, tbdata

@@ -19,15 +19,7 @@ from scipy import stats
 import vari_funcs #my module to help run code neatly
 #from scipy.stats import chisquare
 plt.close('all') #close any open plots
-def remove_low_flux(flux, tbdata):
-    ''' 
-        Function to remove objects that average below the detection limit
-    '''
-    avgflux = np.nanmean(flux, axis=1)
-    mask = avgflux >= 10**((30-25.3)/2.5)
-    flux = flux[mask]
-    tbdata = tbdata[mask]
-    return flux, tbdata
+
 ### Open the fits files and get data ###
 tbdata = fits.open('mag_flux_tables/K/mag_flux_table_best_extra_clean_no06.fits')[1].data
 chandata = fits.open('mag_flux_tables/K/xray_mag_flux_table_best_extra_clean_no06.fits')[1].data
@@ -35,9 +27,9 @@ sdata = fits.open('mag_flux_tables/K/stars_mag_flux_table_extra_clean_no06.fits'
 sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06_2arcsec.fits')
 
 ### Remove edges ###
-tbdata = vari_funcs.remove_edges(tbdata)
-chandata = vari_funcs.remove_edges(chandata)
-sdata = vari_funcs.remove_edges(sdata)
+tbdata = vari_funcs.field_funcs.remove_edges(tbdata)
+chandata = vari_funcs.field_funcs.remove_edges(chandata)
+sdata = vari_funcs.field_funcs.remove_edges(sdata)
 
 ## Create arrays of flux values ###
 flux = vari_funcs.k_mag_flux.flux_stacks(tbdata, aper=4)
@@ -45,13 +37,13 @@ fluxchan = vari_funcs.k_mag_flux.flux_stacks(chandata, aper=4)
 sflux = vari_funcs.k_mag_flux.flux_stacks(sdata, aper=4)
 
 ### remove values that are negative ###
-flux, tbdata = vari_funcs.noneg(flux, tbdata)
-fluxchan, chandata = vari_funcs.noneg(fluxchan, chandata)
-sflux, sdata = vari_funcs.noneg(sflux, sdata)
+flux, tbdata = vari_funcs.flux_funcs.noneg(flux, tbdata)
+fluxchan, chandata = vari_funcs.flux_funcs.noneg(fluxchan, chandata)
+sflux, sdata = vari_funcs.flux_funcs.noneg(sflux, sdata)
 
-#flux, tbdata = remove_low_flux(flux, tbdata)
-#fluxchan, chandata = remove_low_flux(fluxchan, chandata)
-#sflux, sdata = remove_low_flux(sflux, sdata)
+#flux, tbdata = vari_funcs.flux_funcs.nremove_low_flux(flux, tbdata)
+#fluxchan, chandata = vari_funcs.flux_funcs.nremove_low_flux(fluxchan, chandata)
+#sflux, sdata = vari_funcs.flux_funcs.nremove_low_flux(sflux, sdata)
 
 ### Get error arrays ###
 flux, fluxerr, tbdata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, tbdata, aper=4)
@@ -63,21 +55,21 @@ tbdata['X-ray'][tbdata['X-ray']==70] = False
 tbdata['X-ray'][tbdata['X-ray']==84] = True
 
 ### Check chisq plot looks correct ###
-fig,_ = vari_funcs.flux_variability_plot(flux, fluxchan, 'chisq', 
+fig,_ = vari_funcs.selection_plot_funcs.flux_variability_plot(flux, fluxchan, 'chisq', 
                                        fluxerr=fluxerr, chanerr=chanerr,
                                        starflux=sflux, starfluxerr=serr,
                                        #normalised=True, 
                                        stars=True, scale='log')
-fig.canvas.mpl_connect('pick_event', vari_funcs.onpickflux_2arcsec)
+fig.canvas.mpl_connect('pick_event', vari_funcs.selection_plot_funcs.onpickflux_2arcsec)
 
 devdata = fits.open('variable_tables/no06_variables_chi30_2arcsec_deviant_neg.fits')[1].data
 devflux, devfluxerr, devdata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, devdata, aper=4)
 devmean = np.nanmean(devflux, axis=1)
 
 ### Calculate chi^2 values ###
-chisq = vari_funcs.my_chisquare_err(flux, fluxerr)
-chanchisq = vari_funcs.my_chisquare_err(fluxchan, chanerr)
-devchisq = vari_funcs.my_chisquare_err(devflux, devfluxerr)
+chisq = vari_funcs.vary_stats.my_chisquare_err(flux, fluxerr)
+chanchisq = vari_funcs.vary_stats.my_chisquare_err(fluxchan, chanerr)
+devchisq = vari_funcs.vary_stats.my_chisquare_err(devflux, devfluxerr)
 
 #plt.plot(devmean, devchisq, 'kd', mfc='None', markersize=10)
 ### Select Variables as those with chisq > 22.458 and >50 ###
@@ -97,7 +89,7 @@ plt.tight_layout()
 #### Check if variables vanish if the most deviant semester is removed ###
 #varyflux = vari_funcs.k_mag_flux.flux5_stacks(varydata40)
 #varyflux, varyfluxerr, varydata40 = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, varydata40)
-#fluxn, fluxnerr = vari_funcs.normalise_flux_and_errors(varyflux, varyfluxerr)
+#fluxn, fluxnerr = vari_funcs.flux_funcs.normalise_flux_and_errors(varyflux, varyfluxerr)
 #diff = abs(fluxn - 1)
 #mask = np.argmax(diff, axis=1)
 #varyfluxnew = np.copy(varyflux)
@@ -105,8 +97,8 @@ plt.tight_layout()
 #varyfluxnew[np.arange(len(varyflux)),mask] = np.nan
 #varyfluxerrnew[np.arange(len(varyflux)),mask] = np.nan
 #
-#varychi = vari_funcs.my_chisquare_err(varyflux, varyfluxerr)
-#varychinew = vari_funcs.my_chisquare_err(varyfluxnew, varyfluxerrnew)
+#varychi = vari_funcs.vary_stats.my_chisquare_err(varyflux, varyfluxerr)
+#varychinew = vari_funcs.vary_stats.my_chisquare_err(varyfluxnew, varyfluxerrnew)
 #chidiff = varychi - varychinew
 ### Save new tables ###
 #save24 = Table(varydata24)
@@ -136,8 +128,8 @@ plt.tight_layout()
 #        binupp = np.nanmax(flux)
 #    else:
 #        binupp = binarr[n+1]
-#    binflux, bindata = vari_funcs.fluxbin(binedge, binupp, flux, tbdata) #bindata
-##    binsflux, binsdata = vari_funcs.fluxbin(binedge, binupp, sflux, sdata)
+#    binflux, bindata = vari_funcs.flux_funcs.fluxbin(binedge, binupp, flux, tbdata) #bindata
+##    binsflux, binsdata = vari_funcs.flux_funcs.fluxbin(binedge, binupp, sflux, sdata)
 #    binsizes[n] = len(bindata) #+ len(binsdata)
 ##    plt.vlines(binedge, 1e-2, 1e4, zorder=4)
 #    binmean[n] = np.nanmean(binflux)
@@ -145,7 +137,7 @@ plt.tight_layout()
 ##        continue
 #    ### get chi values within bin ###
 ##    binflux, binfluxerr, bindata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, bindata)
-##    binchisq = vari_funcs.my_chisquare_err(binflux, binfluxerr)
+##    binchisq = vari_funcs.vary_stat.my_chisquare_err(binflux, binfluxerr)
 ##    
 #    ### P value of 30 with dof=6 is 0.00003931 ###
 #    ### therefore false positives = binsize * P ###

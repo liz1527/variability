@@ -172,3 +172,38 @@ def find_outliers(flux, tbdata, bins, threshold=6):
         allmodz = np.append(allmodz, modz)
     outliers = allmodz>=threshold
     return outliers, tbnew, allmodz
+
+def my_chisquare_char(flux, char_var):
+    ''' Function that calculates the chi^2 of an object using the characteristic
+    variance for its average flux as the error 
+    Inputs:
+        flux = a 2D array of flux values where each row is a lightcurve for a 
+               single object. Must be an array of a single flux bin
+        char_var = charactaristic variance of that flux bin
+    Outputs:
+        chi: 1D array of chi squared values calculated using the characteristic
+             variance as the error.
+    '''
+    fluxn = flux_funcs.normalise_flux(flux)
+    meanflux = np.nanmean(fluxn, axis=1)
+    top = np.square(fluxn-meanflux[:,None])
+    chi = np.nansum(top/char_var, axis=1)
+    return chi
+
+def my_chisquare_epoch(flux, sigsq):
+    ''' Function that calculates the chi^2 of an object using the sigma 
+    calculated from the spread of data points for its average flux as the error 
+    Inputs:
+        flux = a 2D array of flux values where each row is a lightcurve for a 
+               single object. Must be an array of a single flux bin
+        sigsq = spread of flux values of that flux bin in each epoch
+    Outputs:
+        chi: 1D array of chi squared values calculated using the spread as the 
+             error.
+    '''
+    sigsqn = np.tile(sigsq, [len(flux), 1])
+    fluxn, sigsqn = flux_funcs.normalise_flux_and_errors(flux, sigsqn)
+    meanflux = np.nanmean(fluxn, axis=1)
+    top = np.square(fluxn-meanflux[:,None])
+    chi = np.nansum(top/(sigsqn**2), axis=1)
+    return chi

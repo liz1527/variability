@@ -31,7 +31,8 @@ def psf_correct_flux(baseflux, initflux, avgtype):
                     median value is used for the correction 
     Output:
         Flux array with values crudely corrected for differences in seeing
-        (average flux should now be the same for each epoch). '''
+        (average flux should now be the same for each epoch). 
+    '''
     if avgtype == 'mean':
         avgfluxperepoch = np.mean(baseflux, axis=0)#for UDS
         avgflux = np.mean(baseflux)
@@ -66,7 +67,8 @@ def psf_correct_mag(basemag, initmag, avgtype):
                     median value is used for the correction 
     Output:
         Flux array with values crudely corrected for differences in seeing
-        (average flux should now be the same for each epoch). '''
+        (average flux should now be the same for each epoch). 
+    '''
     if avgtype == 'mean':
         avgfluxperepoch = np.mean(basemag, axis=0)#for UDS
         avgflux = np.mean(basemag)
@@ -91,7 +93,8 @@ def err_correct(flux, fluxerr, fluxnew):
         fluxerr = initial flux err array
         fluxcorr = array of fluxes that have been corrected
     Output:
-        Flux error array with values crudely corrected '''
+        Flux error array with values crudely corrected 
+    '''
         
     return fluxnew * (fluxerr/flux)
 
@@ -106,7 +109,8 @@ def err_correct_flux(oldflux, fluxerr):
         fluxerr = initial flux err array
         fluxcorr = array of fluxes that have been corrected
     Output:
-        Flux error array with values crudely corrected '''
+        Flux error array with values crudely corrected 
+    '''
     avgflux = np.mean(oldflux, axis=1)
     return fluxerr/avgflux[:,None]
 

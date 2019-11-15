@@ -8,6 +8,7 @@ Module for functions that act on the flux or magnitude light curve arrays
 @author: ppxee
 """
 import numpy as np
+import k_mag_flux
 
 def normalise_flux(flux):
     ''' Normalise each objects flux so its average flux is 1
@@ -180,3 +181,40 @@ def fluxbinerr(min, max, flux, fluxerr):
     fluxbin = flux[bin]
     fluxerrbin = fluxerr[bin]
     return fluxbin, fluxerrbin
+
+def flux_split(tbdata, half):
+    ''' Function to give either the sources greater that 1e4 or less than 1e4
+    so that comparisons between the high and low flux variables can be made.
+    Inputs:
+        tbdata = full original table of data
+        half = 'upper' or 'lower' depending on whether objects with high or low
+               fluxes are required.
+    Outputs:
+        tbdata: table of data for whichever half was inputted
+    '''
+    flux = k_mag_flux.flux4_stacks(tbdata)
+    meanflux = np.nanmean(flux, axis=1)
+    if half == 'upper':
+        tbdata = tbdata[meanflux >= 8e3]
+    elif half == 'lower':
+        tbdata = tbdata[meanflux < 8e3]
+    else:
+        print('Invalid half string, should be upper or lower')
+    return tbdata
+
+def remove_low_flux(flux, tbdata):
+    ''' Function to remove objects that average below the detection limit of 
+    the survey.
+    Inputs:
+        flux = 2D array of flux values where each row is a light curve
+        tbdata = original table of data
+    Outputs:
+        flux = 2D array of flux values for all objects that are above the 
+               detection limit on average
+        tbdata = table of data for these objects
+    '''
+    avgflux = np.nanmean(flux, axis=1)
+    mask = avgflux >= 10**((30-25.3)/2.5)
+    flux = flux[mask]
+    tbdata = tbdata[mask]
+    return flux, tbdata

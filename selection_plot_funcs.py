@@ -18,7 +18,8 @@ from astropy.stats import median_absolute_deviation
 
 ### Import my modules ###
 import field_funcs #for restricting field
-import k_mag_flux #for creating lightcurves
+import k_mag_flux #for creating lightcurves in Ks
+import j_mag_flux #for creating lightcurves in J
 import flux_funcs #for removing bad flux values
 import lightcurve_funcs #for plotting lightcurves
 import correction_funcs #for crude psf corrections
@@ -364,6 +365,22 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
 
 
 def plot_median_line(fluxn, tbdata, statistic='MAD',createplot=True):
+    ''' Function to find (and plot a line showing) the median value for a 
+    variety of statistics across the flux range of the sample - useful when 
+    calculating uncertainties.
+    Inputs:
+        fluxn = 2D array of flux values where each line is the light curve of
+                an object
+        tbdata = table of data that corresponds to the fluxes given (same length)
+        statisitic = which statistic to find the median of. Options are MAD 
+                     ('MAD', default), excess variance ('excess'), standard
+                     deviation ('std'), variance ('var')
+        createplot = bool, defines whether or not to actually plot the median
+                     line onto the most recent plot. Default is True
+    Outputs:
+        bins = array denoting what the bin edges were
+        allmedstat = array of the median values for each bin
+    '''
     bins = np.array([13, 15])
     bins = np.append(bins, np.arange(16,24,0.2))
     bins = np.append(bins, [24])
@@ -378,17 +395,17 @@ def plot_median_line(fluxn, tbdata, statistic='MAD',createplot=True):
     #    print(binedge)
         if n==np.size(bins)-1:
             break
-        mag, bindata = fluxbin(binedge, bins[n+1], fluxn, tbdata) #bindata
+        mag, bindata = flux_funcs.fluxbin(binedge, bins[n+1], fluxn, tbdata) #bindata
         if statistic == 'excess':
-            magerr = fluxerr5_stacks(bindata) #make error array
-            nmag, nmagerr = normalise_flux_and_errors(mag, magerr)
+            magerr = k_mag_flux.fluxerr5_stacks(bindata) #make error array
+            nmag, nmagerr = flux_funcs.normalise_flux_and_errors(mag, magerr)
         else:
-            nmag = normalise_flux(mag)
+            nmag = flux_funcs.normalise_flux(mag)
         
         if statistic == 'std':
             binstat = np.std(nmag, axis=1)
         elif statistic == 'excess':
-            binstat = normsigmasq(nmag, nmagerr)
+            binstat = vary_stats.normsigmasq(nmag, nmagerr)
         elif statistic == 'MAD':
             binstat = median_absolute_deviation(nmag, axis=1)
         elif statistic == 'var':
@@ -403,7 +420,29 @@ def plot_median_line(fluxn, tbdata, statistic='MAD',createplot=True):
         plt.plot(bins[0:42], allmedstat, 'k--')
     return bins, allmedstat
 
-def plot_median_line_stars(fluxn, tbdata, sflux, sdata, statistic='MAD',createplot=True):
+def plot_median_line_stars(fluxn, tbdata, sflux, sdata, statistic='MAD',
+                           createplot=True):
+    ''' Function to find (and plot a line showing) the median value for a 
+    variety of statistics across the flux range of the sample - useful when 
+    calculating uncertainties. This version includes the fluxes of stars in the
+    calculation.
+    Inputs:
+        fluxn = 2D array of flux values where each line is the light curve of
+                an object
+        tbdata = table of data that corresponds to the fluxes given (same length)
+        sflux = 2D array of flux values where each line is the light curve of
+                a star
+        sdata = table of data that corresponds to the star fluxes given (same 
+                length)
+        statisitic = which statistic to find the median of. Options are MAD 
+                     ('MAD', default), excess variance ('excess'), standard
+                     deviation ('std'), variance ('var')
+        createplot = bool, defines whether or not to actually plot the median
+                     line onto the most recent plot. Default is True
+    Outputs:
+        bins = array denoting what the bin edges were
+        allmedstat = array of the median values for each bin
+    '''
     bins = np.arange(13,25,0.2)
     bins = np.append(bins, [25])
     
@@ -419,25 +458,25 @@ def plot_median_line_stars(fluxn, tbdata, sflux, sdata, statistic='MAD',createpl
             break
         
         # bin both set of data
-        gmag, bindata = fluxbin(binedge, bins[n+1], fluxn, tbdata) #bindata
-        smag, sbindata = fluxbin(binedge, bins[n+1], sflux, sdata) #bindata
+        gmag, bindata = flux_funcs.fluxbin(binedge, bins[n+1], fluxn, tbdata) #bindata
+        smag, sbindata = flux_funcs.fluxbin(binedge, bins[n+1], sflux, sdata) #bindata
         
         # combine into one array
         mag = np.vstack((gmag, smag))
         
         if statistic == 'excess':
-            gmagerr = fluxerr5_stacks(bindata) #make error array
-            smagerr = fluxerr5_stacks(sdata)
+            gmagerr = k_mag_flux.fluxerr5_stacks(bindata) #make error array
+            smagerr = k_mag_flux.fluxerr5_stacks(sdata)
             magerr = np.vstack((gmagerr, smagerr)) #combine
             
-            nmag, nmagerr = normalise_flux_and_errors(mag, magerr)
+            nmag, nmagerr = flux_funcs.normalise_flux_and_errors(mag, magerr)
         else:
-            nmag = normalise_flux(mag)
+            nmag = flux_funcs.normalise_flux(mag)
         
         if statistic == 'std':
             binstat = np.std(nmag, axis=1)
         elif statistic == 'excess':
-            binstat = normsigmasq(nmag, nmagerr)
+            binstat = vary_stats.normsigmasq(nmag, nmagerr)
         elif statistic == 'MAD':
             binstat = median_absolute_deviation(nmag, axis=1)
         elif statistic == 'var':
@@ -453,6 +492,27 @@ def plot_median_line_stars(fluxn, tbdata, sflux, sdata, statistic='MAD',createpl
     return bins, allmedstat
 
 def plot_median_line_stars_J(fluxn, tbdata, sflux, sdata, statistic='MAD'):
+    ''' Function to find (and plot a line showing) the median value for a 
+    variety of statistics across the flux range of the sample - useful when 
+    calculating uncertainties. This version includes the fluxes of stars in the
+    calculation and is designed to be used on the J band data
+    Inputs:
+        fluxn = 2D array of flux values where each line is the light curve of
+                an object
+        tbdata = table of data that corresponds to the fluxes given (same length)
+        sflux = 2D array of flux values where each line is the light curve of
+                a star
+        sdata = table of data that corresponds to the star fluxes given (same 
+                length)
+        statisitic = which statistic to find the median of. Options are MAD 
+                     ('MAD', default), excess variance ('excess'), standard
+                     deviation ('std'), variance ('var')
+        createplot = bool, defines whether or not to actually plot the median
+                     line onto the most recent plot. Default is True
+    Outputs:
+        bins = array denoting what the bin edges were
+        allmedstat = array of the median values for each bin
+    '''
     bins = np.arange(13,28,0.2)
     bins = np.append(bins, [28,29,30])
     
@@ -468,25 +528,25 @@ def plot_median_line_stars_J(fluxn, tbdata, sflux, sdata, statistic='MAD'):
             break
         
         # bin both set of data
-        gmag, bindata = fluxbin(binedge, bins[n+1], fluxn, tbdata) #bindata
-        smag, sbindata = fluxbin(binedge, bins[n+1], sflux, sdata) #bindata
+        gmag, bindata = flux_funcs.fluxbin(binedge, bins[n+1], fluxn, tbdata) #bindata
+        smag, sbindata = flux_funcs.fluxbin(binedge, bins[n+1], sflux, sdata) #bindata
         
         # combine into one array
         mag = np.vstack((gmag, smag))
         
         if statistic == 'excess':
-            gmagerr = jfluxerr4_stacks(bindata) #make error array
-            smagerr = jfluxerr4_stacks(sdata)
+            gmagerr = j_mag_flux.fluxerr4_stacks(bindata) #make error array
+            smagerr = j_mag_flux.fluxerr4_stacks(sdata)
             magerr = np.vstack((gmagerr, smagerr)) #combine
             
-            nmag, nmagerr = normalise_flux_and_errors(mag, magerr)
+            nmag, nmagerr = flux_funcs.normalise_flux_and_errors(mag, magerr)
         else:
-            nmag = normalise_flux(mag)
+            nmag = flux_funcs.normalise_flux(mag)
         
         if statistic == 'std':
             binstat = np.std(nmag, axis=1)
         elif statistic == 'excess':
-            binstat = normsigmasq(nmag, nmagerr)
+            binstat = vary_stats.normsigmasq(nmag, nmagerr)
         elif statistic == 'MAD':
             binstat = median_absolute_deviation(nmag, axis=1)
         elif statistic == 'var':
