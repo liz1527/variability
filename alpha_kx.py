@@ -34,25 +34,10 @@ fullxray = fits.open('UDS_catalogues/DR11-2arcsec-June24-2018+plusXY_chandra_nov
 noxvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_nochanXray_DR11data_restframe.fits')[1].data
 xvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_chandata_DR11data_restframe.fits')[1].data
 
-def func(x):
-    ### power law to integrate ###
-    return x**(-0.9)
 
-def get_L_k(tbdata):
-    ### get magnitude ###
-    kmag = tbdata['M_K_z_p']
-    
-    ### convert to luminosity ###
-    L_k = 10**((34.1-kmag)/2.5)
-    L_k = L_k * u.W * (u.Hz)**-1 # Units of W/Hz
-    
-    L_k = L_k.to((u.erg) * (u.s)**-1 * (u.Hz)**-1, equivalencies=u.spectral())
-    
-    return L_k
-
-allx_L_k = get_L_k(fullxray)
-nox_L_k = get_L_k(noxvarydata)
-x_L_k = get_L_k(xvarydata)
+allx_L_k = vari_funcs.xray_funcs.get_L_k(fullxray)
+nox_L_k = vari_funcs.xray_funcs.get_L_k(noxvarydata)
+x_L_k = vari_funcs.xray_funcs.get_L_k(xvarydata)
 
 ##_, bins, _ = plt.hist([nox_L_k, x_L_k, allx_L_k], bins=50, color=['b','r','k'], #linestyle=['dashed','dashed','dashed'],
 ##         histtype='step', label=['Variable Non-X-ray AGN','Variable X-ray AGN','X-ray AGN'],
@@ -74,81 +59,10 @@ x_L_k = get_L_k(xvarydata)
 ### First need to assume power law for flux density and find constant ###
 ### Then sub this equation for flux density into luminosity density eq ###
 
-def get_xray_L_2(tbdata, Xray=True, band='Hard'):
-    z = vari_funcs.get_z(tbdata)
-#    z[z>4] = np.nan
-    if band=='Hard': 
-        upplim = 10 ## set band limits in keV
-        lowlim = 2
-        if Xray == True: # if it is an X-ray source, get flux from catalogue
-            flux = tbdata['Hard_flux'] 
-            flux# Units of erg cm**-2 s**-1
-        else: # if it is non X-ray - use the upper limit
-            flux = np.zeros(len(tbdata))
-            flux += 6.5e-16 # Units of erg cm**-2 s**-1
-    elif band=='Full': 
-        upplim = 10
-        lowlim = 0.5
-        if Xray == True:
-            flux = tbdata['Full_flux'] # Units of erg cm**-2 s**-1
-        else:
-            flux = 4.4e-16 # Units of erg cm**-2 s**-1
-    elif band=='Soft': 
-        upplim = 2
-        lowlim = 0.5
-        if Xray == True:
-            flux = tbdata['Soft_flux'] # Units of erg cm**-2 s**-1
-        else:
-            flux = 1.4e-16 # Units of erg cm**-2 s**-1
-    elif band=='Uhrd': 
-        upplim = 10
-        lowlim = 5
-        if Xray == True:
-            flux = tbdata['Uhrd_flux'] # Units of erg cm**-2 s**-1
-        else:
-            flux = 9.2e-15 # Units of erg cm**-2 s**-1
-            
-    ### Add units ###
-    flux = flux* (u.erg) * (u.cm)**-2 * (u.s)**-1 
-    upplim = upplim * u.keV
-    lowlim = lowlim * u.keV
-    
-    ### redshift limits ###
-#    upplim = upplim/(1+z)
-#    lowlim = lowlim/(1+z)
-    
-    ### get integrated flux density ###
-#    result = integrate.quad(func, lowlim.value, upplim.value)
-#    denom = result[0] 
-#    print(denom)
-    denom = ((upplim**(0.1))/(0.1)) - ((lowlim**(0.1))/(0.1))
-    print(denom)
-    
-    ### use this and flux value to get the power law constant ###
-    const = flux / denom
-    
-    ### calculate flux density ###
-    nu = 2 * u.keV # 2kev is value to evaluate at
-    F_2 = const * (nu**(-0.9))
-    
-    ### get luminosity distance ###
-    DL = cosmo.luminosity_distance(z) # need to sort out units
-    DL = DL.to(u.cm)
-    
-    ### calculate luminosity density ###
-    L_2 = 4 * np.pi * (DL**2) * F_2#const * (nu**-0.9)
-    
-    L_2 = L_2.to((u.erg) * (u.s)**-1 * (u.Hz)**-1, equivalencies=u.spectral())
-    
-    #.to(u.W * (u.Hz)**-1, equivalencies=u.spectral())
-    
-    L_2[L_2==0] = np.nan
-    
-    return L_2, F_2, flux, z #L_2_w_Hz
 
-allx_L_2, allx_F_2, allx_flux, allx_z = get_xray_L_2(fullxray)
-nox_L_2, nox_F_2, nox_flux, nox_z = get_xray_L_2(noxvarydata, Xray=False)
-x_L_2, x_F_2, x_flux, x_z = get_xray_L_2(xvarydata)
+allx_L_2, allx_F_2, allx_flux, allx_z = vari_funcs.xray_funcs.get_xray_L_2(fullxray)
+nox_L_2, nox_F_2, nox_flux, nox_z = vari_funcs.xray_funcs.get_xray_L_2(noxvarydata, Xray=False)
+x_L_2, x_F_2, x_flux, x_z = vari_funcs.xray_funcs.get_xray_L_2(xvarydata)
 
 #print('Start flux = '+str(allx_flux[10]))#+' erg/cm**2/s')
 #print('z = '+str(allx_z[10]))
@@ -156,27 +70,10 @@ x_L_2, x_F_2, x_flux, x_z = get_xray_L_2(xvarydata)
 print('Luminosity density at 2keV = '+str(allx_L_2[10]))#+' erg/s/eV')
 print('Luminosity density at K = '+str(allx_L_k[10]))#+' erg/s/eV')
 
-def calc_alpha_kx(L_k, L_2, xband=2*u.keV, optband=1.6*u.um):
-    
-    ### convert units ###
-    xband = xband.to(u.um, equivalencies=u.spectral())
-    
-    optband = optband.to(u.um, equivalencies=u.spectral())
-    
-    numer = np.log(optband.value * L_k.value) - np.log(xband.value * L_2.value)
-    denom = np.log(optband.value) - np.log(xband.value)
-    
-    alpha = -(numer/denom) + 1
-    
-#    alpha2 = -0.3838 * (np.log(L_2.value)/np.log(L_k.value))
-    
-    mask = np.isinf(alpha)
-    alpha[mask] = np.nan
-    return alpha
 
-allx_alpha_kx = calc_alpha_kx(allx_L_k, allx_L_2)
-nox_alpha_kx = calc_alpha_kx(nox_L_k, nox_L_2)
-x_alpha_kx = calc_alpha_kx(x_L_k, x_L_2)
+allx_alpha_kx = vari_funcs.xray_funcs.calc_alpha_kx(allx_L_k, allx_L_2)
+nox_alpha_kx = vari_funcs.xray_funcs.calc_alpha_kx(nox_L_k, nox_L_2)
+x_alpha_kx = vari_funcs.xray_funcs.calc_alpha_kx(x_L_k, x_L_2)
 
 plt.figure()
 upplims = nox_L_2.value/3

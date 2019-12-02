@@ -20,31 +20,15 @@ import vari_funcs #my module to help run code neatly
 #from scipy.stats import chisquare
 plt.close('all') #close any open plots
 
-def my_chisquare_char(flux, char_var):
-    fluxn = vari_funcs.normalise_flux(flux)
-    meanflux = np.nanmean(fluxn, axis=1)
-    top = np.square(fluxn-meanflux[:,None])
-    chi = np.nansum(top/char_var, axis=1)
-    return chi
-
-def my_chisquare_epoch(flux, sigsq):
-    sigsqn = np.tile(sigsq, [len(flux), 1])
-    fluxn, sigsqn = vari_funcs.normalise_flux_and_errors(flux, sigsqn)
-#    fluxn = vari_funcs.normalise_flux(flux)
-    meanflux = np.nanmean(fluxn, axis=1)
-    top = np.square(fluxn-meanflux[:,None])
-    chi = np.nansum(top/(sigsqn**2), axis=1)
-    return chi
-
 ### Open the fits files and get data ###
 tbdata = fits.open('mag_flux_tables/J/mag_flux_table_best_J_extra_clean.fits')[1].data
 chandata = fits.open('mag_flux_tables/J/xray_mag_flux_table_best_J_extra_clean.fits')[1].data
 sdata = fits.open('mag_flux_tables/J/stars_mag_flux_table_J_extra_clean.fits')[1].data
 
 ### Split the data into the 4 quadrants ###
-quaddata = vari_funcs.quadrants(tbdata, '05B')
-chanquaddata = vari_funcs.quadrants(chandata, '05B')
-squaddata = vari_funcs.quadrants(sdata, '05B')
+quaddata = vari_funcs.field_funcs.quadrants(tbdata, '05B')
+chanquaddata = vari_funcs.field_funcs.quadrants(chandata, '05B')
+squaddata = vari_funcs.field_funcs.quadrants(sdata, '05B')
 
 sigsqdict = {}
 sigdict = {}
@@ -57,28 +41,29 @@ for m, qtbdata in enumerate(quaddata):
     qsdata = squaddata[m]
     
     ## Create arrays of flux values ###
-    fluxn = vari_funcs.jflux4_stacks(qtbdata)
-    fluxchann = vari_funcs.jflux4_stacks(qchandata) 
-    sfluxn = vari_funcs.jflux4_stacks(qsdata)
+    fluxn = vari_funcs.j_mag_flux.flux4_stacks(qtbdata)
+    fluxchann = vari_funcs.j_mag_flux.flux4_stacks(qchandata) 
+    sfluxn = vari_funcs.j_mag_flux.flux4_stacks(qsdata)
     
-    ### remove values that are negative ###
-#    fluxn, qtbdata = vari_funcs.noneg(fluxn, qtbdata)
-#    fluxchann, qchandata = vari_funcs.noneg(fluxchann, qchandata)
-#    sfluxn, qsdata = vari_funcs.noneg(sfluxn, qsdata)
+#    ### remove values that are negative ###
+#    fluxn, qtbdata = vari_funcs.flux_funcs.noneg(fluxn, qtbdata)
+#    fluxchann, qchandata = vari_funcs.flux_funcs.noneg(fluxchann, qchandata)
+#    sfluxn, qsdata = vari_funcs.flux_funcs.noneg(sfluxn, qsdata)
     
-    fluxerr = vari_funcs.jfluxerr4_stacks(qtbdata)
-    fluxerrchan = vari_funcs.jfluxerr4_stacks(qchandata)
-    sfluxerr = vari_funcs.jfluxerr4_stacks(qsdata)
+    ### Get original error stacks ###
+    fluxerr = vari_funcs.j_mag_flux.fluxerr4_stacks(qtbdata)
+    fluxerrchan = vari_funcs.j_mag_flux.fluxerr4_stacks(qchandata)
+    sfluxerr = vari_funcs.j_mag_flux.fluxerr4_stacks(qsdata)
     
     
-#    vari_funcs.flux_variability_plot(fluxn, fluxchann, 'var', starflux=sfluxn, 
+#    vari_funcs.selection_plot_funcs.flux_variability_plot(fluxn, fluxchann, 'var', starflux=sfluxn, 
 #                                     stars=True, normalised=True, scale='symlog')
-    #bins, medvar = vari_funcs.plot_median_line(fluxn, tbdata, statistic='var')
+    #bins, medvar = vari_funcs.selection_plot_funcs.plot_median_line(fluxn, tbdata, statistic='var')
     
-    bins, medvar = vari_funcs.plot_median_line_stars_J(fluxn, qtbdata, sfluxn, qsdata, statistic='var')
+    bins, medvar = vari_funcs.selection_plot_funcs.plot_median_line_stars_J(fluxn, qtbdata, sfluxn, qsdata, statistic='var')
     
     
-#    vari_funcs.flux_variability_plot(fluxn, fluxchann, 'chisq',
+#    vari_funcs.selection_plot_funcs.flux_variability_plot(fluxn, fluxchann, 'chisq',
 #                                       fluxerr = fluxerr,
 #                                       starfluxerr = sfluxerr,
 #                                        starflux=sfluxn, stars=True,
@@ -92,20 +77,20 @@ for m, qtbdata in enumerate(quaddata):
     newmedvar = np.empty(np.shape(medvar))
     finalmed = np.empty(np.shape(medvar))
     for n, binedge in enumerate(bins[0:np.size(bins)-1]):
-        flux, bindata = vari_funcs.fluxbin(binedge, bins[n+1], fluxn, qtbdata) #bindata
-        fluxchan, binchan = vari_funcs.fluxbin(binedge, bins[n+1], fluxchann, qchandata) #bindata
-        sflux, sbindata = vari_funcs.fluxbin(binedge, bins[n+1], sfluxn, qsdata) #bindata
+        flux, bindata = vari_funcs.flux_funcs.fluxbin(binedge, bins[n+1], fluxn, qtbdata) #bindata
+        fluxchan, binchan = vari_funcs.flux_funcs.fluxbin(binedge, bins[n+1], fluxchann, qchandata) #bindata
+        sflux, sbindata = vari_funcs.flux_funcs.fluxbin(binedge, bins[n+1], sfluxn, qsdata) #bindata
         # get errors
-        fluxerr = vari_funcs.fluxerr4_stacks(bindata)
-        fluxchanerr = vari_funcs.fluxerr4_stacks(binchan)
-        sfluxerr = vari_funcs.fluxerr4_stacks(sbindata)
+        fluxerr = vari_funcs.j_mag_flux.fluxerr4_stacks(bindata)
+        fluxchanerr = vari_funcs.j_mag_flux.fluxerr4_stacks(binchan)
+        sfluxerr = vari_funcs.j_mag_flux.fluxerr4_stacks(sbindata)
         print(len(flux))
         meanflux = np.nanmean(flux, axis=1)
         meanchan = np.nanmean(fluxchan, axis=1)
         meansflux = np.nanmean(sflux, axis=1)
-        chisq = my_chisquare_char(flux, medvar[n])
-        chisqchan = my_chisquare_char(fluxchan, medvar[n])
-        schisq = my_chisquare_char(sflux, medvar[n])
+        chisq = vari_funcs.vary_stats.my_chisquare_char(flux, medvar[n])
+        chisqchan = vari_funcs.vary_stats.my_chisquare_char(fluxchan, medvar[n])
+        schisq = vari_funcs.vary_stats.my_chisquare_char(sflux, medvar[n])
         
         ### plot ###
         plt.figure(3,figsize=[8,8])    
@@ -133,13 +118,13 @@ for m, qtbdata in enumerate(quaddata):
         newgflux = flux[chisq<50,:]
         newsflux = sflux[schisq<50,:]
         newflux = np.vstack((newgflux, newsflux))
-        newfluxn = vari_funcs.normalise_flux(newflux)
+        newfluxn = vari_funcs.flux_funcs.normalise_flux(newflux)
         vary = np.var(newfluxn, axis=1, ddof=1)
         newmedvar[n] = np.nanmedian(vary)
     
-        newchisq = my_chisquare_char(flux, newmedvar[n])
-        newchisqchan = my_chisquare_char(fluxchan, newmedvar[n])
-        newschisq = my_chisquare_char(sflux, newmedvar[n])
+        newchisq = vari_funcs.vary_stats.my_chisquare_char(flux, newmedvar[n])
+        newchisqchan = vari_funcs.vary_stats.my_chisquare_char(fluxchan, newmedvar[n])
+        newschisq = vari_funcs.vary_stats.my_chisquare_char(sflux, newmedvar[n])
         
         ## plot new ###
         plt.figure(4, figsize=[8,8])
@@ -167,9 +152,9 @@ for m, qtbdata in enumerate(quaddata):
         ### plot new variance ###
     #    plt.figure(5, figsize=[8,8])
         #get errors
-        binfluxn, binfluxerrn = vari_funcs.normalise_flux_and_errors(flux, fluxerr)
-        binfluxchann, binfluxchanerrn = vari_funcs.normalise_flux_and_errors(fluxchan, fluxchanerr)
-        binsfluxn, binsfluxerrn = vari_funcs.normalise_flux_and_errors(sflux, sfluxerr)
+        binfluxn, binfluxerrn = vari_funcs.flux_funcs.normalise_flux_and_errors(flux, fluxerr)
+        binfluxchann, binfluxchanerrn = vari_funcs.flux_funcs.normalise_flux_and_errors(fluxchan, fluxchanerr)
+        binsfluxn, binsfluxerrn = vari_funcs.flux_funcs.normalise_flux_and_errors(sflux, sfluxerr)
         #get variance
         sig = np.var(binfluxn, axis=1, ddof=1)
         sigchan = np.var(binfluxchann, axis=1, ddof=1)
@@ -201,9 +186,9 @@ for m, qtbdata in enumerate(quaddata):
         sigdict[dictkey] = np.sqrt(sigsqdict[dictkey])
         
         ### Get another new chi-squared with epoch error ###
-        newchisq2 = my_chisquare_epoch(flux, sigdict[dictkey])
-        newchisqchan2 = my_chisquare_epoch(fluxchan, sigdict[dictkey])
-        newschisq2 = my_chisquare_epoch(sflux, sigdict[dictkey])
+        newchisq2 = vari_funcs.vary_stats.my_chisquare_epoch(flux, sigdict[dictkey])
+        newchisqchan2 = vari_funcs.vary_stats.my_chisquare_epoch(fluxchan, sigdict[dictkey])
+        newschisq2 = vari_funcs.vary_stats.my_chisquare_epoch(sflux, sigdict[dictkey])
         
         ### plot new ###
         plt.figure(6, figsize=[8,8])    
@@ -217,9 +202,9 @@ for m, qtbdata in enumerate(quaddata):
             plt.ylim(ymin=3e-2, ymax=4e4)
             plt.ylabel('Chi Squared')
             plt.xlabel('Mean Flux')
-            plt.title('With quad epoch flux bin errors')
-            plt.text(5e2, 1e3, r'$\chi^{2} = \sum{\frac{( \,{x_{i} - \bar{x}})^{2} \,}{\sigma_{quad-epoch}^{2}}}$')
-            plt.hlines(22.458,8e1,1e7, label='99.9% confidence level', zorder=4)
+            plt.title('J with quad epoch flux bin errors')
+#            plt.text(1e2, 9e2, r'$\chi^{2} = \sum{\frac{( \,{x_{i} - \bar{x}})^{2} \,}{\sigma_{quad-epoch}^{2}}}$')
+            plt.hlines(30,0,1e7, label=r'$\chi^{2} = 30$', zorder=4)
             plt.legend()
         else:
             plt.plot(meanflux, newchisq2, 'b+',zorder=2)
@@ -251,9 +236,9 @@ plt.legend()
 
 varychi = galchisq[galchisq > 24.322]
 
-### Turn dictionary into astropy table ###
-t = Table(sigdict)
-t.write('sigma_tables/quad_epoch_sigma_table_extra_clean_2arcsec_J.fits')
+#### Turn dictionary into astropy table ###
+#t = Table(sigdict)
+#t.write('sigma_tables/quad_epoch_sigma_table_extra_clean_2arcsec_J.fits')
 
 
 

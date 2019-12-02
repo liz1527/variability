@@ -3,7 +3,10 @@
 """
 Created on Wed Nov  7 11:35:11 2018
 
-Code to isolate variable sources using the bootstraped error bars and chi^2
+Code to creat chi-flux plot using the bootstraped error bars and 2 arcsec K-band
+
+This version has dual x-axis showing magnitudes and fluxes, and is the version
+used in my first paper.
 
 @author: ppxee
 """
@@ -32,50 +35,50 @@ sdata = fits.open('mag_flux_tables/K/stars_mag_flux_table_extra_clean_no06.fits'
 sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06_2arcsec.fits')
 
 ### Remove edges ###
-tbdata = vari_funcs.remove_edges(tbdata)
-chandata = vari_funcs.remove_edges(chandata)
-sdata = vari_funcs.remove_edges(sdata)
+tbdata = vari_funcs.field_funcs.remove_edges(tbdata)
+chandata = vari_funcs.field_funcs.remove_edges(chandata)
+sdata = vari_funcs.field_funcs.remove_edges(sdata)
 
 ## Create arrays of flux values ###
-flux = vari_funcs.flux4_stacks(tbdata)
-fluxchan = vari_funcs.flux4_stacks(chandata) 
-sflux = vari_funcs.flux4_stacks(sdata)
+flux = vari_funcs.k_mag_flux.flux4_stacks(tbdata)
+fluxchan = vari_funcs.k_mag_flux.flux4_stacks(chandata) 
+sflux = vari_funcs.k_mag_flux.flux4_stacks(sdata)
 
 ### remove values that are negative ###
-flux, tbdata = vari_funcs.noneg(flux, tbdata)
-fluxchan, chandata = vari_funcs.noneg(fluxchan, chandata)
-sflux, sdata = vari_funcs.noneg(sflux, sdata)
+flux, tbdata = vari_funcs.flux_funcs.noneg(flux, tbdata)
+fluxchan, chandata = vari_funcs.flux_funcs.noneg(fluxchan, chandata)
+sflux, sdata = vari_funcs.flux_funcs.noneg(sflux, sdata)
 
 ### Get error arrays ###
-flux, fluxerr, tbdata = vari_funcs.create_quad_error_array(sigtb, tbdata, aper=4)
-fluxchan, chanerr, chandata = vari_funcs.create_quad_error_array(sigtb, chandata,aper=4)
-sflux, serr, sdata = vari_funcs.create_quad_error_array(sigtb, sdata, aper=4)
+flux, fluxerr, tbdata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, tbdata, aper=4)
+fluxchan, chanerr, chandata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, chandata,aper=4)
+sflux, serr, sdata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, sdata, aper=4)
 
 ### reset X-ray column as messed up by stacking ###
 tbdata['X-ray'][tbdata['X-ray']==70] = False 
 tbdata['X-ray'][tbdata['X-ray']==84] = True
 
-### Check chisq plot looks correct ###
-#fig,_ = vari_funcs.flux_variability_plot(flux, fluxchan, 'chisq', 
+### Main function not used as need to specify axes in this case ###
+#fig,_ = vari_funcs.selection_plot_funcs.flux_variability_plot(flux, fluxchan, 'chisq',flux_variability_plot(flux, fluxchan, 'chisq', 
 #                                       fluxerr=fluxerr, chanerr=chanerr,
 #                                       starflux=sflux, starfluxerr=serr,
 #                                       #normalised=True, 
 #                                       stars=True, scale='log')
+### Create plot with two axes ##
 fig = plt.figure(figsize=[8,8])
-ax1 = fig.add_subplot(111)
-ax2 = ax1.twiny()
+ax1 = fig.add_subplot(111) # Subplot covering whole plot
+ax2 = ax1.twiny() # Twin of the first subplot
 
 avgfluxperob = np.nanmean(flux, axis=1) #for UDS
 avgfluxchanperob = np.nanmean(fluxchan, axis=1) #for non-stellar chandra
 savgfluxperob = np.nanmean(sflux, axis=1) #for stars
 
-### plot chi squared ###
-vary = vari_funcs.my_chisquare_err(flux, fluxerr)
-varychan = vari_funcs.my_chisquare_err(fluxchan, chanerr)
-varystar = vari_funcs.my_chisquare_err(sflux, serr)
+### find chi squared ###
+vary = vari_funcs.vary_stats.my_chisquare_err(flux, fluxerr)
+varychan = vari_funcs.vary_stats.my_chisquare_err(fluxchan, chanerr)
+varystar = vari_funcs.vary_stats.my_chisquare_err(sflux, serr)
 
-#ax1.set_ylabel('Chi Squared')
-### Plot the variability v mean as appropriate ###
+### Plot the chi sq v mean ###
 plt.plot(savgfluxperob, varystar, 'm*', mfc = 'none', markersize = 10,
              label='DR11 Star') 
 line, = plt.plot(avgfluxperob, vary, 'b+', label='Galaxy', picker=2)
@@ -88,36 +91,35 @@ ax1.set_xscale('log')
 ax1.set_yscale('log')
     
 ax1.set_ylim(3e-2,3e4)
-ax1.set_xlim(8e1, 1e7)
-#    plt.xlim(13,26)
+ax1.set_xlim(8e1, 1e7) #if flux
+#    plt.xlim(13,26) #if mag
+
 ax1.set_xlabel('Mean Flux')
 ax1.set_ylabel(r'$\chi^{2}$')
 
-ticks = np.array([1e2, 1e3, 1e4, 1e5, 1e6, 1e7])
-new_ticks = 30 - 2.5*np.log10(ticks)
+ticks = np.array([1e2, 1e3, 1e4, 1e5, 1e6, 1e7]) #set flux ticks
+new_ticks = 30 - 2.5*np.log10(ticks) #find equivilant mag ticks
 
-ax2.set_xlim(ax1.get_xlim())
-ax2.set_xscale('log')
-ax2.set_xticks(ticks)
-ax2.set_xticklabels(new_ticks)
-ax2.minorticks_off()
-ax1.minorticks_on()
+ax2.set_xlim(ax1.get_xlim()) #set twin to same limits
+ax2.set_xscale('log') #set twin to same scale
+ax2.set_xticks(ticks) #set flux ticks
+ax2.set_xticklabels(new_ticks) #set mag ticks
+ax2.minorticks_off() #switch off log ticks on the upper axis
+ax1.minorticks_on() #keep them on on the lower axis
 ax2.set_xlabel('Mean $K$-band Magnitude (AB)')
 
 
 plt.legend()
 
-fig.canvas.mpl_connect('pick_event', vari_funcs.onpickflux)
+### Activate on click properties
+fig.canvas.mpl_connect('pick_event', vari_funcs.selection_plot_funcs.onpickflux_2arcsec)
 
-### Calculate chi^2 values ###
-chisq = vari_funcs.my_chisquare_err(flux, fluxerr)
-chanchisq = vari_funcs.my_chisquare_err(fluxchan, chanerr)
 
 ### Select Variables as those with chisq > 22.458 and >50 ###
-varydata24 = tbdata[chisq>22.458]
-varydata30 = tbdata[chisq>30]
-varydata40 = tbdata[chisq>40]
-varydata50 = tbdata[chisq>50]
+varydata24 = tbdata[vary>22.458]
+varydata30 = tbdata[vary>30]
+varydata40 = tbdata[vary>40]
+varydata50 = tbdata[vary>50]
 
 plt.hlines(30, 8e1, 1e7,'g', zorder=4,label='Chi=30')
 

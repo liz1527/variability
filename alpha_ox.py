@@ -34,43 +34,9 @@ fullxray = fits.open('UDS_catalogues/DR11-2arcsec-June24-2018+plusXY_chandra_nov
 noxvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_nochanXray_DR11data_restframe.fits')[1].data
 xvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_chandata_DR11data_restframe.fits')[1].data
 
-
-def func(x):
-    ### power law to integrate ###
-    return x**(-0.9)
-
-def get_L_O(tbdata):
-    z = vari_funcs.get_z(tbdata)
-    z[z<0.5] = np.nan
-    z[z>4] = np.nan
-    
-    ### get luminosity distance ###
-    DL = cosmo.luminosity_distance(z) # need to sort out units
-    DL = DL.to(u.cm)
-    
-    ### get U band magnitude ###
-    umag = tbdata['M_U_z_p']
-    
-    L_U = 10**((34.1-umag)/2.5)
-    L_U = L_U * u.W * (u.Hz)**-1 # Units of W/Hz
-    
-    L_U = L_U.to((u.erg) * (u.s)**-1 * (u.Hz)**-1, equivalencies=u.spectral())
-    
-    ### Use frequency ratios to find Omag ###
-    Ofreq = constants.c/(2500 * u.AA)
-    Ufreq = constants.c/(3743 * u.AA)
-    
-    L_O = L_U * (Ufreq/Ofreq)     # assuming flux propotional to freq**-1
-#    F_O = F_O.to((u.erg) * (u.s)**-1 * (u.cm)**2 * (u.Hz)**-1, equivalencies=u.spectral()) # units of ergs/s/cm**"/Hz
-    
-    
-#    L_O = L_O.to((u.erg) * (u.s)**-1 * (u.Hz)**-1, equivalencies=u.spectral())
-    
-    return L_O
-
-allx_L_O = get_L_O(fullxray)
-nox_L_O = get_L_O(noxvarydata)
-x_L_O = get_L_O(xvarydata)
+allx_L_O = vari_funcs.xray_funcs.get_L_O(fullxray)
+nox_L_O = vari_funcs.xray_funcs.get_L_O(noxvarydata)
+x_L_O = vari_funcs.xray_funcs.get_L_O(xvarydata)
 
 ##_, bins, _ = plt.hist([nox_L_O, x_L_O, allx_L_O], bins=50, color=['b','r','k'], #linestyle=['dashed','dashed','dashed'],
 ##         histtype='step', label=['Variable Non-X-ray AGN','Variable X-ray AGN','X-ray AGN'],
@@ -92,82 +58,9 @@ x_L_O = get_L_O(xvarydata)
 ### First need to assume power law for flux density and find constant ###
 ### Then sub this equation for flux density into luminosity density eq ###
 
-def get_xray_L_2(tbdata, Xray=True, band='Hard'):
-    z = vari_funcs.get_z(tbdata)
-    z[z<0.5] = np.nan
-    z[z>4] = np.nan
-    
-    ### get luminosity distance ###
-    DL = cosmo.luminosity_distance(z) # need to sort out units
-    DL = DL.to(u.cm)
-    
-    if band=='Hard': 
-        upplim = 10 ## set band limits in keV
-        lowlim = 2
-        if Xray == True: # if it is an X-ray source, get flux from catalogue
-            flux = tbdata['Hard_flux'] 
-            flux# Units of erg cm**-2 s**-1
-        else: # if it is non X-ray - use the upper limit
-            flux = np.zeros(len(tbdata))
-            flux += 6.5e-16 # Units of erg cm**-2 s**-1
-    elif band=='Full': 
-        upplim = 10
-        lowlim = 0.5
-        if Xray == True:
-            flux = tbdata['Full_flux'] # Units of erg cm**-2 s**-1
-        else:
-            flux = 4.4e-16 # Units of erg cm**-2 s**-1
-    elif band=='Soft': 
-        upplim = 2
-        lowlim = 0.5
-        if Xray == True:
-            flux = tbdata['Soft_flux'] # Units of erg cm**-2 s**-1
-        else:
-            flux = 1.4e-16 # Units of erg cm**-2 s**-1
-    elif band=='Uhrd': 
-        upplim = 10
-        lowlim = 5
-        if Xray == True:
-            flux = tbdata['Uhrd_flux'] # Units of erg cm**-2 s**-1
-        else:
-            flux = 9.2e-15 # Units of erg cm**-2 s**-1
-            
-    ### Add units ###
-    flux = flux* (u.erg) * (u.cm)**-2 * (u.s)**-1 
-    upplim = upplim * u.keV
-    lowlim = lowlim * u.keV
-    
-    ### redshift limits ###
-#    upplim = upplim/(1+z)
-#    lowlim = lowlim/(1+z)
-    
-    ### get integrated flux density ###
-#    result = integrate.quad(func, lowlim.value, upplim.value)
-#    denom = result[0] 
-#    print(denom)
-    denom = ((upplim**(0.1))/(0.1)) - ((lowlim**(0.1))/(0.1))
-    print(denom)
-    
-    ### use this and flux value to get the power law constant ###
-    const = flux / denom
-    
-    ### calculate flux density ###
-    nu = 2 * u.keV # 2kev is value to evaluate at
-    F_2 = const * (nu**(-0.9))
-    
-    
-    ### calculate luminosity density ###
-    L_2 = 4 * np.pi * (DL**2) * F_2#const * (nu**-0.9)
-    
-    L_2 = L_2.to((u.erg) * (u.s)**-1 * (u.Hz)**-1, equivalencies=u.spectral())
-        
-    L_2[L_2==0] = np.nan
-    
-    return L_2, F_2, flux, z #L_2_w_Hz
-
-allx_L_2, allx_F_2, allx_flux, allx_z = get_xray_L_2(fullxray)
-nox_L_2, nox_F_2, nox_flux, nox_z = get_xray_L_2(noxvarydata, Xray=False)
-x_L_2, x_F_2, x_flux, x_z = get_xray_L_2(xvarydata)
+allx_L_2, allx_F_2, allx_flux, allx_z = vari_funcs.xray_funcs.get_xray_L_2(fullxray)
+nox_L_2, nox_F_2, nox_flux, nox_z = vari_funcs.xray_funcs.get_xray_L_2(noxvarydata, Xray=False)
+x_L_2, x_F_2, x_flux, x_z = vari_funcs.xray_funcs.get_xray_L_2(xvarydata)
 
 #print('Start flux = '+str(allx_flux[10]))#+' erg/cm**2/s')
 #print('z = '+str(allx_z[10]))
@@ -175,27 +68,9 @@ x_L_2, x_F_2, x_flux, x_z = get_xray_L_2(xvarydata)
 print('Luminosity density at 2keV = '+str(allx_L_2[10]))#+' erg/s/eV')
 print('Luminosity density at O = '+str(allx_L_O[10]))#+' erg/s/eV')
 
-def calc_alpha_Ox(L_O, L_2, xband=2*u.keV, optband=1.6*u.um):
-    
-    ### convert units ###
-    xband = xband.to(u.um, equivalencies=u.spectral())
-    
-    optband = optband.to(u.um, equivalencies=u.spectral())
-    
-#    numer = np.log(optband.value * L_O.value) - np.log(xband.value * L_2.value)
-#    denom = np.log(optband.value) - np.log(xband.value)
-#    
-#    alpha = -(numer/denom) + 1
-    
-    alpha = -0.3838 * (np.log10(L_2.value/L_O.value))
-    
-    mask = np.isinf(alpha)
-    alpha[mask] = np.nan
-    return alpha
-
-allx_alpha_Ox = calc_alpha_Ox(allx_L_O, allx_L_2)
-nox_alpha_Ox = calc_alpha_Ox(nox_L_O, nox_L_2)
-x_alpha_Ox = calc_alpha_Ox(x_L_O, x_L_2)
+allx_alpha_Ox = vari_funcs.xray_funcs.calc_alpha_Ox(allx_L_O, allx_L_2)
+nox_alpha_Ox = vari_funcs.xray_funcs.calc_alpha_Ox(nox_L_O, nox_L_2)
+x_alpha_Ox = vari_funcs.xray_funcs.calc_alpha_Ox(x_L_O, x_L_2)
 
 
 ### Calculate a-ox lines for plot ###

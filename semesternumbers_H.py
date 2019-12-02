@@ -30,7 +30,7 @@ t = [2,3,4,5,6,7,8]
 plt.figure()
 plt.bar(t, framenum)
 plt.xticks(x, years)
-
+print('total H frames = '+str(np.nansum(framenum)))
 ### number of observations is number of frames/4 as 4 cameras ###
 obsnum = framenum/4
 

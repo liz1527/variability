@@ -21,7 +21,7 @@ font = {'family' : 'DejaVu Sans',
 plt.rc('font', **font)
 
 ### Open the fits files and get data ###
-Kvarys = fits.open('variable_tables/zero_sigma_J_variables_K_data.fits')[1].data
+Kvarys = fits.open('variable_tables/no06_variables_chi30_2arcsec_DR11data_restframe.fits')[1].data
 Jvarys = fits.open('variable_tables/no06_variables_chi30_2arcsec_DR11data_J.fits')[1].data
 Hvarys = fits.open('variable_tables/no06_variables_chi30_2arcsec_DR11data_H.fits')[1].data
 Ksigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06_2arcsec.fits')
@@ -142,5 +142,5 @@ for n in range(len(newKvarys)): #Will plot all with blank plots of those with no
     
     
     plt.tight_layout()
-    plt.savefig('plots/Chi30Lightcurves/2arcsec/JHK_lightcurves/zero_sig_J/flux_'+str(n))#+str(varys['NUMBER_05B'][n])+'_lightcurve.png')
-    plt.close('all')
+#    plt.savefig('plots/Chi30Lightcurves/2arcsec/JHK_lightcurves/flux_'+str(n))#+str(varys['NUMBER_05B'][n])+'_lightcurve.png')
+#    plt.close('all')
