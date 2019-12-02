@@ -3,6 +3,8 @@
 """
 Created on Mon Sep 17 11:49:11 2018
 
+OLD CODE - NOT UPDATED WITH RESTRUCTURING 
+
 code to create a mock catalogue that can be used to test my variability code.
 
 @author: ppxee

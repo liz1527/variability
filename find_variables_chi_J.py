@@ -21,25 +21,25 @@ import vari_funcs #my module to help run code neatly
 plt.close('all') #close any open plots
 
 ### Open the fits files and get data ###
-tbdata = fits.open('mag_flux_tables/K/mag_flux_table_best_extra_clean_no06.fits')[1].data
-chandata = fits.open('mag_flux_tables/K/xray_mag_flux_table_best_extra_clean_no06.fits')[1].data
-sdata = fits.open('mag_flux_tables/K/stars_mag_flux_table_extra_clean_no06.fits')[1].data
-sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06_2arcsec_neg.fits')
+tbdata = fits.open('mag_flux_tables/J/mag_flux_table_best_J_extra_clean.fits')[1].data
+chandata = fits.open('mag_flux_tables/J/xray_mag_flux_table_best_J_extra_clean.fits')[1].data
+sdata = fits.open('mag_flux_tables/J/stars_mag_flux_table_J_extra_clean.fits')[1].data
+sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_2arcsec_J_noneg.fits')
 
 ## Create arrays of flux values ###
-flux = vari_funcs.k_mag_flux.flux_stacks(tbdata, aper=4)
-fluxchan = vari_funcs.k_mag_flux.flux_stacks(chandata, aper=4) 
-sflux = vari_funcs.k_mag_flux.flux_stacks(sdata, aper=4)
-
-#### remove values that are negative ###
-#flux, tbdata = vari_funcs.noneg(flux, tbdata)
-#fluxchan, chandata = vari_funcs.noneg(fluxchan, chandata)
-#sflux, sdata = vari_funcs.noneg(sflux, sdata)
+flux = vari_funcs.j_mag_flux.flux_stacks(tbdata, aper=4)
+fluxchan = vari_funcs.j_mag_flux.flux_stacks(chandata, aper=4) 
+sflux = vari_funcs.j_mag_flux.flux_stacks(sdata, aper=4)
+#
+### remove values that are negative ###
+flux, tbdata = vari_funcs.flux_funcs.noneg(flux, tbdata)
+fluxchan, chandata = vari_funcs.flux_funcs.noneg(fluxchan, chandata)
+sflux, sdata = vari_funcs.flux_funcs.noneg(sflux, sdata)
 
 ### Get error arrays ###
-flux, fluxerr, tbdata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, tbdata, aper=4)
-fluxchan, chanerr, chandata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, chandata, aper=4)
-sflux, serr, sdata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, sdata, aper=4)
+flux, fluxerr, tbdata = vari_funcs.j_mag_flux.create_quad_error_array_J(sigtb, tbdata, aper=4)
+fluxchan, chanerr, chandata = vari_funcs.j_mag_flux.create_quad_error_array_J(sigtb, chandata, aper=4)
+sflux, serr, sdata = vari_funcs.j_mag_flux.create_quad_error_array_J(sigtb, sdata, aper=4)
 
 ### Check chisq plot looks correct ###
 fig, chisq = vari_funcs.selection_plot_funcs.flux_variability_plot(flux, fluxchan, 'chisq', 
@@ -47,28 +47,31 @@ fig, chisq = vari_funcs.selection_plot_funcs.flux_variability_plot(flux, fluxcha
                                        starflux=sflux, starfluxerr=serr,
                                        normalised=True, stars=True, scale='log')
 
-
 plt.ylim(3e-2,3e4)
-plt.xlim(4e0, 1e7)
+plt.xlim(4e-1, 1e7)
+#### Calculate chi^2 values ###
+#chisq = vari_funcs.vary_stats.my_chisquare_err(flux, fluxerr)
+#chanchisq = vari_funcs.vary_stats.my_chisquare_err(fluxchan, chanerr)
+
 ### Select Variables as those with chisq > 24.322 and >50 ###
-varydata24 = tbdata[chisq>24.322]
+varydata32 = tbdata[chisq>32.08]
 varydata30 = tbdata[chisq>30]
 varydata40 = tbdata[chisq>40]
 varydata50 = tbdata[chisq>50]
 
-plt.hlines(24.322, 4e-1, 1e7,zorder=4,label='Chi>24.3')
+plt.hlines(32.08, 4e-1, 1e7,zorder=4,label='Chi>32.08')
 plt.hlines(30, 4e-1, 1e7,'g', zorder=4,label='Chi>30')
 plt.hlines(40, 4e-1, 1e7,'y', zorder=4,label='Chi>40')
-plt.hlines(50, 4e-1, 1e7,'c', zorder=4,label='Chi>50')
+#plt.hlines(50, 4e-1, 1e7,'c', zorder=4,label='Chi>50')
 plt.legend()
 
 #### Save new tables ###
-#save24 = Table(varydata24)
-#save24.write('variable_tables/variables_chi24.fits')
+#save32 = Table(varydata32)
+#save32.write('variable_tables/J_variables_chi32_noneg.fits')
 #save30 = Table(varydata30)
 #save30.write('variable_tables/variables_chi30.fits')
 #save40 = Table(varydata40)
-#save40.write('variable_tables/variables_chi40.fits')
+#save40.write('variable_tables/J_variables_chi40_noneg.fits')
 #save50 = Table(varydata50)
 #save50.write('variable_tables/variables_chi50.fits')
 

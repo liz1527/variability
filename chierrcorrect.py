@@ -3,13 +3,13 @@
 """
 Created on Mon May 14 13:36:55 2018
 
+OLD CODE - NOT UPDATED WITH RESTRUCTURING 
+
 code to figure out chi-square correcting the errors (easier to start on year 
 stacks as there are less complications)
 
 @author: ppxee
 """
-
-""
 
 ### Import required libraries ###
 import matplotlib.pyplot as plt #for plotting

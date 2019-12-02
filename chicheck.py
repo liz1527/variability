@@ -3,6 +3,7 @@
 """
 Created on Thu Jun  7 10:35:16 2018
 
+OLD CODE - NOT UPDATED WITH RESTRUCTURING 
 code to test chisquare
 
 @author: ppxee

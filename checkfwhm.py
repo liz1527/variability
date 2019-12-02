@@ -3,6 +3,9 @@
 """
 Created on Fri Mar  9 10:06:10 2018
 
+OLD CODE - NOT UPDATED WITH RESTRUCTURING 
+Just plots a FWHM curve
+
 @author: ppxee
 """
 

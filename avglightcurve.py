@@ -30,7 +30,7 @@ sdata2 = stars[1].data
 tbdata = vari_funcs.chandra_only(tbdata)
 
 ## Create arrays of flux values ###
-flux = vari_funcs.flux5_stacks(tbdata)
+flux = vari_funcs.k_mag_flux.flux5_stacks(tbdata)
 sfwhm = np.stack(([sdata['FWHM_05B'], sdata['FWHM_06B'],
                 sdata['FWHM_07B'], sdata['FWHM_08B'],
                 sdata['FWHM_09B'], sdata['FWHM_10B'], 
@@ -43,11 +43,11 @@ savgfwhm = np.mean(sfwhm, axis=0)
 savgflux = np.mean(sflux, axis=0)
 
 ### Plot light curves ###
-vari_funcs.avg_lightcurve(avgflux)
+vari_funcs.lightcurve_funcs.avg_lightcurve(avgflux)
 plt.title('Mean Lightcurve for All Objects')
-vari_funcs.avg_lightcurve(savgflux)
+vari_funcs.lightcurve_funcs.avg_lightcurve(savgflux)
 plt.title('Mean Lightcurve for Stars')
-ax = vari_funcs.avg_lightcurve(savgfwhm)
+ax = vari_funcs.lightcurve_funcs.avg_lightcurve(savgfwhm)
 plt.title('Mean FWHM')
 plt.ylabel('FWHM')
 ax.invert_yaxis()
@@ -67,12 +67,12 @@ stars.close()
 #avgflux = np.mean(flux, axis=1) #for UDS
 
 ### Define bins for histograms and average light curves ###
-#fluxbin1 = vari_funcs.fluxbin(avgflux, 0, 1e1, flux)
-#fluxbin2 = vari_funcs.fluxbin(avgflux, 1e1, 1e2, flux)
-#fluxbin3 = vari_funcs.fluxbin(avgflux, 1e2, 1e3, flux)
-#fluxbin4 = vari_funcs.fluxbin(avgflux, 1e3, 1e4, flux)
-#fluxbin5 = vari_funcs.fluxbin(avgflux, 1e4, 1e5, flux)
-#fluxbin6 = vari_funcs.fluxbin(avgflux, 1e6, 1e7, flux)
+#fluxbin1 = vari_funcs.flux_funcs.fluxbin(avgflux, 0, 1e1, flux)
+#fluxbin2 = vari_funcs.flux_funcs.fluxbin(avgflux, 1e1, 1e2, flux)
+#fluxbin3 = vari_funcs.flux_funcs.fluxbin(avgflux, 1e2, 1e3, flux)
+#fluxbin4 = vari_funcs.flux_funcs.fluxbin(avgflux, 1e3, 1e4, flux)
+#fluxbin5 = vari_funcs.flux_funcs.fluxbin(avgflux, 1e4, 1e5, flux)
+#fluxbin6 = vari_funcs.flux_funcs.fluxbin(avgflux, 1e6, 1e7, flux)
 
 #avgflux1 = np.mean(fluxbin1, axis=0)
 #avgflux2 = np.mean(fluxbin2, axis=0)
@@ -81,12 +81,12 @@ stars.close()
 #avgflux5 = np.mean(fluxbin5, axis=0)
 #avgflux6 = np.mean(fluxbin6, axis=0)
 
-#vari_funcs.avg_lightcurve(avgflux1)
-#vari_funcs.avg_lightcurve(avgflux2)
-#vari_funcs.avg_lightcurve(avgflux3)
-#vari_funcs.avg_lightcurve(avgflux4)
-#vari_funcs.avg_lightcurve(avgflux5)
-#vari_funcs.avg_lightcurve(avgflux6)
+#vari_funcs.lightcurve_funcs.avg_lightcurve(avgflux1)
+#vari_funcs.lightcurve_funcs.avg_lightcurve(avgflux2)
+#vari_funcs.lightcurve_funcs.avg_lightcurve(avgflux3)
+#vari_funcs.lightcurve_funcs.avg_lightcurve(avgflux4)
+#vari_funcs.lightcurve_funcs.avg_lightcurve(avgflux5)
+#vari_funcs.lightcurve_funcs.avg_lightcurve(avgflux6)
 #
 #### Create arrays of flux values ###
 #sflux = vari_funcs.flux5_stacks(sdata)
@@ -95,12 +95,12 @@ stars.close()
 #savgflux = np.mean(sflux, axis=1) #for UDS
 #
 #### Define bins for histograms and average light curves ###
-#sfluxbin1 = vari_funcs.fluxbin(savgflux, 0, 1e1, sflux)
-#sfluxbin2 = vari_funcs.fluxbin(savgflux, 1e1, 1e2, sflux)
-#sfluxbin3 = vari_funcs.fluxbin(savgflux, 1e2, 1e3, sflux)
-#sfluxbin4 = vari_funcs.fluxbin(savgflux, 1e3, 1e4, sflux)
-#sfluxbin5 = vari_funcs.fluxbin(savgflux, 1e4, 1e5, sflux)
-#sfluxbin6 = vari_funcs.fluxbin(savgflux, 1e6, 1e7, sflux)
+#sfluxbin1 = vari_funcs.flux_funcs.fluxbin(savgflux, 0, 1e1, sflux)
+#sfluxbin2 = vari_funcs.flux_funcs.fluxbin(savgflux, 1e1, 1e2, sflux)
+#sfluxbin3 = vari_funcs.flux_funcs.fluxbin(savgflux, 1e2, 1e3, sflux)
+#sfluxbin4 = vari_funcs.flux_funcs.fluxbin(savgflux, 1e3, 1e4, sflux)
+#sfluxbin5 = vari_funcs.flux_funcs.fluxbin(savgflux, 1e4, 1e5, sflux)
+#sfluxbin6 = vari_funcs.flux_funcs.fluxbin(savgflux, 1e6, 1e7, sflux)
 #
 #### Calculate the average flux for each year within each flux bin ###
 #savgflux = np.mean(sflux, axis=0)
@@ -112,10 +112,10 @@ stars.close()
 #savgflux6 = np.mean(sfluxbin6, axis=0)
 #
 #### Plot light curves ###
-#vari_funcs.avg_lightcurve(savgflux)
-#vari_funcs.avg_lightcurve(savgflux1)
-#vari_funcs.avg_lightcurve(savgflux2)
-#vari_funcs.avg_lightcurve(savgflux3)
-#vari_funcs.avg_lightcurve(savgflux4)
-#vari_funcs.avg_lightcurve(savgflux5)
-#vari_funcs.avg_lightcurve(savgflux6)
+#vari_funcs.lightcurve_funcs.avg_lightcurve(savgflux)
+#vari_funcs.lightcurve_funcs.avg_lightcurve(savgflux1)
+#vari_funcs.lightcurve_funcs.avg_lightcurve(savgflux2)
+#vari_funcs.lightcurve_funcs.avg_lightcurve(savgflux3)
+#vari_funcs.lightcurve_funcs.avg_lightcurve(savgflux4)
+#vari_funcs.lightcurve_funcs.avg_lightcurve(savgflux5)
+#vari_funcs.lightcurve_funcs.avg_lightcurve(savgflux6)

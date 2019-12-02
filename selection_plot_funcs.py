@@ -140,7 +140,7 @@ def onpickflux_2arcsec(event):
         event = info from click
     '''
     print('Click registered')
-    tbdata = fits.open('mag_flux_tables/mag_flux_table_best_extra_clean_no06.fits')[1].data
+    tbdata = fits.open('mag_flux_tables/K/mag_flux_table_best_extra_clean_no06.fits')[1].data
     sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06_2arcsec.fits')
     tbdata = field_funcs.remove_edges(tbdata)
 
@@ -443,8 +443,9 @@ def plot_median_line_stars(fluxn, tbdata, sflux, sdata, statistic='MAD',
         bins = array denoting what the bin edges were
         allmedstat = array of the median values for each bin
     '''
-    bins = np.arange(13,25,0.2)
-    bins = np.append(bins, [25])
+    bins = np.arange(13,26,0.2)
+    bins = np.append(bins, [26,27,28])
+#    bins = np.append([13,14], bins)
     
     bins = 10**((30-bins)/2.5)
     bins = np.flip(bins, axis=0)

@@ -46,6 +46,7 @@ import flux_funcs #for changes to flux/mag stacks
 
 import selection_plot_funcs #for plotting main selection plot + onclicks
 
+import xray_funcs #for calculating luminosities and alpha_ox
 ### Define miscellanseous functions that don't fit in a sub-module ###
 def get_z(tbdata):
     ''' Get z with spectroscopic data where possible 
