@@ -18,10 +18,10 @@ sems = ['05B', '06B', '07B', '08B', '09B', '10B', '11B', '12B']#
 
 def sem_mag_flux(sem):
     if sem == '10B':
-        semtb = Table.read('SE_outputs_yearstacks/cleaned_'+sem+'_output_J.fits')
+        semtb = Table.read('SE_outputs_yearstacks/K_extraction/cleaned_'+sem+'_output_J.fits')
     else:
-        semtb = Table.read('SE_outputs_yearstacks/extra_clean_'+sem+'_output_J.fits')
-#    semtb = Table.read('SE_outputs_yearstacks/extra_clean_'+sem+'_output_J.fits')
+        semtb = Table.read('SE_outputs_yearstacks/K_extraction/extra_clean_'+sem+'_output_J.fits')
+#    semtb = Table.read('SE_outputs_yearstacks/K_extraction/cleaned_'+sem+'_output_J.fits')
     #extract column names
     cols = np.asarray(semtb.colnames)
     
@@ -87,7 +87,7 @@ from astropy import units as u
 # match with stars catalogue
 print('Matching Stars')
 stars = Table.read('UDS_catalogues/DR11-secure-stars.fits')
-starscoord = SkyCoord(stars['RA']*u.degree, stars['DEC']*u.degree)
+starscoord = SkyCoord(stars['ALPHA_J2000']*u.degree, stars['DELTA_J2000']*u.degree)
 semcomcoord = SkyCoord(semcom['ALPHA_J2000_05B'], semcom['DELTA_J2000_05B'])
 idx, d2d , _ = match_coordinates_sky(starscoord, semcomcoord)
 mask = d2d<=1*u.arcsec #make sure match is within 1 arcsec (like in topcat)
@@ -99,8 +99,8 @@ semcomns = semcom[ind] #create table of no stars
 
 #match with best catalogue
 print('Matching Best')
-best = Table.read('UDS_catalogues/DR11-2arcsec-Jan-1-2018_best.fits')
-bestcoord = SkyCoord(best['RA']*u.degree, best['DEC']*u.degree)
+best = Table.read('UDS_catalogues/DR11-2arcsec-Jun-30-2019_best.fits')
+bestcoord = SkyCoord(best['ALPHA_J2000']*u.degree, best['DELTA_J2000']*u.degree)
 semcomnscoord = SkyCoord(semcomns['ALPHA_J2000_05B'], semcomns['DELTA_J2000_05B'])
 idx, d2d , _ = match_coordinates_sky(bestcoord, semcomnscoord)
 mask = d2d<=1*u.arcsec #make sure match is within 1 arcsec (like in topcat)
@@ -139,7 +139,8 @@ xraycol = Column(xray, 'X-ray')
 bestmf.add_column(xraycol)
 
 #%% Save the tables
-semcom.write('mag_flux_tables/J/mag_flux_table_J_extra_clean.fits')
-bestmf.write('mag_flux_tables/J/mag_flux_table_best_J_extra_clean.fits')
-starsmf.write('mag_flux_tables/J/stars_mag_flux_table_J_extra_clean.fits')
-xraymf.write('mag_flux_tables/J/xray_mag_flux_table_best_J_extra_clean.fits')
+extra = '_extra_clean'
+semcom.write('mag_flux_tables/J/mag_flux_table_J'+extra+'.fits')
+bestmf.write('mag_flux_tables/J/mag_flux_table_best_J'+extra+'.fits')
+starsmf.write('mag_flux_tables/J/stars_mag_flux_table_J'+extra+'.fits')
+xraymf.write('mag_flux_tables/J/xray_mag_flux_table_best_J'+extra+'.fits')
