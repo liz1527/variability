@@ -17,7 +17,7 @@ import numpy as np
 sems = ['05B', '06B', '07B', '08B', '09B', '10B', '11B', '12B']#
 
 def sem_mag_flux(sem):
-    if sem == '10B':
+    if sem == '06B':
         semtb = Table.read('SE_outputs_yearstacks/K_extraction/cleaned_'+sem+'_output_J.fits')
     else:
         semtb = Table.read('SE_outputs_yearstacks/K_extraction/extra_clean_'+sem+'_output_J.fits')

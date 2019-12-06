@@ -24,7 +24,7 @@ plt.close('all') #close any open plots
 tbdata = fits.open('mag_flux_tables/K/mag_flux_table_best_extra_clean_no06.fits')[1].data
 chandata = fits.open('mag_flux_tables/K/xray_mag_flux_table_best_extra_clean_no06.fits')[1].data
 sdata = fits.open('mag_flux_tables/K/stars_mag_flux_table_extra_clean_no06.fits')[1].data
-sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06_2arcsec.fits')
+sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06_2arcsec_neg.fits')
 
 ### Remove edges ###
 tbdata = vari_funcs.field_funcs.remove_edges(tbdata)
@@ -36,10 +36,10 @@ flux = vari_funcs.k_mag_flux.flux_stacks(tbdata, aper=4)
 fluxchan = vari_funcs.k_mag_flux.flux_stacks(chandata, aper=4) 
 sflux = vari_funcs.k_mag_flux.flux_stacks(sdata, aper=4)
 
-### remove values that are negative ###
-flux, tbdata = vari_funcs.flux_funcs.noneg(flux, tbdata)
-fluxchan, chandata = vari_funcs.flux_funcs.noneg(fluxchan, chandata)
-sflux, sdata = vari_funcs.flux_funcs.noneg(sflux, sdata)
+#### remove values that are negative ###
+#flux, tbdata = vari_funcs.flux_funcs.noneg(flux, tbdata)
+#fluxchan, chandata = vari_funcs.flux_funcs.noneg(fluxchan, chandata)
+#sflux, sdata = vari_funcs.flux_funcs.noneg(sflux, sdata)
 
 #flux, tbdata = vari_funcs.flux_funcs.nremove_low_flux(flux, tbdata)
 #fluxchan, chandata = vari_funcs.flux_funcs.nremove_low_flux(fluxchan, chandata)
@@ -62,14 +62,14 @@ fig,_ = vari_funcs.selection_plot_funcs.flux_variability_plot(flux, fluxchan, 'c
                                        stars=True, scale='log')
 fig.canvas.mpl_connect('pick_event', vari_funcs.selection_plot_funcs.onpickflux_2arcsec)
 
-devdata = fits.open('variable_tables/no06_variables_chi30_2arcsec_deviant_neg.fits')[1].data
-devflux, devfluxerr, devdata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, devdata, aper=4)
-devmean = np.nanmean(devflux, axis=1)
+#devdata = fits.open('variable_tables/no06_variables_chi30_2arcsec_deviant_neg.fits')[1].data
+#devflux, devfluxerr, devdata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, devdata, aper=4)
+#devmean = np.nanmean(devflux, axis=1)
 
 ### Calculate chi^2 values ###
 chisq = vari_funcs.vary_stats.my_chisquare_err(flux, fluxerr)
 chanchisq = vari_funcs.vary_stats.my_chisquare_err(fluxchan, chanerr)
-devchisq = vari_funcs.vary_stats.my_chisquare_err(devflux, devfluxerr)
+#devchisq = vari_funcs.vary_stats.my_chisquare_err(devflux, devfluxerr)
 
 #plt.plot(devmean, devchisq, 'kd', mfc='None', markersize=10)
 ### Select Variables as those with chisq > 22.458 and >50 ###
@@ -113,41 +113,41 @@ plt.tight_layout()
 #%% checks for false positives ###
 
 ### Create binedge array ###
-#bins = np.array(sigtb.colnames)
-#binarr = np.empty(int(len(bins)/4))
-#for k, bin in enumerate(bins):
-#    if bin[0] == '1':
-#        binarr[k] = int(bin[2:])
-#        k+=1
-#binarr = binarr.astype(int)
-#
-#binsizes =  np.empty(int(len(binarr)))
-#binmean =  np.empty(int(len(binarr)))
-#for n, binedge in enumerate(binarr):
-#    if binedge==binarr[-1]:
-#        binupp = np.nanmax(flux)
-#    else:
-#        binupp = binarr[n+1]
-#    binflux, bindata = vari_funcs.flux_funcs.fluxbin(binedge, binupp, flux, tbdata) #bindata
-##    binsflux, binsdata = vari_funcs.flux_funcs.fluxbin(binedge, binupp, sflux, sdata)
-#    binsizes[n] = len(bindata) #+ len(binsdata)
-##    plt.vlines(binedge, 1e-2, 1e4, zorder=4)
-#    binmean[n] = np.nanmean(binflux)
-##    if binsizes[n] < 9:
-##        continue
-#    ### get chi values within bin ###
-##    binflux, binfluxerr, bindata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, bindata)
-##    binchisq = vari_funcs.vary_stat.my_chisquare_err(binflux, binfluxerr)
-##    
-#    ### P value of 30 with dof=6 is 0.00003931 ###
-#    ### therefore false positives = binsize * P ###
-#P =  0.00003931#0.001
-#numfalpos = binsizes * P
-#plt.figure(figsize=[8,5])
-#plt.plot(binmean, numfalpos)
-#plt.xscale('log')
+bins = np.array(sigtb.colnames)
+binarr = np.empty(int(len(bins)/4))
+for k, bin in enumerate(bins):
+    if bin[0] == '1':
+        binarr[k] = int(bin[2:])
+        k+=1
+binarr = binarr.astype(int)
+
+binsizes =  np.empty(int(len(binarr)))
+binmean =  np.empty(int(len(binarr)))
+for n, binedge in enumerate(binarr):
+    if binedge==binarr[-1]:
+        binupp = np.nanmax(flux)
+    else:
+        binupp = binarr[n+1]
+    binflux, bindata = vari_funcs.flux_funcs.fluxbin(binedge, binupp, flux, tbdata) #bindata
+#    binsflux, binsdata = vari_funcs.flux_funcs.fluxbin(binedge, binupp, sflux, sdata)
+    binsizes[n] = len(bindata) #+ len(binsdata)
+#    plt.vlines(binedge, 1e-2, 1e4, zorder=4)
+    binmean[n] = np.nanmean(binflux)
+#    if binsizes[n] < 9:
+#        continue
+    ### get chi values within bin ###
+#    binflux, binfluxerr, bindata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, bindata)
+#    binchisq = vari_funcs.vary_stat.my_chisquare_err(binflux, binfluxerr)
+#    
+    ### P value of 30 with dof=6 is 0.00003931 ###
+    ### therefore false positives = binsize * P ###
+P =  0.00003931#0.001
+numfalpos = binsizes * P
+plt.figure(figsize=[8,5])
+plt.plot(binmean, numfalpos)
+plt.xscale('log')
 #plt.xlim(8e1,1e7)
-#plt.xlabel('Flux')
-#plt.ylabel('Expected number of sources with $\chi^{2}$ > 30')
-#plt.tight_layout()
-#totalfalpos = np.nansum(numfalpos)
+plt.xlabel('Flux')
+plt.ylabel('Expected number of sources with $\chi^{2}$ > 30')
+plt.tight_layout()
+totalfalpos = np.nansum(numfalpos)

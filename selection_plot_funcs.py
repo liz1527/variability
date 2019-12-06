@@ -515,7 +515,7 @@ def plot_median_line_stars_J(fluxn, tbdata, sflux, sdata, statistic='MAD'):
         allmedstat = array of the median values for each bin
     '''
     bins = np.arange(13,28,0.2)
-    bins = np.append(bins, [28,29,30])
+    bins = np.append(bins, [28,29,30,31])
     
     bins = 10**((30-bins)/2.5)
     bins = np.flip(bins, axis=0)

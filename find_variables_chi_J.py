@@ -24,17 +24,17 @@ plt.close('all') #close any open plots
 tbdata = fits.open('mag_flux_tables/J/mag_flux_table_best_J_extra_clean.fits')[1].data
 chandata = fits.open('mag_flux_tables/J/xray_mag_flux_table_best_J_extra_clean.fits')[1].data
 sdata = fits.open('mag_flux_tables/J/stars_mag_flux_table_J_extra_clean.fits')[1].data
-sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_2arcsec_J_noneg.fits')
+sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_2arcsec_J.fits')
 
 ## Create arrays of flux values ###
 flux = vari_funcs.j_mag_flux.flux_stacks(tbdata, aper=4)
 fluxchan = vari_funcs.j_mag_flux.flux_stacks(chandata, aper=4) 
 sflux = vari_funcs.j_mag_flux.flux_stacks(sdata, aper=4)
 #
-### remove values that are negative ###
-flux, tbdata = vari_funcs.flux_funcs.noneg(flux, tbdata)
-fluxchan, chandata = vari_funcs.flux_funcs.noneg(fluxchan, chandata)
-sflux, sdata = vari_funcs.flux_funcs.noneg(sflux, sdata)
+#### remove values that are negative ###
+#flux, tbdata = vari_funcs.flux_funcs.noneg(flux, tbdata)
+#fluxchan, chandata = vari_funcs.flux_funcs.noneg(fluxchan, chandata)
+#sflux, sdata = vari_funcs.flux_funcs.noneg(sflux, sdata)
 
 ### Get error arrays ###
 flux, fluxerr, tbdata = vari_funcs.j_mag_flux.create_quad_error_array_J(sigtb, tbdata, aper=4)
@@ -49,6 +49,7 @@ fig, chisq = vari_funcs.selection_plot_funcs.flux_variability_plot(flux, fluxcha
 
 plt.ylim(3e-2,3e4)
 plt.xlim(4e-1, 1e7)
+
 #### Calculate chi^2 values ###
 #chisq = vari_funcs.vary_stats.my_chisquare_err(flux, fluxerr)
 #chanchisq = vari_funcs.vary_stats.my_chisquare_err(fluxchan, chanerr)
@@ -66,12 +67,12 @@ plt.hlines(40, 4e-1, 1e7,'y', zorder=4,label='Chi>40')
 plt.legend()
 
 #### Save new tables ###
-#save32 = Table(varydata32)
-#save32.write('variable_tables/J_variables_chi32_noneg.fits')
+save32 = Table(varydata32)
+save32.write('variable_tables/J/K_extraction/J_variables_chi32.fits')
 #save30 = Table(varydata30)
 #save30.write('variable_tables/variables_chi30.fits')
-#save40 = Table(varydata40)
-#save40.write('variable_tables/J_variables_chi40_noneg.fits')
+save40 = Table(varydata40)
+save40.write('variable_tables/J/K_extraction/J_variables_chi40.fits')
 #save50 = Table(varydata50)
 #save50.write('variable_tables/variables_chi50.fits')
 

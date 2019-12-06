@@ -26,15 +26,20 @@ chandata = fits.open('mag_flux_tables/K/xray_mag_flux_table_best_extra_clean_no0
 sdata = fits.open('mag_flux_tables/K/stars_mag_flux_table_extra_clean_no06.fits')[1].data
 sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06_2arcsec_neg.fits')
 
+### Remove edges ###
+tbdata = vari_funcs.field_funcs.remove_edges(tbdata)
+chandata = vari_funcs.field_funcs.remove_edges(chandata)
+sdata = vari_funcs.field_funcs.remove_edges(sdata)
+
 ## Create arrays of flux values ###
 flux = vari_funcs.k_mag_flux.flux_stacks(tbdata, aper=4)
 fluxchan = vari_funcs.k_mag_flux.flux_stacks(chandata, aper=4) 
 sflux = vari_funcs.k_mag_flux.flux_stacks(sdata, aper=4)
 
 #### remove values that are negative ###
-#flux, tbdata = vari_funcs.noneg(flux, tbdata)
-#fluxchan, chandata = vari_funcs.noneg(fluxchan, chandata)
-#sflux, sdata = vari_funcs.noneg(sflux, sdata)
+#flux, tbdata = vari_funcs.flux_funcs.noneg(flux, tbdata)
+#fluxchan, chandata = vari_funcs.flux_funcs.noneg(fluxchan, chandata)
+#sflux, sdata = vari_funcs.flux_funcs.noneg(sflux, sdata)
 
 ### Get error arrays ###
 flux, fluxerr, tbdata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, tbdata, aper=4)
