@@ -32,9 +32,7 @@ plt.rc('font', **font)
 tbdata = fits.open('mag_flux_tables/K/mag_flux_table_best_K_extra_clean.fits')[1].data
 chandata = fits.open('mag_flux_tables/K/xray_mag_flux_table_best_K_extra_clean.fits')[1].data
 sdata = fits.open('mag_flux_tables/K/stars_mag_flux_table_K_extra_clean.fits')[1].data
-#xtalkdata = fits.open('mag_flux_tables/K/mag_flux_table_xtalk_K_extra_clean.fits')[1].data
-xtalkdata = fits.open('variable_tables/K/variables_no06_chi30_DR11data_xtalk.fits')[1].data
-sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_K_extra_clean_2arcsec_noneg.fits')
+sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_K_extra_clean_2arcsec_neg.fits')
 
 def prep_data(tbdata):
     ### Remove edges ###
@@ -43,8 +41,8 @@ def prep_data(tbdata):
     ### Create arrays of flux values ###
     flux = vari_funcs.k_mag_flux.flux4_stacks(tbdata)
     
-    ### remove values that are negative ###
-    flux, tbdata = vari_funcs.flux_funcs.noneg(flux, tbdata)
+#    ### remove values that are negative ###
+#    flux, tbdata = vari_funcs.flux_funcs.noneg(flux, tbdata)
     
     ### Get error arrays ###
     flux, fluxerr, tbdata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, tbdata, aper=4)
@@ -61,52 +59,82 @@ def prep_data(tbdata):
 tbdata, avgfluxperob, vary = prep_data(tbdata)
 chandata, avgfluxchanperob, varychan = prep_data(chandata)
 sdata, savgfluxperob, varystar = prep_data(sdata)
-xtalkdata, xtalkavgfluxperob, varyxtalk = prep_data(xtalkdata)
 
 ### reset X-ray column as messed up by stacking ###
 tbdata['X-ray'][tbdata['X-ray']==70] = False 
 tbdata['X-ray'][tbdata['X-ray']==84] = True
 
 ### Create plot with two axes ##
-fig = plt.figure(figsize=[8,8])
-ax1 = fig.add_subplot(111) # Subplot covering whole plot
+fig = plt.figure(figsize=[9,8])
+ax1 = plt.subplot2grid((5,5), (0,0), colspan=4, rowspan=5)# Subplot covering majority of plot
+ax4 = plt.subplot2grid((5,5), (0,4), rowspan=5, sharey=ax1)
+
 ax2 = ax1.twiny() # Twin of the first subplot
 
-### Plot the chi sq v mean ###
-plt.plot(savgfluxperob, varystar, 'm*', mfc = 'none', markersize = 10,
-             label='DR11 Star') 
-line, = plt.plot(avgfluxperob, vary, 'b+', label='Galaxy', picker=2)
-plt.plot(avgfluxchanperob, varychan, 'ro', mfc = 'none', markersize = 10,
-         label='X-ray detected') #no picker as will be selected in the UDS point
-plt.plot(xtalkavgfluxperob, varyxtalk, 'kd', mfc = 'none', markersize = 10,
-         label='X-talk') #no picker as will be selected in the UDS point
+### set tick values ###
+low_ticks = np.array([1e2, 1e3, 1e4, 1e5, 1e6])#, 1e7]) #set flux ticks
+#new_ticks = 30 - 2.5*np.log10(ticks) #find equivilant mag ticks
+#new_ticks = new_ticks + 1.9
 
-    
-### Apply required plot charateristics ###
+new_ticks =np.array([27, 25, 23, 21, 19, 17, 15])
+upp_ticks = new_ticks - 1.9
+upp_ticks = 10**((upp_ticks-30)/(-2.5))
+
+### Plot the chi sq v mean ###
+ax1.plot(savgfluxperob, varystar, 'm*', mfc = 'none', markersize = 10,
+             label='DR11 Star', rasterized=True) 
+line, = ax1.plot(avgfluxperob, vary, 'b+', label='Galaxy', picker=2, rasterized=True)
+ax1.plot(avgfluxchanperob, varychan, 'ro', mfc = 'none', markersize = 10,
+         label='X-ray detected', rasterized=True) #no picker as will be selected in the UDS point
+
+### Plot chi sq hist ###
+bins = np.logspace(np.log10(3e-2), np.log10(3e4),100)
+ax4.hist(varystar, bins, color='m', histtype='step', linestyle='--', 
+         linewidth=1.5, density=True, orientation=u'horizontal')
+ax4.hist(vary, bins, color='b', histtype='step', linestyle='-.', 
+         linewidth=1.5, density=True, orientation=u'horizontal')
+ax4.hist(varychan, bins, color='r', histtype='step', linestyle='-', 
+         linewidth=1.5, density=True, orientation=u'horizontal')
+
+### Apply plot characteristics ###
 ax1.set_xscale('log')
 ax1.set_yscale('log')
     
 ax1.set_ylim(3e-2,3e4)
-ax1.set_xlim(8e1, 1e7) #if flux noneg
-#ax1.set_xlim(4e0, 1e7) #if flux neg
+ax1.set_xlim(8e1, 1e7) #if flux
 #    plt.xlim(13,26) #if mag
 
 ax1.set_xlabel('Mean Flux')
 ax1.set_ylabel(r'$\chi^{2}$')
 
-ticks = np.array([1e2, 1e3, 1e4, 1e5, 1e6, 1e7]) #set flux ticks
-new_ticks = 30 - 2.5*np.log10(ticks) #find equivilant mag ticks
 
 ax2.set_xlim(ax1.get_xlim()) #set twin to same limits
 ax2.set_xscale('log') #set twin to same scale
-ax2.set_xticks(ticks) #set flux ticks
+ax2.set_xticks(upp_ticks) #set flux ticks
 ax2.set_xticklabels(new_ticks) #set mag ticks
 ax2.minorticks_off() #switch off log ticks on the upper axis
-ax1.minorticks_on() #keep them on on the lower axis
 ax2.set_xlabel('Mean $K$-band Magnitude (AB)')
 
+ax1.set_xticks(low_ticks) #set flux ticks
+ax1.minorticks_on() #keep them on on the lower axis
 
-plt.legend()
+plt.setp(ax4.get_yticklabels(), visible=False)
+ax4.set_xticks(ax4.get_xticks()[1:]) 
+#ax4.tick_params(axis='y', which='both', left=False)
+#ax4.majorticks_off() #switch off log ticks on the upper axis
+ax4.set_xlabel('Norm. Counts')
+
+### Plot flux hist ###
+#bins2 = np.logspace(np.log10(8e1), np.log10(1e7),100)
+#ax3.hist(savgfluxperob, bins2, color='m', histtype='step', linestyle='--', 
+#         linewidth=1.5, density=True)
+#ax3.hist(avgfluxperob, bins2, color='b', histtype='step', linestyle='-.', 
+#         linewidth=1.5, density=True)
+#ax3.hist(avgfluxchanperob, bins2, color='r', histtype='step', linestyle='-', 
+#         linewidth=1.5, density=True)
+#
+#### Apply plot characteristics ###
+#plt.setp(ax3.get_xticklabels(), visible=False)
 
 ### Activate on click properties
 fig.canvas.mpl_connect('pick_event', vari_funcs.selection_plot_funcs.onpickflux_2arcsec)
@@ -117,10 +145,13 @@ varydata24 = tbdata[vary>22.458]
 varydata30 = tbdata[vary>30]
 varydata40 = tbdata[vary>40]
 varydata50 = tbdata[vary>50]
+#
+#svarydata30 = sdata[varystar>30]
+#save30 = Table(svarydata30)
+#save30.write('variable_tables/K/variables_stars.fits')
 
-xtalkvarydata30 = xtalkdata[varyxtalk>30]
+ax1.hlines(30, 8e1, 1e7,'g', zorder=4,label='Chi=30')
 
-plt.hlines(30, 4e0, 1e7,'g', zorder=4,label='Chi=30')
-
-plt.legend()
-plt.tight_layout()
+ax1.legend(fontsize=14)
+#plt.subplots_adjust(hspace=0)
+plt.tight_layout(w_pad=0, h_pad=0.6)

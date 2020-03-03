@@ -25,16 +25,22 @@ for n, sem in enumerate(semesters):
 
 x = [1,2,3,4,5,6,7,8]
 
-plt.figure()
-plt.bar(x, framenum)
-plt.xticks(x, semesters)
+#plt.figure()
+#plt.bar(x, framenum)
+#plt.xticks(x, semesters)
 
+depths = np.load('np_arrays/magnitude_depths.npy')
+depths = depths.round(1).astype('str')
 ### number of observations is number of frames/4 as 4 cameras ###
 obsnum = framenum/4
 
 plt.figure()
 plt.bar(x, obsnum, color='k')
+for n in range(len(depths)):
+    plt.text(x[n]-0.35, obsnum[n]+10, depths[n])
 plt.xticks(x, semesters)
+plt.ylim(ymax=580)
 plt.xlabel('Semester')
 plt.ylabel('Number of Observations')
 plt.tight_layout()
+

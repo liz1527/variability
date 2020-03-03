@@ -24,9 +24,9 @@ plt.close('all') #close any open plots
 tbdata = fits.open('UDS_catalogues/SpUDS_IRAC_catalogue_DR11data.fits')[1].data
 xdata = fits.open('UDS_catalogues/SpUDS_IRAC_catalogue_DR11data_chandra.fits')[1].data
 #tbdata = fits.open('UDS_catalogues/SpUDS_IRAC_catalogue.fits')[1].data
-varydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_DR11data_SpUDSdata_IRAC.fits')[1].data
-xvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_Xray_DR11data_SpUDSdata_IRAC.fits')[1].data
-noxvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_noXray_DR11data_SpUDSdata_IRAC.fits')[1].data
+varydata = fits.open('variable_tables/K/no06_variables_chi30_2arcsec_DR11data_SpUDSdata_IRAC.fits')[1].data
+xvarydata = fits.open('variable_tables/K/no06_variables_chi30_2arcsec_Xray_DR11data_SpUDSdata_IRAC.fits')[1].data
+noxvarydata = fits.open('variable_tables/K/no06_variables_chi30_2arcsec_noXray_DR11data_SpUDSdata_IRAC.fits')[1].data
 #%%
 #def get_data(tbdata):
 #    ### get IRAC colours ### 
@@ -219,8 +219,8 @@ plt.rc('font', **font)
 
 #### plot with lum as colour ####
 plt.plot(I3minI4, I1minI2,'.', color='tab:grey', markersize=1, label='Galaxy', 
-         zorder=0, alpha=0.5)
-plt.plot(xI3minI4, xI1minI2,'ks', markersize=5,  label='Non-Variable X-ray AGN',zorder=0)
+         zorder=0, alpha=0.5, rasterized=True)
+plt.plot(xI3minI4, xI1minI2,'ks', markersize=5,  label='Non-Variable X-ray AGN',zorder=0, rasterized=True)
 #plt.scatter(I3minI4, I1minI2, c=zcolour, marker='.',vmax=clim, label='Galaxy')#, zorder=0, alpha=0.5)
 #plt.scatter(varyI3minI4, varyI1minI2, c=varyL,
 #            norm=colors.LogNorm(vmin=cmin, vmax=cmax), marker='o')

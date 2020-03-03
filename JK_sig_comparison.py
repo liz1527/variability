@@ -26,16 +26,16 @@ plt.close('all') #close any open plots
 
 #%% Open the fits files and get data ###
 ### Import data for variables selected in K ###
-KKdata = fits.open('variable_tables/no06_variables_chi30_2arcsec_DR11data_restframe.fits')[1].data
-KJdata = fits.open('variable_tables/no06_variables_chi30_2arcsec_DR11data_J_best.fits')[1].data
+KKdata = fits.open('variable_tables/K/variables_no06_chi30_DR11data.fits')[1].data
+KJdata = fits.open('variable_tables/K/variables_no06_chi30_DR11data_J.fits')[1].data
 
 ### Import data for variables selected in J ###
-JKdata = fits.open('variable_tables/J_variables_chi40_noneg_DR11data_Kdata.fits')[1].data
-JJdata = fits.open('variable_tables/J_variables_chi40_noneg_DR11data.fits')[1].data
+JKdata = fits.open('variable_tables/J/K_extraction/J_variables_chi32_noneg_DR11data_K.fits')[1].data
+JJdata = fits.open('variable_tables/J/K_extraction/J_variables_chi32_noneg_DR11data.fits')[1].data
 
 ### Import sig data ###
-Jsigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_2arcsec_J.fits')
-Ksigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06_2arcsec_neg.fits')
+Jsigtb = Table.read('sigma_tables/quad_epoch_sigma_table_J_extra_clean_2arcsec_noneg.fits')
+Ksigtb = Table.read('sigma_tables/quad_epoch_sigma_table_K_extra_clean_2arcsec_noneg.fits')
 
 #Jxraydata = Jdata[Jdata['X-ray']==True]
 
@@ -66,6 +66,22 @@ JJmeanflux = np.nanmean(JJfluxnorm, axis=1)
 
 #start = time.time()
 
+### Find stellarity for full tbdata ##
+phot = Table.read('UDS_catalogues/DR11-2arcsec-Jun-30-2019_best_photometry.fits')
+small = phot['MAG_APER'][:,0] # 0.7 arcsec
+big = phot['MAG_APER'][:,3] # 2 arcsec
+stell = big - small
+
+### set values where mag == 99 to nan ### 
+small[small==99] = np.nan
+big[big==99] = np.nan
+
+Jmask = np.isin(phot['ID'], JJdata['ID'])
+Kmask = np.isin(phot['ID'], KKdata['ID'])
+
+Jstell = stell[Jmask]
+Kstell = stell[Kmask]
+
 ### Set up arrays for K selected ###
 xKKout = np.array([])
 noxKKout = np.array([])
@@ -81,14 +97,16 @@ zeroindsKK = np.array([])
 zeroindsKJ = np.array([])
 x_K_z = np.array([])
 nox_K_z = np.array([])
+x_K_stell = np.array([])
+nox_K_stell = np.array([])
 KJinds = np.arange(len(KJdata))
 
 ### Find z for full tbdata ###
 Kz = vari_funcs.get_z(KKdata)
 
 for n in range(len(KKdata)): #loop over the selection band
-    obnum = KKdata['NUMBER_1'][n] #get DR11 number
-    KJmask = np.isin(KJdata['NUMBER_1'], obnum) #find equivilant J
+    obnum = KKdata['ID'][n] #get DR11 number
+    KJmask = np.isin(KJdata['ID'], obnum) #find equivilant J
     if ~np.any(KJmask):
         continue
     
@@ -123,6 +141,9 @@ for n in range(len(KKdata)): #loop over the selection band
         ### save z of object ###
         x_K_z = np.append(x_K_z, Kz[n])
         
+        ### save stellarity of object ###
+        x_K_stell = np.append(x_K_stell, Kstell[n])
+        
 #        ### save x-ray flux for chan objects ###
 #        xflux = KKdata[]
     else:
@@ -140,6 +161,9 @@ for n in range(len(KKdata)): #loop over the selection band
         ### save z of object ###
         nox_K_z = np.append(nox_K_z, Kz[n])
         
+        ### save stellarity of object ###
+        nox_K_stell = np.append(nox_K_stell, Kstell[n])
+        
 ### Set up arrays for J selected ###
 xJKout = np.array([])
 noxJKout = np.array([])
@@ -155,6 +179,8 @@ zeroindsJK = np.array([])
 zeroindsJJ = np.array([])
 x_J_z = np.array([])
 nox_J_z = np.array([])
+x_J_stell = np.array([])
+nox_J_stell = np.array([])
 JKinds = np.arange(len(JKdata))
 
 ### Find z for full tbdata ###
@@ -162,7 +188,7 @@ Jz = vari_funcs.get_z(JJdata)
 
 for n in range(len(JJdata)): #loop over the selection band
     obnum = JJdata['ID'][n] #find DR11 number
-    JKmask = np.isin(JKdata['NUMBER_1'], obnum) #find that object in K array
+    JKmask = np.isin(JKdata['ID'], obnum) #find that object in K array
     if ~np.any(JKmask):
         continue
     
@@ -198,6 +224,9 @@ for n in range(len(JJdata)): #loop over the selection band
         ### save z of object ###
         x_J_z = np.append(x_J_z, Jz[n])
         
+        ### save stellarity of object ###
+        x_J_stell = np.append(x_J_stell, Jstell[n])
+        
     else:
 
         
@@ -213,6 +242,9 @@ for n in range(len(JJdata)): #loop over the selection band
         
         ### save z of object ###
         nox_J_z = np.append(nox_J_z, Jz[n])
+        
+        ### save stellarity of object ###
+        nox_J_stell = np.append(nox_J_stell, Jstell[n])
         
 ### edit 0 sigs so they shou on plot as empty circle upper limits ###
 zerosigval = 1.5e-3
@@ -252,9 +284,9 @@ plt.plot(x,y,'k')
 plt.xlim(xmin=1e-3,xmax=2.3)
 plt.ylim(ymin=1e-3,ymax=2.3)
 plt.tight_layout()
-#plt.savefig('plots/JK_sig_comp/JK_sig_comp.png')
-#plt.savefig('plots/JK_sig_comp/JK_sig_comp_K_variables.png')
-#plt.savefig('plots/JK_sig_comp/JK_sig_comp_J_variables.png')
+#plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp.png')
+#plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_K_variables.png')
+#plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_J_variables.png')
 
 #%% Create figure with J/K selection split ###
 
@@ -287,7 +319,7 @@ plt.plot(x,y,'k')
 plt.xlim(xmin=1e-3,xmax=2.3)
 plt.ylim(ymin=1e-3,ymax=2.3)
 plt.tight_layout()
-plt.savefig('plots/JK_sig_comp/JK_sig_comp_selection_split.png')
+#plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_selection_split.png')
 #%% Plot just the X-ray points with J-K colours on ###
 
 plt.figure()
@@ -312,9 +344,9 @@ plt.plot(x,y,'k')
 plt.xlim(xmin=1e-3,xmax=2.3)
 plt.ylim(ymin=1e-3,ymax=2.3)
 plt.tight_layout()
-#plt.savefig('plots/JK_sig_comp/JK_sig_comp_Xray.png')
-#plt.savefig('plots/JK_sig_comp/JK_sig_comp_Xray_K_variables.png')
-#plt.savefig('plots/JK_sig_comp/JK_sig_comp_Xray_J_variables.png')
+#plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_Xray.png')
+#plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_Xray_K_variables.png')
+#plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_Xray_J_variables.png')
 
 #%% Plot just the non-X-ray points with J-K colours on ###
 
@@ -342,9 +374,9 @@ plt.plot(x,y,'k')
 plt.xlim(xmin=1e-3,xmax=2.3)
 plt.ylim(ymin=1e-3,ymax=2.3)
 plt.tight_layout()
-#plt.savefig('plots/JK_sig_comp/JK_sig_comp_not_Xray.png')
-#plt.savefig('plots/JK_sig_comp/JK_sig_comp_not_Xray_K_variables.png')
-#plt.savefig('plots/JK_sig_comp/JK_sig_comp_not_Xray_J_variables.png')
+#plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_not_Xray.png')
+#plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_not_Xray_K_variables.png')
+#plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_not_Xray_J_variables.png')
 
 #%% Plot just the X-ray points with z colours on ###
 
@@ -370,9 +402,9 @@ plt.plot(x,y,'k')
 plt.xlim(xmin=1e-3,xmax=2.3)
 plt.ylim(ymin=1e-3,ymax=2.3)
 plt.tight_layout()
-#plt.savefig('plots/JK_sig_comp/JK_sig_comp_Xray_zcolours.png')
-#plt.savefig('plots/JK_sig_comp/JK_sig_comp_Xray_zcolours_K_variables.png')
-#plt.savefig('plots/JK_sig_comp/JK_sig_comp_Xray_zcolours_J_variables.png')
+#plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_Xray_zcolours.png')
+#plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_Xray_zcolours_K_variables.png')
+#plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_Xray_zcolours_J_variables.png')
 
 #%% Plot just the non-X-ray points with z colours on ###
 
@@ -400,9 +432,86 @@ plt.plot(x,y,'k')
 plt.xlim(xmin=1e-3,xmax=2.3)
 plt.ylim(ymin=1e-3,ymax=2.3)
 plt.tight_layout()
-#plt.savefig('plots/JK_sig_comp/JK_sig_comp_not_Xray_zcolours.png')
-#plt.savefig('plots/JK_sig_comp/JK_sig_comp_not_Xray_zcolours_K_variables.png')
-#plt.savefig('plots/JK_sig_comp/JK_sig_comp_not_Xray_zcolours_J_variables.png')
+#plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_not_Xray_zcolours.png')
+#plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_not_Xray_zcolours_K_variables.png')
+#plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_not_Xray_zcolours_J_variables.png')
+
+#%% Plot just the X-ray points with stellarity colours on ###
+
+plt.figure()
+plt.errorbar(xKKout, xKJout, yerr=xKJouterr, xerr=xKKouterr, 
+             color='tab:grey', fmt='.', zorder=0, alpha=0.5)
+plt.scatter(xKKout, xKJout, c=x_K_stell)#, vmin=-2, vmax=1.5)
+plt.errorbar(xJKout, xJJout, yerr=xJJouterr, xerr=xJKouterr, 
+             color='tab:grey', fmt='.', zorder=0, alpha=0.5)
+plt.scatter(xJKout, xJJout, c=x_J_stell)#, vmin=-2, vmax=1.5)
+plt.errorbar(xKKout[xKJout==zerosigval], xKJout[xKJout==zerosigval], yerr=0.25e-3, fmt='b.', zorder=0, uplims=True)
+plt.errorbar(xJKout[xJKout==zerosigval], xJJout[xJKout==zerosigval], xerr=0.25e-3, fmt='b.', zorder=0, xuplims=True)
+
+plt.xlabel('$\sigma_{K}$')
+plt.ylabel('$\sigma_{J}$')
+plt.xscale('log')
+plt.yscale('log')
+plt.title('X-ray Detected')
+cbar=plt.colorbar()
+plt.clim(-2,1.5)
+cbar.set_label(r'$K_{2^{\prime\prime}} - K_{0.7^{\prime\prime}}$')
+plt.plot(x,y,'k')
+plt.xlim(xmin=1e-3,xmax=2.3)
+plt.ylim(ymin=1e-3,ymax=2.3)
+plt.tight_layout()
+
+#%% Plot just the non-X-ray points with stellarity colours on ###
+
+plt.figure()
+plt.errorbar(noxKKout[noxKJout!=0], noxKJout[noxKJout!=0], 
+             yerr=noxKJouterr[noxKJout!=0], xerr=noxKKouterr[noxKJout!=0], 
+             color='tab:grey', fmt='.', zorder=0, alpha=0.5)
+plt.scatter(noxKKout, noxKJout, c=nox_K_stell)#, vmin=-2, vmax=1.5)
+plt.errorbar(noxJKout[noxJKout!=0], noxJJout[noxJKout!=0], 
+             yerr=noxJJouterr[noxJKout!=0], xerr=noxJKouterr[noxJKout!=0], 
+             color='tab:grey', fmt='.', zorder=0, alpha=0.5)
+plt.scatter(noxJKout, noxJJout, c=nox_J_stell)#, vmin=-2, vmax=1.5)
+plt.errorbar(noxKKout[noxKJout==zerosigval], noxKJout[noxKJout==zerosigval], yerr=0.25e-3, fmt='b.', zorder=0, uplims=True)
+plt.errorbar(noxJKout[noxJKout==zerosigval], noxJJout[noxJKout==zerosigval], xerr=0.25e-3, fmt='b.', zorder=0, xuplims=True)
+
+plt.xlabel('$\sigma_{K}$')
+plt.ylabel('$\sigma_{J}$')
+plt.xscale('log')
+plt.yscale('log')
+plt.title('Not X-ray Detected')
+cbar=plt.colorbar()
+plt.clim(-2,0)
+cbar.set_label(r'$K_{2^{\prime\prime}} - K_{0.7^{\prime\prime}}$')
+plt.plot(x,y,'k')
+plt.xlim(xmin=1e-3,xmax=2.3)
+plt.ylim(ymin=1e-3,ymax=2.3)
+plt.tight_layout()
+
+#%% Plot just the X-ray points with stellarity colours on ###
+
+plt.figure()
+plt.errorbar(xKKout, xKJout, yerr=xKJouterr, xerr=xKKouterr, 
+             color='tab:grey', fmt='.', zorder=0, alpha=0.5)
+plt.scatter(xKKout, xKJout, c=x_K_stell)#, vmin=-2, vmax=1.5)
+plt.errorbar(xJKout, xJJout, yerr=xJJouterr, xerr=xJKouterr, 
+             color='tab:grey', fmt='.', zorder=0, alpha=0.5)
+plt.scatter(xJKout, xJJout, c=x_J_stell)#, vmin=-2, vmax=1.5)
+plt.errorbar(xKKout[xKJout==zerosigval], xKJout[xKJout==zerosigval], yerr=0.25e-3, fmt='b.', zorder=0, uplims=True)
+plt.errorbar(xJKout[xJKout==zerosigval], xJJout[xJKout==zerosigval], xerr=0.25e-3, fmt='b.', zorder=0, xuplims=True)
+
+plt.xlabel('$\sigma_{K}$')
+plt.ylabel('$\sigma_{J}$')
+plt.xscale('log')
+plt.yscale('log')
+plt.title('X-ray Detected')
+cbar=plt.colorbar()
+plt.clim(-2,0)
+cbar.set_label(r'$K_{2^{\prime\prime}} - K_{0.7^{\prime\prime}}$')
+plt.plot(x,y,'k')
+plt.xlim(xmin=1e-3,xmax=2.3)
+plt.ylim(ymin=1e-3,ymax=2.3)
+plt.tight_layout()
 
 #%% Save table of objects that have sigma_J == 0 ###
 #zerostbdata = tbdata[zeroindsK.astype(int)] # creates full data table with K band lc data

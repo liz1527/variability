@@ -21,10 +21,10 @@ import vari_funcs #my module to help run code neatly
 plt.close('all') #close any open plots
 
 ### Open the fits files and get data ###
-tbdata = fits.open('mag_flux_tables/K/mag_flux_table_best_extra_clean_no06.fits')[1].data
-chandata = fits.open('mag_flux_tables/K/xray_mag_flux_table_best_extra_clean_no06.fits')[1].data
-sdata = fits.open('mag_flux_tables/K/stars_mag_flux_table_extra_clean_no06.fits')[1].data
-sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06_2arcsec_neg.fits')
+tbdata = fits.open('mag_flux_tables/K/mag_flux_table_best_K_extra_clean.fits')[1].data
+chandata = fits.open('mag_flux_tables/K/xray_mag_flux_table_best_K_extra_clean.fits')[1].data
+sdata = fits.open('mag_flux_tables/K/stars_mag_flux_table_K_extra_clean.fits')[1].data
+sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_K_extra_clean_2arcsec_neg.fits')
 
 ### Remove edges ###
 tbdata = vari_funcs.field_funcs.remove_edges(tbdata)
@@ -53,25 +53,25 @@ fig, chisq = vari_funcs.selection_plot_funcs.flux_variability_plot(flux, fluxcha
                                        normalised=True, stars=True, scale='log')
 
 
-plt.ylim(3e-2,3e4)
-plt.xlim(4e0, 1e7)
+#plt.ylim(3e-2,3e4)
+#plt.xlim(4e0, 1e7)
 ### Select Variables as those with chisq > 24.322 and >50 ###
 varydata24 = tbdata[chisq>24.322]
 varydata30 = tbdata[chisq>30]
 varydata40 = tbdata[chisq>40]
 varydata50 = tbdata[chisq>50]
 
-plt.hlines(24.322, 4e-1, 1e7,zorder=4,label='Chi>24.3')
+#plt.hlines(24.322, 4e-1, 1e7,zorder=4,label='Chi>24.3')
 plt.hlines(30, 4e-1, 1e7,'g', zorder=4,label='Chi>30')
-plt.hlines(40, 4e-1, 1e7,'y', zorder=4,label='Chi>40')
-plt.hlines(50, 4e-1, 1e7,'c', zorder=4,label='Chi>50')
+#plt.hlines(40, 4e-1, 1e7,'y', zorder=4,label='Chi>40')
+#plt.hlines(50, 4e-1, 1e7,'c', zorder=4,label='Chi>50')
 plt.legend()
 
 #### Save new tables ###
 #save24 = Table(varydata24)
 #save24.write('variable_tables/variables_chi24.fits')
-#save30 = Table(varydata30)
-#save30.write('variable_tables/variables_chi30.fits')
+save30 = Table(varydata30)
+save30.write('variable_tables/K/variables_no06_chi30_neg.fits')
 #save40 = Table(varydata40)
 #save40.write('variable_tables/variables_chi40.fits')
 #save50 = Table(varydata50)

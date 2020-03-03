@@ -26,7 +26,7 @@ plt.close('all') #close any open plots
 #from numpy.lib.recfunctions import append_fields
 
 #%% Open the fits files and get data ###
-#tbdata = fits.open('mag_flux_tables/mag_flux_table_best_extra_clean_no06.fits')[1].data
+tbdata = fits.open('mag_flux_tables/mag_flux_table_best_extra_clean_no06.fits')[1].data
 tbdata = fits.open('variable_tables/no06_variables_chi30_2arcsec_DR11data_restframe.fits')[1].data
 #fullxray = fits.open('mag_flux_tables/chanDR11data_restframe_mag_flux_table_best_extra_clean_no06.fits')[1].data
 #chandata = fits.open('variable_tables/no06_variables_chi30_chandata_DR11data_restframe.fits')[1].data
@@ -38,15 +38,15 @@ sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06_2arcsec
 #chandata = vari_funcs.chandra_only(chandata)
 
 # Extract magnitude table and error table
-flux = vari_funcs.flux4_stacks(tbdata)
+flux = vari_funcs.k_mag_flux.flux4_stacks(tbdata)
 flux, tbdata = vari_funcs.noneg(flux, tbdata)
-flux, fluxerr, tbdata = vari_funcs.create_quad_error_array(sigtb, tbdata, aper=4)
+flux, fluxerr, tbdata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, tbdata, aper=4)
 #chanflux = vari_funcs.flux5_stacks(chandata)
 #chanflux, chandata = vari_funcs.noneg(chanflux, chandata)
 #chanflux, chanerr, chandata = vari_funcs.create_quad_error_array(sigtb, chandata, aper=5)
-#fullflux = vari_funcs.flux5_stacks(fullxray)
+#fullflux = vari_funcs.k_mag_flux.flux4_stacks(fullxray)
 #fullflux, fulldata = vari_funcs.noneg(fullflux, fullxray)
-#fullflux, fullerr, fullxray = vari_funcs.create_quad_error_array(sigtb, fullxray, aper=5)
+#fullflux, fullerr, fullxray = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, fullxray, aper=5)
 
 ### Normalise ###
 fluxnorm, fluxerrnorm = vari_funcs.normalise_flux_and_errors(flux, fluxerr)
@@ -66,9 +66,9 @@ out = np.array([vari_funcs.maximum_likelihood(fluxnorm[n,:], fluxerrnorm[n,:],
 #meanchan = np.nanmean(chanfluxnorm, axis=1)
 #chanout = np.array([vari_funcs.maximum_likelihood(chanfluxnorm[n,:], chanerrnorm[n,:], meanchan[n], posvar) for n in range(numobs)])
 #
-#numobs = np.shape(fullfluxnorm)[0]
-#meanfull = np.nanmean(fullfluxnorm, axis=1)
-#fullout = np.array([vari_funcs.maximum_likelihood(fullfluxnorm[n,:], fullerrnorm[n,:], meanfull[n], posvar) for n in range(numobs)])
+numobs = np.shape(fullfluxnorm)[0]
+meanfull = np.nanmean(fullfluxnorm, axis=1)
+fullout = np.array([vari_funcs.maximum_likelihood(fullfluxnorm[n,:], fullerrnorm[n,:], meanfull[n], posvar) for n in range(numobs)])
 
 #%% Plots
 mask=tbdata['X-ray'].astype(bool)

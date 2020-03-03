@@ -26,18 +26,25 @@ plt.close('all')
 
 ### Get fits ###
 #dr11 = fits.open('UDS_catalogues/DR11-2arcsec-June24-2018+plusXY_best.fits')[1].data
-fullxray = fits.open('UDS_catalogues/DR11-2arcsec-June24-2018+plusXY_chandra_novarys.fits')[1].data
+fullxray = fits.open('UDS_catalogues/DR11-2arcsec-Jun-30-2019_best_chandra_novarys.fits')[1].data
+deviant = fits.open('variable_tables/K/variables_no06_chi30_neg_deviant_DR11data.fits')[1].data
 
 ### with x/nox split ###
-#noxvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_noXray_DR11data_restframe.fits')[1].data
-#xvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_Xray_DR11data_restframe.fits')[1].data
-noxvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_nochanXray_DR11data_restframe.fits')[1].data
-xvarydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_chandata_DR11data_restframe.fits')[1].data
+#noxvarydata = fits.open('variable_tables/K/variables_no06_chi30_DR11data_noxray.fits')[1].data
+#xvarydata = fits.open('variable_tables/K/variables_no06_chi30_DR11data_xray.fits')[1].data
+#noxvarydata = fits.open('variable_tables/K/variables_no06_chi30_nochanXray_DR11data.fits')[1].data
+#xvarydata = fits.open('variable_tables/K/variables_no06_chi30_chandata_DR11data.fits')[1].data
+
+noxvarydata = fits.open('variable_tables/K/variables_no06_chi30_neg_DR11data_noxray.fits')[1].data
+xvarydata = fits.open('variable_tables/K/variables_no06_chi30_neg_DR11data_xray.fits')[1].data
+#noxvarydata = fits.open('variable_tables/K/variables_no06_chi30_neg_nochanXray_DR11data.fits')[1].data
+#xvarydata = fits.open('variable_tables/K/variables_no06_chi30_neg_chandata_DR11data.fits')[1].data
 
 allx_L_O = vari_funcs.xray_funcs.get_L_O(fullxray)
 nox_L_O = vari_funcs.xray_funcs.get_L_O(noxvarydata)
 x_L_O = vari_funcs.xray_funcs.get_L_O(xvarydata)
-
+dev_L_O = vari_funcs.xray_funcs.get_L_O(deviant)
+#
 ##_, bins, _ = plt.hist([nox_L_O, x_L_O, allx_L_O], bins=50, color=['b','r','k'], #linestyle=['dashed','dashed','dashed'],
 ##         histtype='step', label=['Variable Non-X-ray AGN','Variable X-ray AGN','X-ray AGN'],
 ##         normed=True)
@@ -61,6 +68,7 @@ x_L_O = vari_funcs.xray_funcs.get_L_O(xvarydata)
 allx_L_2, allx_F_2, allx_flux, allx_z = vari_funcs.xray_funcs.get_xray_L_2(fullxray)
 nox_L_2, nox_F_2, nox_flux, nox_z = vari_funcs.xray_funcs.get_xray_L_2(noxvarydata, Xray=False)
 x_L_2, x_F_2, x_flux, x_z = vari_funcs.xray_funcs.get_xray_L_2(xvarydata)
+dev_L_2, dev_F_2, dev_flux, dev_z = vari_funcs.xray_funcs.get_xray_L_2(deviant, Xray=False)
 
 #print('Start flux = '+str(allx_flux[10]))#+' erg/cm**2/s')
 #print('z = '+str(allx_z[10]))
@@ -71,6 +79,7 @@ print('Luminosity density at O = '+str(allx_L_O[10]))#+' erg/s/eV')
 allx_alpha_Ox = vari_funcs.xray_funcs.calc_alpha_Ox(allx_L_O, allx_L_2)
 nox_alpha_Ox = vari_funcs.xray_funcs.calc_alpha_Ox(nox_L_O, nox_L_2)
 x_alpha_Ox = vari_funcs.xray_funcs.calc_alpha_Ox(x_L_O, x_L_2)
+dev_alpha_Ox = vari_funcs.xray_funcs.calc_alpha_Ox(dev_L_O, dev_L_2)
 
 
 ### Calculate a-ox lines for plot ###
@@ -86,6 +95,7 @@ dot = plt.plot(nox_L_O, nox_L_2,'bo', label='Variable Non-X-ray AGN')
 plt.errorbar(nox_L_O.value, nox_L_2.value,yerr=upplims, fmt='bo', #mfc='None', #markersize=10,
              uplims=True,zorder=3)#, label='Variable Non-X-ray AGN'
 plt.plot(x_L_O, x_L_2,'ro', label='Variable X-ray AGN',zorder=2)
+dot = plt.plot(dev_L_O, dev_L_2,'yd', label='Deviant',zorder=4)
 plt.plot(x,y1, 'k', label=r'$\alpha_{OX} = 1$',zorder=0)
 plt.plot(x,y2, 'k--', label=r'$\alpha_{OX} = 2$',zorder=0)
 #plt.plot(x,y3, label=r'$\alpha_{OX} = 3$')

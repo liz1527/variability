@@ -24,14 +24,19 @@ plt.close('all') #close any open plots
 tbdata = fits.open('mag_flux_tables/J/mag_flux_table_best_J_extra_clean.fits')[1].data
 chandata = fits.open('mag_flux_tables/J/xray_mag_flux_table_best_J_extra_clean.fits')[1].data
 sdata = fits.open('mag_flux_tables/J/stars_mag_flux_table_J_extra_clean.fits')[1].data
-sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_2arcsec_J.fits')
+sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_J_extra_clean_2arcsec_neg.fits')
+
+### Remove edges ###
+tbdata = vari_funcs.field_funcs.remove_edges(tbdata)
+chandata = vari_funcs.field_funcs.remove_edges(chandata)
+sdata = vari_funcs.field_funcs.remove_edges(sdata)
 
 ## Create arrays of flux values ###
 flux = vari_funcs.j_mag_flux.flux_stacks(tbdata, aper=4)
 fluxchan = vari_funcs.j_mag_flux.flux_stacks(chandata, aper=4) 
 sflux = vari_funcs.j_mag_flux.flux_stacks(sdata, aper=4)
 #
-#### remove values that are negative ###
+### remove values that are negative ###
 #flux, tbdata = vari_funcs.flux_funcs.noneg(flux, tbdata)
 #fluxchan, chandata = vari_funcs.flux_funcs.noneg(fluxchan, chandata)
 #sflux, sdata = vari_funcs.flux_funcs.noneg(sflux, sdata)
@@ -68,11 +73,11 @@ plt.legend()
 
 #### Save new tables ###
 save32 = Table(varydata32)
-save32.write('variable_tables/J/K_extraction/J_variables_chi32.fits')
+save32.write('variable_tables/J/K_extraction/J_variables_chi32_neg.fits')
 #save30 = Table(varydata30)
 #save30.write('variable_tables/variables_chi30.fits')
-save40 = Table(varydata40)
-save40.write('variable_tables/J/K_extraction/J_variables_chi40.fits')
+#save40 = Table(varydata40)
+#save40.write('variable_tables/J/K_extraction/J_variables_chi40.fits')
 #save50 = Table(varydata50)
 #save50.write('variable_tables/variables_chi50.fits')
 

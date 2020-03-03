@@ -22,9 +22,16 @@ plt.close('all') #close any open plots
 
 
 ### Open the fits files and get data ###
-tbdata = fits.open('mag_flux_tables/K/mag_flux_table_best_extra_clean_no06.fits')[1].data
-chandata = fits.open('mag_flux_tables/K/xray_mag_flux_table_best_extra_clean_no06.fits')[1].data
-sdata = fits.open('mag_flux_tables/K/stars_mag_flux_table_extra_clean_no06.fits')[1].data
+tbdata = fits.open('mag_flux_tables/K/mag_flux_table_best_K_extra_clean.fits')[1].data
+chandata = fits.open('mag_flux_tables/K/xray_mag_flux_table_best_K_extra_clean.fits')[1].data
+sdata = fits.open('mag_flux_tables/K/stars_mag_flux_table_K_extra_clean.fits')[1].data
+
+ap = 2 # set up aperture size
+
+### Remove edges ###
+tbdata = vari_funcs.field_funcs.remove_edges(tbdata)
+chandata = vari_funcs.field_funcs.remove_edges(chandata)
+sdata = vari_funcs.field_funcs.remove_edges(sdata)
 
 ### Split the data into the 4 quadrants ###
 quaddata = vari_funcs.field_funcs.quadrants(tbdata, '05B')
@@ -43,24 +50,24 @@ for m, qtbdata in enumerate(quaddata):
     print(len(qtbdata)+len(qsdata))
     
     ## Create arrays of flux values ###
-    fluxn = vari_funcs.k_mag_flux.flux4_stacks(qtbdata)
-    fluxchann = vari_funcs.k_mag_flux.flux4_stacks(qchandata) 
-    sfluxn = vari_funcs.k_mag_flux.flux4_stacks(qsdata)
+    fluxn = vari_funcs.k_mag_flux.flux_stacks(qtbdata, aper=ap)
+    fluxchann = vari_funcs.k_mag_flux.flux_stacks(qchandata, aper=ap) 
+    sfluxn = vari_funcs.k_mag_flux.flux_stacks(qsdata, aper=ap)
     
-#    ### remove values that are negative ###
-#    fluxn, qtbdata = vari_funcs.flux_funcs.noneg(fluxn, qtbdata)
-#    fluxchann, qchandata = vari_funcs.flux_funcs.noneg(fluxchann, qchandata)
-#    sfluxn, qsdata = vari_funcs.flux_funcs.noneg(sfluxn, qsdata)
+    ### remove values that are negative ###
+    fluxn, qtbdata = vari_funcs.flux_funcs.noneg(fluxn, qtbdata)
+    fluxchann, qchandata = vari_funcs.flux_funcs.noneg(fluxchann, qchandata)
+    sfluxn, qsdata = vari_funcs.flux_funcs.noneg(sfluxn, qsdata)
     
-    fluxerr = vari_funcs.k_mag_flux.fluxerr4_stacks(qtbdata)
-    fluxerrchan = vari_funcs.k_mag_flux.fluxerr4_stacks(qchandata)
-    sfluxerr = vari_funcs.k_mag_flux.fluxerr4_stacks(qsdata)
+    fluxerr = vari_funcs.k_mag_flux.fluxerr_stacks(qtbdata, aper=ap)
+    fluxerrchan = vari_funcs.k_mag_flux.fluxerr_stacks(qchandata, aper=ap)
+    sfluxerr = vari_funcs.k_mag_flux.fluxerr_stacks(qsdata, aper=ap)
     
-    ### plot flux vs err ###
-    plt.figure(11)
-    plt.subplot(2,2,m+1)
-    plt.plot(fluxn[:,0], fluxerr[:,0], 'b+')
-    plt.plot(sfluxn[:,0], sfluxerr[:,0], 'm*')
+#    ### plot flux vs err ###
+#    plt.figure(11)
+#    plt.subplot(2,2,m+1)
+#    plt.plot(fluxn[:,0], fluxerr[:,0], 'b+')
+#    plt.plot(sfluxn[:,0], sfluxerr[:,0], 'm*')
     
     ### get original chi sq ###
     chisq = vari_funcs.vary_stats.my_chisquare_err(fluxn, fluxerr)
@@ -99,9 +106,9 @@ for m, qtbdata in enumerate(quaddata):
         fluxchan, binchan = vari_funcs.flux_funcs.fluxbin(binedge, bins[n+1], fluxchann, qchandata) #bindata
         sflux, sbindata = vari_funcs.flux_funcs.fluxbin(binedge, bins[n+1], sfluxn, qsdata) #bindata
         # get errors
-        fluxerr = vari_funcs.k_mag_flux.fluxerr4_stacks(bindata)
-        fluxchanerr = vari_funcs.k_mag_flux.fluxerr4_stacks(binchan)
-        sfluxerr = vari_funcs.k_mag_flux.fluxerr4_stacks(sbindata)
+        fluxerr = vari_funcs.k_mag_flux.fluxerr_stacks(bindata, aper=ap)
+        fluxchanerr = vari_funcs.k_mag_flux.fluxerr_stacks(binchan, aper=ap)
+        sfluxerr = vari_funcs.k_mag_flux.fluxerr_stacks(sbindata, aper=ap)
 #        print(len(flux)+len(sflux))
         meanflux = np.nanmean(flux, axis=1)
         meanchan = np.nanmean(fluxchan, axis=1)
@@ -132,7 +139,7 @@ for m, qtbdata in enumerate(quaddata):
 #            plt.plot(meansflux, schisq, 'm*', zorder=1, mfc='None', markersize=10)
     
         
-        ### remove any with chisq > 50 ###
+        ### remove any with chisq > 30 ###
         newgflux = flux[chisq<30,:]
         newsflux = sflux[schisq<30,:]
         newflux = np.vstack((newgflux, newsflux))
@@ -251,14 +258,14 @@ for m, qtbdata in enumerate(quaddata):
 #plt.plot(bins[0:42], finalmed, 'k--',zorder=3)
 #%%
 histbins = np.logspace(-2.3,4.4,100)
-plt.figure()
-plt.hist(finalchisq, histbins, label='Self-calibrated uncertainties')
-plt.hist(oldchisq, histbins, label='SExtractor Uncertainties')
-plt.xscale('log')
-#plt.yscale('symlog')
-plt.ylabel('Normalised Counts')
-plt.xlabel(r'$\chi^{2}$ ')
-plt.tight_layout()
+#plt.figure()
+#plt.hist(finalchisq, histbins, label='Self-calibrated uncertainties')
+#plt.hist(oldchisq, histbins, label='SExtractor Uncertainties')
+#plt.xscale('log')
+##plt.yscale('symlog')
+#plt.ylabel('Normalised Counts')
+#plt.xlabel(r'$\chi^{2}$ ')
+#plt.tight_layout()
 
 x = np.logspace(-2.3,4.4,500)
 #x = np.linspace(3e-2,4e4,5000)
@@ -267,11 +274,11 @@ y = stats.chi2.pdf(x,6) #6 dof as 7 variables
 #plt.vlines(7, 0, 0.12)
 plt.legend()
 
-varychi = galchisq[galchisq > 24.322]
+varychi = galchisq[galchisq > 30]
 
-### Turn dictionary into astropy table ###
+#### Turn dictionary into astropy table ###
 #t = Table(sigdict)
-#t.write('sigma_tables/quad_epoch_sigma_table_extra_clean_no06_2arcsec_neg.fits')
+#t.write('sigma_tables/quad_epoch_sigma_table_K_extra_clean_1arcsec_neg.fits')
 
 
 

@@ -1,27 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Feb  5 15:43:38 2018
+Created on Mon Mar  2 16:54:35 2020
 
-Code to try and streamline the creation of mag-flux tables for variability
-analysis.
-
-Update on 13/4/18 to allow creations of month stacks mag_flux
+Code to create month mag flux tables
 
 @author: ppxee
 """
-#%% Create Semester mag-flux tables
+
 from astropy.table import Table, join, vstack, Column
 import numpy as np
 
-sems = ['05B', '06B', '07B', '08B', '09B', '10B', '11B', '12B']
-
-def sem_mag_flux(sem):
-    if sem == '10B':
-        semtb = Table.read('SE_outputs_yearstacks/K/cleaned_'+sem+'_output.fits')
-    else:
-        semtb = Table.read('SE_outputs_yearstacks/K/extra_clean_'+sem+'_output_K.fits')
-#    semtb = Table.read('SE_outputs_yearstacks/cleaned_'+sem+'_output.fits')
+#
+#%% Code for creating mag flux tables with month stack data
+def month_mag_flux(month):
+    semtb = Table.read('SE_outputs_monthstacks/cleaned_'+month+'_output_K.fits')
+    
     #extract column names
     cols = np.asarray(semtb.colnames)
     
@@ -41,43 +35,33 @@ def sem_mag_flux(sem):
         del semtb[name]
         
     for name in semtb.colnames:
-        semtb.rename_column(name, name+'_'+sem)  
+        if name == 'NUMBER':
+            continue
+        semtb.rename_column(name, name+'_'+month)  
         
     return semtb
 
-# Create semester mag flux tables
-sem05B = sem_mag_flux(sems[0])
-#sem06B = sem_mag_flux(sems[1])
-sem07B = sem_mag_flux(sems[2])
-sem08B = sem_mag_flux(sems[3])
-sem09B = sem_mag_flux(sems[4])
-sem10B = sem_mag_flux(sems[5])
-sem11B = sem_mag_flux(sems[6])
-sem12B = sem_mag_flux(sems[7])
+#%% 
+    
+months = ['sep05','oct05','nov05','dec05', 'jan06', 'dec06', 'jan07', 'aug07', 
+          'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 'jul09', 'aug09', 
+          'sep09', 'oct09', 'nov09', 'dec09', 'jan10', 'feb10', 'aug10',
+          'sep10', 'oct10', 'nov10', 'dec10', 'jan11', 'feb11', 'aug11',
+          'sep11', 'oct11', 'nov11', 'dec11', 'jan12', 'feb12', 'jul12',
+          'aug12', 'sep12', 'oct12', 'nov12']
 
-#%% Join these tables using their IDs (will be fine for just this part as numbers alwasy match)
-#print('Join 1')
-#sem06B.rename_column('NUMBER_06B', 'NUMBER_05B')
-#semcom = join(sem05B, sem06B, keys='NUMBER_05B')
-semcom = sem05B
-print('Join 2')
-sem07B.rename_column('NUMBER_07B', 'NUMBER_05B')
-semcom = join(semcom, sem07B, keys='NUMBER_05B')
-print('Join 3')
-sem08B.rename_column('NUMBER_08B', 'NUMBER_05B')
-semcom = join(semcom, sem08B, keys='NUMBER_05B')
-print('Join 4')
-sem09B.rename_column('NUMBER_09B', 'NUMBER_05B')
-semcom = join(semcom, sem09B, keys='NUMBER_05B')
-print('Join 5')
-sem10B.rename_column('NUMBER_10B', 'NUMBER_05B')
-semcom = join(semcom, sem10B, keys='NUMBER_05B')
-print('Join 6')
-sem11B.rename_column('NUMBER_11B', 'NUMBER_05B')
-semcom = join(semcom, sem11B, keys='NUMBER_05B')
-print('Join 7')
-sem12B.rename_column('NUMBER_12B', 'NUMBER_05B')
-semcom = join(semcom, sem12B, keys='NUMBER_05B')
+for i, month  in enumerate(months):
+    #create month table with correctly renamed columns
+    montb = month_mag_flux(month)
+    print('Join ' + str(i))
+    if i == 0:
+        semcom = montb # for the first month just make the combined table the 
+                        #month table
+    else:
+        semcom = join(semcom, montb, keys='NUMBER') #join tables together using 
+                                                    # IDs in my catalogue
+    del montb
+    
 
 #%% Match these with various catalogs to create final tables
 from astropy.coordinates import match_coordinates_sky
@@ -86,9 +70,9 @@ from astropy import units as u
 
 # match with stars catalogue
 print('Matching Stars')
-stars = Table.read('UDS_catalogues/DR11-secure-stars.fits')
-starscoord = SkyCoord(stars['ALPHA_J2000']*u.degree, stars['DELTA_J2000']*u.degree)
-semcomcoord = SkyCoord(semcom['ALPHA_J2000_05B'], semcom['DELTA_J2000_05B'])
+stars = Table.read('UDS_catalogues/DR8-secure-stars.fits')
+starscoord = SkyCoord(stars['RA']*u.degree, stars['DEC']*u.degree)
+semcomcoord = SkyCoord(semcom['ALPHA_J2000_sep05'], semcom['DELTA_J2000_sep05'])
 idx, d2d , _ = match_coordinates_sky(starscoord, semcomcoord)
 mask = d2d<=1*u.arcsec #make sure match is within 1 arcsec (like in topcat)
 idx = idx[mask]
@@ -99,15 +83,15 @@ semcomns = semcom[ind] #create table of no stars
 
 #match with best catalogue
 print('Matching Best')
-best = Table.read('UDS_catalogues/DR11-2arcsec-Jun-30-2019_best.fits')
+best = Table.read('UDS_catalogues/uds_multicat_ap3.v5b_best.fits')
 bestcoord = SkyCoord(best['ALPHA_J2000']*u.degree, best['DELTA_J2000']*u.degree)
-semcomnscoord = SkyCoord(semcomns['ALPHA_J2000_05B'], semcomns['DELTA_J2000_05B'])
+semcomnscoord = SkyCoord(semcomns['ALPHA_J2000_sep05'], semcomns['DELTA_J2000_sep05'])
 idx, d2d , _ = match_coordinates_sky(bestcoord, semcomnscoord)
 mask = d2d<=1*u.arcsec #make sure match is within 1 arcsec (like in topcat)
 idx = idx[mask]
 bestmf = semcomns[idx] #create best table with no stars
 
-bestmfcoord = SkyCoord(bestmf['ALPHA_J2000_05B'], bestmf['DELTA_J2000_05B'])
+bestmfcoord = SkyCoord(bestmf['ALPHA_J2000_sep05'], bestmf['DELTA_J2000_sep05'])
 
 # match with xmm
 print('Matching XMM')
@@ -134,16 +118,16 @@ print('Joining xray table')
 xraymf = vstack([chanmf, xmmmf])
 #%%
 # boolean whether a source is seen in x-rays
-xray = np.isin(bestmf['NUMBER_05B'], xraymf['NUMBER_05B'])
+xray = np.isin(bestmf['NUMBER'], xraymf['NUMBER'])
 xraycol = Column(xray, 'X-ray')
 bestmf.add_column(xraycol)
-xrayfull = np.isin(semcom['NUMBER_05B'], xraymf['NUMBER_05B'])
+xrayfull = np.isin(semcom['NUMBER'], xraymf['NUMBER'])
 xraycolfull = Column(xrayfull, 'X-ray')
 semcom.add_column(xraycolfull)
 
 #%% Save the tables
-extra = '_extra_clean'
-semcom.write('mag_flux_tables/K/mag_flux_table_K'+extra+'.fits')
-bestmf.write('mag_flux_tables/K/mag_flux_table_best_K'+extra+'.fits')
-starsmf.write('mag_flux_tables/K/stars_mag_flux_table_K'+extra+'.fits')
-xraymf.write('mag_flux_tables/K/xray_mag_flux_table_best_K'+extra+'.fits')
+extra = '_cleaned'
+semcom.write('mag_flux_tables/K/month/month_mag_flux_table_K'+extra+'.fits')
+bestmf.write('mag_flux_tables/K/month/month_mag_flux_table_best_K'+extra+'.fits')
+starsmf.write('mag_flux_tables/K/month/month_stars_mag_flux_table_K'+extra+'.fits')
+xraymf.write('mag_flux_tables/K/month/month_xray_mag_flux_table_best_K'+extra+'.fits')

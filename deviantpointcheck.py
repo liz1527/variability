@@ -21,19 +21,19 @@ import vari_funcs #my module to help run code neatly
 plt.close('all') #close any open plots
 
 ### Read fits tables ###
-varydata = fits.open('variable_tables/no06_variables_chi30_2arcsec_neg.fits')[1].data
-sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06_2arcsec_neg.fits')
+varydata = fits.open('variable_tables/K/variables_no06_chi30.fits')[1].data
+sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_K_extra_clean_2arcsec_neg.fits')
 
 ### remove edges ###
-varydata = vari_funcs.remove_edges(varydata)
+varydata = vari_funcs.field_funcs.remove_edges(varydata)
 
 ### Create flux and error arrays ###
-varyflux = vari_funcs.flux4_stacks(varydata)
-varyflux, varyfluxerr, varydata = vari_funcs.create_quad_error_array(sigtb, varydata, aper=4)
+varyflux = vari_funcs.k_mag_flux.flux4_stacks(varydata)
+varyflux, varyfluxerr, varydata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, varydata, aper=4)
 meanflux = np.nanmean(varyflux, axis=1)
 
 ### Find difference from 1 ###
-fluxn, fluxnerr = vari_funcs.normalise_flux_and_errors(varyflux, varyfluxerr)
+fluxn, fluxnerr = vari_funcs.flux_funcs.normalise_flux_and_errors(varyflux, varyfluxerr)
 diff = abs(fluxn - 1)
 
 ### mask max difference ###
@@ -45,8 +45,8 @@ varyfluxerrnew[np.arange(len(varyflux)),mask] = np.nan
 
 
 ### Calculate new chi^2 values ###
-chisq = vari_funcs.my_chisquare_err(varyflux, varyfluxerr)
-chisqnew = vari_funcs.my_chisquare_err(varyfluxnew, varyfluxerrnew)
+chisq = vari_funcs.vary_stats.my_chisquare_err(varyflux, varyfluxerr)
+chisqnew = vari_funcs.vary_stats.my_chisquare_err(varyfluxnew, varyfluxerrnew)
 
 diff = chisq - chisqnew
 meandiff = np.nanmean(diff)
@@ -100,4 +100,4 @@ plt.tight_layout()
 
 ### save checked table ###
 save30 = Table(newvary)
-save30.write('variable_tables/no06_variables_chi30_2arcsec_deviant_neg.fits')
+save30.write('variable_tables/variables_no06_chi30_noneg_deviant.fits')

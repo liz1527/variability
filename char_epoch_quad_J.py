@@ -25,6 +25,11 @@ tbdata = fits.open('mag_flux_tables/J/mag_flux_table_best_J_extra_clean.fits')[1
 chandata = fits.open('mag_flux_tables/J/xray_mag_flux_table_best_J_extra_clean.fits')[1].data
 sdata = fits.open('mag_flux_tables/J/stars_mag_flux_table_J_extra_clean.fits')[1].data
 
+### Remove edges ###
+tbdata = vari_funcs.field_funcs.remove_edges(tbdata)
+chandata = vari_funcs.field_funcs.remove_edges(chandata)
+sdata = vari_funcs.field_funcs.remove_edges(sdata)
+
 ### Split the data into the 4 quadrants ###
 quaddata = vari_funcs.field_funcs.quadrants(tbdata, '05B')
 chanquaddata = vari_funcs.field_funcs.quadrants(chandata, '05B')
@@ -44,11 +49,11 @@ for m, qtbdata in enumerate(quaddata):
     fluxn = vari_funcs.j_mag_flux.flux4_stacks(qtbdata)
     fluxchann = vari_funcs.j_mag_flux.flux4_stacks(qchandata) 
     sfluxn = vari_funcs.j_mag_flux.flux4_stacks(qsdata)
-    
-    ### remove values that are negative ###
-    fluxn, qtbdata = vari_funcs.flux_funcs.noneg(fluxn, qtbdata)
-    fluxchann, qchandata = vari_funcs.flux_funcs.noneg(fluxchann, qchandata)
-    sfluxn, qsdata = vari_funcs.flux_funcs.noneg(sfluxn, qsdata)
+#    
+#    ### remove values that are negative ###
+#    fluxn, qtbdata = vari_funcs.flux_funcs.noneg(fluxn, qtbdata)
+#    fluxchann, qchandata = vari_funcs.flux_funcs.noneg(fluxchann, qchandata)
+#    sfluxn, qsdata = vari_funcs.flux_funcs.noneg(sfluxn, qsdata)
     
     ### Get original error stacks ###
     fluxerr = vari_funcs.j_mag_flux.fluxerr4_stacks(qtbdata)
@@ -237,9 +242,9 @@ plt.legend()
 
 varychi = galchisq[galchisq > 24.322]
 
-#### Turn dictionary into astropy table ###
+### Turn dictionary into astropy table ###
 t = Table(sigdict)
-t.write('sigma_tables/quad_epoch_sigma_table_extra_clean_2arcsec_J_noneg.fits')
+t.write('sigma_tables/quad_epoch_sigma_table_J_extra_clean_2arcsec_neg.fits')
 
 
 

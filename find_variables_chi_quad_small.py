@@ -21,10 +21,12 @@ import vari_funcs #my module to help run code neatly
 plt.close('all') #close any open plots
 
 ### Open the fits files and get data ###
-tbdata = fits.open('mag_flux_tables/K/mag_flux_table_best_extra_clean_no06.fits')[1].data
-chandata = fits.open('mag_flux_tables/K/xray_mag_flux_table_best_extra_clean_no06.fits')[1].data
-sdata = fits.open('mag_flux_tables/K/stars_mag_flux_table_extra_clean_no06.fits')[1].data
-sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06_2arcsec_neg.fits')
+tbdata = fits.open('mag_flux_tables/K/mag_flux_table_best_K_extra_clean.fits')[1].data
+chandata = fits.open('mag_flux_tables/K/xray_mag_flux_table_best_K_extra_clean.fits')[1].data
+sdata = fits.open('mag_flux_tables/K/stars_mag_flux_table_K_extra_clean.fits')[1].data
+sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_K_extra_clean_1arcsec_neg.fits')
+
+ap = 2 # 1arcsec aper
 
 ### Remove edges ###
 tbdata = vari_funcs.field_funcs.remove_edges(tbdata)
@@ -32,9 +34,9 @@ chandata = vari_funcs.field_funcs.remove_edges(chandata)
 sdata = vari_funcs.field_funcs.remove_edges(sdata)
 
 ## Create arrays of flux values ###
-flux = vari_funcs.k_mag_flux.flux_stacks(tbdata, aper=4)
-fluxchan = vari_funcs.k_mag_flux.flux_stacks(chandata, aper=4) 
-sflux = vari_funcs.k_mag_flux.flux_stacks(sdata, aper=4)
+flux = vari_funcs.k_mag_flux.flux_stacks(tbdata, aper=ap)
+fluxchan = vari_funcs.k_mag_flux.flux_stacks(chandata, aper=ap) 
+sflux = vari_funcs.k_mag_flux.flux_stacks(sdata, aper=ap)
 
 #### remove values that are negative ###
 #flux, tbdata = vari_funcs.flux_funcs.noneg(flux, tbdata)
@@ -46,9 +48,9 @@ sflux = vari_funcs.k_mag_flux.flux_stacks(sdata, aper=4)
 #sflux, sdata = vari_funcs.flux_funcs.nremove_low_flux(sflux, sdata)
 
 ### Get error arrays ###
-flux, fluxerr, tbdata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, tbdata, aper=4)
-fluxchan, chanerr, chandata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, chandata,aper=4)
-sflux, serr, sdata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, sdata, aper=4)
+flux, fluxerr, tbdata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, tbdata, aper=ap)
+fluxchan, chanerr, chandata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, chandata,aper=ap)
+sflux, serr, sdata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, sdata, aper=ap)
 
 ### reset X-ray column as messed up by stacking ###
 tbdata['X-ray'][tbdata['X-ray']==70] = False 
@@ -62,8 +64,11 @@ fig,_ = vari_funcs.selection_plot_funcs.flux_variability_plot(flux, fluxchan, 'c
                                        stars=True, scale='log')
 fig.canvas.mpl_connect('pick_event', vari_funcs.selection_plot_funcs.onpickflux_2arcsec)
 
+plt.ylim(3e-2,3e4)
+#plt.xlim(8e1, 1e7) #if flux noneg
+plt.xlim(4e0, 1e7) #if flux neg
 #devdata = fits.open('variable_tables/no06_variables_chi30_2arcsec_deviant_neg.fits')[1].data
-#devflux, devfluxerr, devdata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, devdata, aper=4)
+#devflux, devfluxerr, devdata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, devdata, aper=ap)
 #devmean = np.nanmean(devflux, axis=1)
 
 ### Calculate chi^2 values ###
@@ -79,7 +84,7 @@ varydata40 = tbdata[chisq>40]
 varydata50 = tbdata[chisq>50]
 
 #plt.hlines(22.458, 8e1, 1e7,zorder=4,label='Chi>22.5')
-plt.hlines(30, 8e1, 1e7,'g', zorder=4,label='Chi=30')
+plt.hlines(30, 4e0, 1e7, 'g', zorder=4,label='Chi=30')
 #plt.hlines(40, 8e1, 1e7,'y', zorder=4,label='Chi>40')
 #plt.hlines(50, 8e1, 1e7,'c', zorder=4,label='Chi>50')
 
@@ -103,8 +108,8 @@ plt.tight_layout()
 ### Save new tables ###
 #save24 = Table(varydata24)
 #save24.write('variable_tables/no06_variables_chi22.fits')
-#save30 = Table(varydata30)
-#save30.write('variable_tables/no06_variables_chi30_2arcsec_neg.fits')
+save30 = Table(varydata30)
+save30.write('variable_tables/K/variables_no06_chi30_1arcsec_neg.fits', overwrite=True)
 #save40 = Table(varydata40)
 #save40.write('variable_tables/no06_variables_chi40.fits')
 #save50 = Table(varydata50)
