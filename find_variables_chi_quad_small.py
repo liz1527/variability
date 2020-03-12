@@ -24,7 +24,7 @@ plt.close('all') #close any open plots
 tbdata = fits.open('mag_flux_tables/K/mag_flux_table_best_K_extra_clean.fits')[1].data
 chandata = fits.open('mag_flux_tables/K/xray_mag_flux_table_best_K_extra_clean.fits')[1].data
 sdata = fits.open('mag_flux_tables/K/stars_mag_flux_table_K_extra_clean.fits')[1].data
-sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_K_extra_clean_1arcsec_neg.fits')
+sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_K_extra_clean_1arcsec_noneg.fits')
 
 ap = 2 # 1arcsec aper
 
@@ -38,10 +38,10 @@ flux = vari_funcs.k_mag_flux.flux_stacks(tbdata, aper=ap)
 fluxchan = vari_funcs.k_mag_flux.flux_stacks(chandata, aper=ap) 
 sflux = vari_funcs.k_mag_flux.flux_stacks(sdata, aper=ap)
 
-#### remove values that are negative ###
-#flux, tbdata = vari_funcs.flux_funcs.noneg(flux, tbdata)
-#fluxchan, chandata = vari_funcs.flux_funcs.noneg(fluxchan, chandata)
-#sflux, sdata = vari_funcs.flux_funcs.noneg(sflux, sdata)
+### remove values that are negative ###
+flux, tbdata = vari_funcs.flux_funcs.noneg(flux, tbdata)
+fluxchan, chandata = vari_funcs.flux_funcs.noneg(fluxchan, chandata)
+sflux, sdata = vari_funcs.flux_funcs.noneg(sflux, sdata)
 
 #flux, tbdata = vari_funcs.flux_funcs.nremove_low_flux(flux, tbdata)
 #fluxchan, chandata = vari_funcs.flux_funcs.nremove_low_flux(fluxchan, chandata)
@@ -108,8 +108,8 @@ plt.tight_layout()
 ### Save new tables ###
 #save24 = Table(varydata24)
 #save24.write('variable_tables/no06_variables_chi22.fits')
-save30 = Table(varydata30)
-save30.write('variable_tables/K/variables_no06_chi30_1arcsec_neg.fits', overwrite=True)
+#save30 = Table(varydata30)
+#save30.write('variable_tables/K/variables_no06_chi30_1arcsec_neg.fits', overwrite=True)
 #save40 = Table(varydata40)
 #save40.write('variable_tables/no06_variables_chi40.fits')
 #save50 = Table(varydata50)

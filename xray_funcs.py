@@ -70,6 +70,60 @@ def get_xray_L(tbdata, Xray=True, band='Full'):
     
     return flux, L, z
 
+def get_xray_L_mixedtable(tbdata, band='Full'):
+    ''' Function to find the X-ray luminosity in a variety of flux bands. 
+    Inputs:
+        tbdata = data table for all the objects, must have x-ray boolean incl
+        band = what band of flux should be used:
+                - 'Full' 0.5-10keV (default)
+                - 'Hard' 2-10keV 
+                - 'Soft' 0.2-5keV
+                - 'Uhrd' 5-10keV (not recommended)
+    Outputs:
+        flux = broad band flux in units of ergs/cm^2/s
+        L = broad band luminosity in units of ergs/s
+        z = redshift
+    '''
+    z = vari_funcs.get_z(tbdata)
+#    z[z<0.5] = np.nan
+#    z[z>4] = np.nan
+    
+    ### get luminosity distance ###
+    DL = cosmo.luminosity_distance(z) # need to sort out units
+    DL = DL.to(u.cm)
+    
+    flux = np.zeros(len(tbdata))
+    for n in range(len(tbdata)):
+        if band=='Hard': 
+            if tbdata['X-ray'][n] == True: # if it is an X-ray source, get flux from catalogue
+                flux[n] = tbdata['Hard_flux'] 
+#                flux# Units of erg cm**-2 s**-1
+            else: # if it is non X-ray - use the upper limit
+                flux[n] = 6.5e-16 # Units of erg cm**-2 s**-1
+        elif band=='Full': 
+            if tbdata['X-ray'][n] == True:
+                flux[n] = tbdata['Full_flux'] # Units of erg cm**-2 s**-1
+            else:
+                flux[n] = 4.4e-16 # Units of erg cm**-2 s**-1
+        elif band=='Soft': 
+            if tbdata['X-ray'][n] == True:
+                flux[n] = tbdata['Soft_flux'] # Units of erg cm**-2 s**-1
+            else:
+                flux[n] = 1.4e-16 # Units of erg cm**-2 s**-1
+        elif band=='Uhrd': 
+            if tbdata['X-ray'][n] == True:
+                flux = tbdata['Uhrd_flux'] # Units of erg cm**-2 s**-1
+            else:
+                flux[n] = 9.2e-15 # Units of erg cm**-2 s**-1
+            
+    ### Add units ###
+    flux = flux* (u.erg) * (u.cm)**-2 * (u.s)**-1 
+    
+    ### get luminosity ###
+    L = flux*4*np.pi*(DL**2)
+    
+    return flux, L, z
+
 def get_xray_L_2(tbdata, Xray=True, band='Hard'):
     ''' Function to find the monochromatic X-ray luminosity at 2keV in a 
     variety of flux bands. This assumes a power law for flux density and then
