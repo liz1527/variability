@@ -78,3 +78,13 @@ def no_ticks():
     ''' Function that removes all ticks from axes, useful on image plots '''
     plt.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
     plt.tick_params(axis='y', which='both', left=False, right=False, labelleft=False)
+    
+def mag2flux(mag):
+    ''' Function to convert DR11 magnitudes into fluxes
+    Inputs:
+        mag = AB magnitude from the DR11 catalogue
+    Outputs:
+        flux = flux of related to that magnitude 
+    '''
+    flux = 10**((mag-30)/(-2.5))
+    return flux
