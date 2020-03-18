@@ -54,7 +54,7 @@ fig, chisq = vari_funcs.selection_plot_funcs.flux_variability_plot(flux, fluxcha
 
 
 #plt.ylim(3e-2,3e4)
-#plt.xlim(4e0, 1e7)
+plt.xlim(4e0, 1e7)
 ### Select Variables as those with chisq > 24.322 and >50 ###
 varydata24 = tbdata[chisq>24.322]
 varydata30 = tbdata[chisq>30]
@@ -70,8 +70,8 @@ plt.legend()
 #### Save new tables ###
 #save24 = Table(varydata24)
 #save24.write('variable_tables/variables_chi24.fits')
-save30 = Table(varydata30)
-save30.write('variable_tables/K/variables_no06_chi30_neg.fits')
+#save30 = Table(varydata30)
+#save30.write('variable_tables/K/variables_no06_chi30_neg.fits')
 #save40 = Table(varydata40)
 #save40.write('variable_tables/variables_chi40.fits')
 #save50 = Table(varydata50)

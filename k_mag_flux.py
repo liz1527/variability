@@ -45,6 +45,51 @@ def fluxerr_stacks(tbdata, aper=5):
                 tbdata['FLUXERR_APER_11B'][:,aper],tbdata['FLUXERR_APER_12B'][:,aper]], axis=1)
     return fluxerr
 
+def month_flux_stacks(tbdata, aper=4):
+    ''' Function that takes a catalogue of flux data from the sextracor output
+    and makes a np array containing only the specified aperture data for each 
+    epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        flux = an array with 8 columns containing flux values for each year '''
+    aper -= 1 # to make it zero indexed
+    months = ['sep05','oct05','nov05','dec05', 'jan06', 'dec06', 'jan07',  
+          'aug07', 'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 'jul09',  
+          'aug09', 'sep09', 'oct09', 'nov09', 'dec09', 'jan10', 'feb10', 
+          'aug10', 'sep10', 'oct10', 'nov10', 'dec10', 'jan11', 'feb11', 
+          'aug11', 'sep11', 'oct11', 'nov11', 'dec11', 'jan12', 'feb12', 
+          'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
+    
+    for month in months:
+        if month == 'sep05':
+            flux = tbdata['FLUX_APER_'+month][:,aper]
+        else:
+            flux = np.vstack([flux, tbdata['FLUX_APER_'+month][:,aper]])
+    return np.transpose(flux)
+
+def month_fluxerr_stacks(tbdata, aper=4):
+    ''' Function that takes a catalogue of flux data from the sextracor output
+    and makes a np array containing only the specified aperture data for each 
+    epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        flux = an array with 40 columns containing flux values for each year '''
+    aper -= 1 # to make it zero indexed
+    months = ['sep05','oct05','nov05','dec05', 'jan06', 'dec06', 'jan07',  
+          'aug07', 'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 'jul09',  
+          'aug09', 'sep09', 'oct09', 'nov09', 'dec09', 'jan10', 'feb10', 
+          'aug10', 'sep10', 'oct10', 'nov10', 'dec10', 'jan11', 'feb11', 
+          'aug11', 'sep11', 'oct11', 'nov11', 'dec11', 'jan12', 'feb12', 
+          'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
+    
+    for month in months:
+        if month == 'sep05':
+            fluxerr = tbdata['FLUXERR_APER_'+month][:,aper]
+        else:
+            fluxerr = np.vstack([fluxerr, tbdata['FLUXERR_APER_'+month][:,aper]])
+    return fluxerr
 
 def mag_stacks(tbdata, aper=5):
     ''' Function that takes a catalogue of flux data from the sextracor output
@@ -75,6 +120,52 @@ def magerr_stacks(tbdata, aper=5):
                 tbdata['MAGERR_APER_07B'][:,aper],tbdata['MAGERR_APER_08B'][:,aper],
                 tbdata['MAGERR_APER_09B'][:,aper],tbdata['MAGERR_APER_10B'][:,aper], 
                 tbdata['MAGERR_APER_11B'][:,aper],tbdata['MAGERR_APER_12B'][:,aper]], axis=1)
+    return magerr
+
+def month_mag_stacks(tbdata, aper=4):
+    ''' Function that takes a catalogue of flux data from the sextracor output
+    and makes a np array containing only the specified aperture data for each 
+    epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        flux = an array with 8 columns containing flux values for each year '''
+    aper -= 1 # to make it zero indexed
+    months = ['sep05','oct05','nov05','dec05', 'jan06', 'dec06', 'jan07',  
+          'aug07', 'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 'jul09',  
+          'aug09', 'sep09', 'oct09', 'nov09', 'dec09', 'jan10', 'feb10', 
+          'aug10', 'sep10', 'oct10', 'nov10', 'dec10', 'jan11', 'feb11', 
+          'aug11', 'sep11', 'oct11', 'nov11', 'dec11', 'jan12', 'feb12', 
+          'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
+    
+    for month in months:
+        if month == 'sep05':
+            mag = tbdata['MAG_APER_'+month][:,aper]
+        else:
+            mag = np.vstack([mag, tbdata['MAG_APER_'+month][:,aper]])
+    return mag
+
+def month_magerr_stacks(tbdata, aper=4):
+    ''' Function that takes a catalogue of flux data from the sextracor output
+    and makes a np array containing only the specified aperture data for each 
+    epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        flux = an array with 8 columns containing flux values for each year '''
+    aper -= 1 # to make it zero indexed
+    months = ['sep05','oct05','nov05','dec05', 'jan06', 'dec06', 'jan07',  
+          'aug07', 'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 'jul09',  
+          'aug09', 'sep09', 'oct09', 'nov09', 'dec09', 'jan10', 'feb10', 
+          'aug10', 'sep10', 'oct10', 'nov10', 'dec10', 'jan11', 'feb11', 
+          'aug11', 'sep11', 'oct11', 'nov11', 'dec11', 'jan12', 'feb12', 
+          'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
+    
+    for month in months:
+        if month == 'sep05':
+            magerr = tbdata['MAGERR_APER_'+month][:,aper]
+        else:
+            magerr = np.vstack([magerr, tbdata['MAGERR_APER_'+month][:,aper]])
     return magerr
 
 def flux1_stacks(tbdata):

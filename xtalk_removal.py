@@ -109,9 +109,9 @@ for n, id in enumerate(varys['ID']):
         else:
             varys_noxtalk.add_row(obdata[0])
             
-varys.write('variable_tables/K/variables_no06_chi30_neg_DR11data_xtalkchecked.fits')
-varys_xtalk.write('variable_tables/K/variables_no06_chi30_neg_DR11data_xtalkcontam.fits')
-varys_noxtalk.write('variable_tables/K/variables_no06_chi30_neg_DR11data_noxtalkcontam.fits')
+#varys.write('variable_tables/K/variables_no06_chi30_neg_DR11data_xtalkchecked.fits')
+#varys_xtalk.write('variable_tables/K/variables_no06_chi30_neg_DR11data_xtalkcontam.fits')
+#varys_noxtalk.write('variable_tables/K/variables_no06_chi30_neg_DR11data_noxtalkcontam.fits')
 
 
 
