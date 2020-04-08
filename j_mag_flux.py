@@ -311,7 +311,7 @@ def create_quad_error_array_J(sigtb, tbdata, aper=5, quadoutput=False):
             if m != len(binarr)-1:
                 mask2 = avgflux<binarr[n,m+1]
             else:
-                #remove lower values
+                #remove upper values
                 mask = avgflux > 6309573 #max bin
                 nanarr = np.full_like(sigtb[str(n+1)+' '+str(int(lower))], np.nan)
                 qflux[mask,:] = nanarr

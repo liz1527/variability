@@ -138,6 +138,7 @@ for n in range(len(KKdata)): #loop over the selection band
         J_K = KKdata['JMAG_20'][n] - KKdata['KMAG_20'][n]
         x_K_J_K = np.append(x_K_J_K, J_K)
         
+        
         ### save z of object ###
         x_K_z = np.append(x_K_z, Kz[n])
         
@@ -163,7 +164,8 @@ for n in range(len(KKdata)): #loop over the selection band
         
         ### save stellarity of object ###
         nox_K_stell = np.append(nox_K_stell, Kstell[n])
-        
+
+               
 ### Set up arrays for J selected ###
 xJKout = np.array([])
 noxJKout = np.array([])
@@ -252,6 +254,7 @@ xKJout[xKJout==0] = zerosigval
 xJKout[xJKout==0] = zerosigval
 noxKJout[noxKJout==0] = zerosigval
 noxJKout[noxJKout==0] = zerosigval
+
 
 x = np.linspace(0,2.5,10)
 y = x
@@ -438,6 +441,17 @@ plt.tight_layout()
 
 #%% Plot just the X-ray points with stellarity colours on ###
 
+### Change stell arrays so colour will be bi-modal instead of a spectrum ###
+def bimodal_colours(stell):
+    stell[stell < -1.2] = 0
+    stell[stell > -0.9] = 0
+    stell[stell != 0] = 1
+    return stell
+x_K_stell = bimodal_colours(x_K_stell)
+nox_K_stell = bimodal_colours(nox_K_stell)
+x_J_stell = bimodal_colours(x_J_stell)
+nox_J_stell = bimodal_colours(nox_J_stell)
+
 plt.figure()
 plt.errorbar(xKKout, xKJout, yerr=xKJouterr, xerr=xKKouterr, 
              color='tab:grey', fmt='.', zorder=0, alpha=0.5)
@@ -454,7 +468,7 @@ plt.xscale('log')
 plt.yscale('log')
 plt.title('X-ray Detected')
 cbar=plt.colorbar()
-plt.clim(-2,1.5)
+#plt.clim(-2,1.5)
 cbar.set_label(r'$K_{2^{\prime\prime}} - K_{0.7^{\prime\prime}}$')
 plt.plot(x,y,'k')
 plt.xlim(xmin=1e-3,xmax=2.3)
@@ -481,32 +495,7 @@ plt.xscale('log')
 plt.yscale('log')
 plt.title('Not X-ray Detected')
 cbar=plt.colorbar()
-plt.clim(-2,0)
-cbar.set_label(r'$K_{2^{\prime\prime}} - K_{0.7^{\prime\prime}}$')
-plt.plot(x,y,'k')
-plt.xlim(xmin=1e-3,xmax=2.3)
-plt.ylim(ymin=1e-3,ymax=2.3)
-plt.tight_layout()
-
-#%% Plot just the X-ray points with stellarity colours on ###
-
-plt.figure()
-plt.errorbar(xKKout, xKJout, yerr=xKJouterr, xerr=xKKouterr, 
-             color='tab:grey', fmt='.', zorder=0, alpha=0.5)
-plt.scatter(xKKout, xKJout, c=x_K_stell)#, vmin=-2, vmax=1.5)
-plt.errorbar(xJKout, xJJout, yerr=xJJouterr, xerr=xJKouterr, 
-             color='tab:grey', fmt='.', zorder=0, alpha=0.5)
-plt.scatter(xJKout, xJJout, c=x_J_stell)#, vmin=-2, vmax=1.5)
-plt.errorbar(xKKout[xKJout==zerosigval], xKJout[xKJout==zerosigval], yerr=0.25e-3, fmt='b.', zorder=0, uplims=True)
-plt.errorbar(xJKout[xJKout==zerosigval], xJJout[xJKout==zerosigval], xerr=0.25e-3, fmt='b.', zorder=0, xuplims=True)
-
-plt.xlabel('$\sigma_{K}$')
-plt.ylabel('$\sigma_{J}$')
-plt.xscale('log')
-plt.yscale('log')
-plt.title('X-ray Detected')
-cbar=plt.colorbar()
-plt.clim(-2,0)
+#plt.clim(-2,0)
 cbar.set_label(r'$K_{2^{\prime\prime}} - K_{0.7^{\prime\prime}}$')
 plt.plot(x,y,'k')
 plt.xlim(xmin=1e-3,xmax=2.3)

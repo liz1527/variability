@@ -140,13 +140,13 @@ def onpickflux_2arcsec(event):
         event = info from click
     '''
     print('Click registered')
-    tbdata = fits.open('mag_flux_tables/K/mag_flux_table_best_extra_clean_no06.fits')[1].data
-    sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_extra_clean_no06_2arcsec.fits')
+    tbdata = fits.open('mag_flux_tables/K/mag_flux_table_best_K_extra_clean.fits')[1].data
+    sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_K_extra_clean_2arcsec_noneg.fits')
     tbdata = field_funcs.remove_edges(tbdata)
 
     ### remove values that are +/-99 ###
-    fluxn = k_mag_flux.flux4_stacks(tbdata)
-    fluxn, tbdata = flux_funcs.noneg(fluxn, tbdata)
+#    fluxn = k_mag_flux.flux4_stacks(tbdata)
+#    fluxn, tbdata = flux_funcs.noneg(fluxn, tbdata)
 #    fluxn, tbdata = remove_low_flux(fluxn, tbdata)
     flux, fluxerr, tbdata = k_mag_flux.create_quad_error_array(sigtb, tbdata, aper=4)
     ob = tbdata['NUMBER_05B'][event.ind] #Define the object number from the index of the selected point
@@ -166,7 +166,7 @@ def onpickflux_2arcsec(event):
     obflux = np.reshape(flux[tbdata['NUMBER_05B']==ob],np.shape(flux)[1])
     obfluxerr = np.reshape(fluxerr[tbdata['NUMBER_05B']==ob],np.shape(flux)[1])
     obdata = tbdata[tbdata['NUMBER_05B']==ob]
-    print(obfluxerr)
+#    print(obfluxerr)
     
     #set up time variable for plot
     print('setting up plot')
@@ -188,7 +188,7 @@ def onpickflux_2arcsec(event):
     plt.title('Lightcurve of Object '+str(obdata['NUMBER_05B']))#+' '+r' $\chi^{2} = $'+str(round(chisq, 2)))
     plt.xticks(t, years)
     plt.tight_layout()
-    print('I got here')
+#    print('I got here')
     
     
 def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],

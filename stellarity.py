@@ -17,8 +17,8 @@ import vari_funcs #my module to help run code neatly
 plt.close('all')
 
 ### Import fits files ###
-noxvarydata = Table.read('variable_tables/K/old_catalogue/no06_variables_chi30_2arcsec_noXray_DR11data_restframe_DR11_photometry.fits')
-xvarydata = Table.read('variable_tables/K/old_catalogue/no06_variables_chi30_2arcsec_Xray_DR11data_restframe_DR11_photometry.fits')
+noxvarydata = Table.read('variable_tables/K/old_catalogue/no06_variables_chi30_2arcsec_nochanXray_DR11data_restframe_DR11_photometry.fits')
+xvarydata = Table.read('variable_tables/K/old_catalogue/no06_variables_chi30_2arcsec_chandata_DR11data_restframe_DR11_photometry.fits')
 fullxray = Table.read('UDS_catalogues/chandra_catalogue_DR11_photometry_novarys.fits')
 dr11 = Table.read('UDS_catalogues/DR11_output_best.fits')
 dr11stars = Table.read('UDS_catalogues/DR11_output_stars.fits')
@@ -74,6 +74,8 @@ plt.plot(xbig, xstellar, 's', color='r',
          label='Variable X-ray Source')
 plt.ylabel(r'$K_{2^{\prime\prime}} - K_{0.7^{\prime\prime}}$')
 plt.xlabel(r'$K_{2^{\prime\prime}}$')
+plt.hlines(-1.2,12,24.5)
+plt.hlines(-0.9,12,24.5)
 plt.xlim(12, 24.5)
 plt.ylim(-2.2, 0.15)
 plt.legend()

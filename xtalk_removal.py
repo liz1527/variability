@@ -45,7 +45,8 @@ def get_percentage(xtalk, tbdata):
     return percent, kflux, predflux
     
 ### Open the fits files and get data ###
-varys = Table.read('variable_tables/K/variables_no06_chi30_neg_DR11data.fits')
+filename = 'J/K_extraction/J_variables_chi32_noneg_DR11data'
+varys = Table.read('variable_tables/'+filename+'.fits')
 xtalk = Table.read('UDS_catalogues/UDS_DR11_pred_xtalk_mag.fits')
 
 #%% match variables and xtalk catalogue ###
@@ -66,6 +67,7 @@ contam_col = Column(contam, name='X-talk_contam')
 varys.add_column(contam_col)
 
 varys_noxtalk = []
+
 for n, id in enumerate(varys['ID']):
     obdata = varys[varys['ID']==id]
     x_varys = obdata['X_IMAGE']
@@ -85,33 +87,69 @@ for n, id in enumerate(varys['ID']):
         
         mask = percent > 10 # mask those with >10% flux
         near_xtalk = near_xtalk[mask]
+        percent = percent[mask]
         if len(near_xtalk) != 0:
             bad += 1
             varys['X-talk_contam'][n] = True
             obdata['X-talk_contam'] = True
             if bad == 1:
                 varys_xtalk = obdata#near_xtalk
+                num = len(near_xtalk)
+                if num == 1:
+                    bad_percents = percent
+                    xtalk_x = near_xtalk['X']
+                    xtalk_y = near_xtalk['Y']
+                else:
+                    maxpercent = np.argmax(percent)
+                    bad_percents = percent[maxpercent]
+                    xtalk_x = near_xtalk['X'][maxpercent]
+                    xtalk_y = near_xtalk['Y'][maxpercent]
             else:
                 varys_xtalk.add_row(obdata[0])#near_xtalk[0])
-#            print('ID = '+str(id)+' is near '+str(len(near_xtalk))+' X-talks with >10% flux')
+                num = np.append(num, len(near_xtalk))
+                if num[bad-1] == 1:
+                    bad_percents = np.append(bad_percents, percent)
+                    xtalk_x = np.append(xtalk_x, near_xtalk['X'])
+                    xtalk_y = np.append(xtalk_y, near_xtalk['Y'])
+                else:
+                    maxpercent = np.argmax(percent)
+                    bad_percents = np.append(bad_percents, percent[maxpercent])
+                    xtalk_x = np.append(xtalk_x, near_xtalk['X'][maxpercent])
+                    xtalk_y = np.append(xtalk_y, near_xtalk['Y'][maxpercent])
+            print('ID = '+str(id)+' is near '+str(len(near_xtalk))+' X-talks with >10% flux')
         else:
             varys['X-talk_contam'][n] = False
             obdata['X-talk_contam'] = False
-            if varys_noxtalk == []:
+            if len(varys_noxtalk) == 0:
                 varys_noxtalk = obdata
             else:
                 varys_noxtalk.add_row(obdata[0])
     else:
         varys['X-talk_contam'][n] = False
         obdata['X-talk_contam'] = False
-        if varys_noxtalk == []:
+        if len(varys_noxtalk) == 0:
             varys_noxtalk = obdata
         else:
             varys_noxtalk.add_row(obdata[0])
             
-#varys.write('variable_tables/K/variables_no06_chi30_neg_DR11data_xtalkchecked.fits')
-#varys_xtalk.write('variable_tables/K/variables_no06_chi30_neg_DR11data_xtalkcontam.fits')
-#varys_noxtalk.write('variable_tables/K/variables_no06_chi30_neg_DR11data_noxtalkcontam.fits')
+### Add number, percent and coord columns to contaminated table ###
+num_col = Column(num, name='X-talk_num')
+varys_xtalk.add_column(num_col)
+percent_col = Column(bad_percents, name='X-talk_percent')
+varys_xtalk.add_column(percent_col)
+x_col = Column(xtalk_x, name='X-talk_X')
+varys_xtalk.add_column(x_col)
+y_col = Column(xtalk_y, name='X-talk_Y')
+varys_xtalk.add_column(y_col)
+        
+
+### Save tables ###
+varys.write('variable_tables/'+filename+'_xtalkchecked.fits',
+            overwrite=True)
+varys_xtalk.write('variable_tables/'+filename+'_xtalkcontam.fits',
+            overwrite=True)
+varys_noxtalk.write('variable_tables/'+filename+'_noxtalkcontam.fits',
+            overwrite=True)
 
 
 

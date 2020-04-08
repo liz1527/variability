@@ -33,8 +33,8 @@ tbdata = fits.open('mag_flux_tables/K/mag_flux_table_best_K_extra_clean.fits')[1
 chandata = fits.open('mag_flux_tables/K/xray_mag_flux_table_best_K_extra_clean.fits')[1].data
 sdata = fits.open('mag_flux_tables/K/stars_mag_flux_table_K_extra_clean.fits')[1].data
 #xtalkdata = fits.open('mag_flux_tables/K/mag_flux_table_xtalk_K_extra_clean.fits')[1].data
-xtalkdata = fits.open('variable_tables/K/variables_no06_chi30_DR11data_xtalk.fits')[1].data
-sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_K_extra_clean_2arcsec_noneg.fits')
+xtalkdata = fits.open('variable_tables/K/variables_no06_chi30_neg_DR11data_xtalkcontam.fits')[1].data
+sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_K_extra_clean_2arcsec_neg.fits')
 
 def prep_data(tbdata):
     ### Remove edges ###
@@ -44,7 +44,7 @@ def prep_data(tbdata):
     flux = vari_funcs.k_mag_flux.flux4_stacks(tbdata)
     
     ### remove values that are negative ###
-    flux, tbdata = vari_funcs.flux_funcs.noneg(flux, tbdata)
+#    flux, tbdata = vari_funcs.flux_funcs.noneg(flux, tbdata)
     
     ### Get error arrays ###
     flux, fluxerr, tbdata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, tbdata, aper=4)
@@ -87,8 +87,8 @@ ax1.set_xscale('log')
 ax1.set_yscale('log')
     
 ax1.set_ylim(3e-2,3e4)
-ax1.set_xlim(8e1, 1e7) #if flux noneg
-#ax1.set_xlim(4e0, 1e7) #if flux neg
+#ax1.set_xlim(8e1, 1e7) #if flux noneg
+ax1.set_xlim(4e0, 1e7) #if flux neg
 #    plt.xlim(13,26) #if mag
 
 ax1.set_xlabel('Mean Flux')
@@ -111,7 +111,7 @@ plt.legend()
 ### Activate on click properties
 fig.canvas.mpl_connect('pick_event', vari_funcs.selection_plot_funcs.onpickflux_2arcsec)
 
-
+#
 ### Select Variables as those with chisq > 22.458 and >50 ###
 varydata24 = tbdata[vary>22.458]
 varydata30 = tbdata[vary>30]

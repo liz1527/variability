@@ -278,7 +278,7 @@ varychi = galchisq[galchisq > 30]
 
 #### Turn dictionary into astropy table ###
 t = Table(sigdict)
-t.write('sigma_tables/quad_epoch_sigma_table_K_extra_clean_1arcsec_noneg.fits')
+t.write('sigma_tables/quad_epoch_sigma_table_K_extra_clean_1arcsec_noneg.fits', overwrite=True)
 
 
 
