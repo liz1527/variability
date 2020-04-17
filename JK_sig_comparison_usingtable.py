@@ -126,8 +126,14 @@ plt.plot(noxKout, noxJout, 'bo', zorder=1)
 #plt.plot(xJKout, xJJout, 'rs', zorder=2)
 #plt.plot(noxJKout, noxJJout, 'bo', zorder=1)
 
-plt.errorbar(xKout[xzeroinds], xJout[xzeroinds], yerr=0.25e-3, fmt='r.', zorder=0, uplims=True)
-plt.errorbar(noxKout[noxzeroinds], noxJout[noxzeroinds], yerr=0.25e-3, fmt='b.', zorder=0, uplims=True)
+plt.errorbar(xKout[xzeroindsJ], xJout[xzeroindsJ], yerr=0.25e-3, fmt='r.', zorder=0, 
+             uplims=True)
+plt.errorbar(noxKout[noxzeroindsJ], noxJout[noxzeroindsJ], yerr=0.25e-3, fmt='b.', 
+             zorder=0, uplims=True)
+plt.errorbar(xKout[xzeroindsK], xJout[xzeroindsK], xerr=0.25e-3, fmt='r.', zorder=0, 
+             xuplims=True)
+plt.errorbar(noxKout[noxzeroindsK], noxJout[noxzeroindsK], xerr=0.25e-3, fmt='b.', 
+             zorder=0, xuplims=True)
 
 plt.xlabel('$\sigma_{K}$')
 plt.ylabel('$\sigma_{J}$')
@@ -137,7 +143,7 @@ plt.plot(x,y,'k')
 plt.xlim(xmin=1e-3,xmax=2.3)
 plt.ylim(ymin=1e-3,ymax=2.3)
 plt.tight_layout()
-#plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp.png')
+plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_noxtalkcontam.png')
 #plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_K_variables.png')
 #plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_J_variables.png')
 
@@ -149,8 +155,11 @@ plt.errorbar(xKout[xnotzeroinds], xJout[xnotzeroinds],
              color='tab:grey', fmt='.', zorder=0, alpha=0.5)
 plt.scatter(xKout, xJout, c=x_J_K, vmin=-1, vmax=2.4, marker='s')
 
-plt.errorbar(xKout[xzeroinds], xJout[xzeroinds], yerr=0.25e-3, fmt='r.', 
-             zorder=0, uplims=True)
+
+plt.errorbar(xKout[xzeroindsJ], xJout[xzeroindsJ], yerr=0.25e-3, fmt='r.', zorder=0, 
+             uplims=True)
+plt.errorbar(xKout[xzeroindsK], xJout[xzeroindsK], xerr=0.25e-3, fmt='r.', zorder=0, 
+             xuplims=True)
 
 plt.xlabel('$\sigma_{K}$')
 plt.ylabel('$\sigma_{J}$')
@@ -163,7 +172,7 @@ plt.plot(x,y,'k')
 plt.xlim(xmin=1e-3,xmax=2.3)
 plt.ylim(ymin=1e-3,ymax=2.3)
 plt.tight_layout()
-#plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_Xray.png')
+plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_Xray_noxtalkcontam.png')
 #plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_Xray_K_variables.png')
 #plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_Xray_J_variables.png')
 
@@ -175,8 +184,10 @@ plt.errorbar(noxKout[noxnotzeroinds], noxJout[noxnotzeroinds],
              color='tab:grey', fmt='.', zorder=0, alpha=0.5)
 plt.scatter(noxKout, noxJout, c=nox_J_K, vmin=-1, vmax=2.4)
 
-plt.errorbar(noxKout[noxzeroinds], noxJout[noxzeroinds], yerr=0.25e-3, fmt='b.',
+plt.errorbar(noxKout[noxzeroindsJ], noxJout[noxzeroindsJ], yerr=0.25e-3, fmt='b.', 
              zorder=0, uplims=True)
+plt.errorbar(noxKout[noxzeroindsK], noxJout[noxzeroindsK], xerr=0.25e-3, fmt='b.', 
+             zorder=0, xuplims=True)
 
 plt.xlabel('$\sigma_{K}$')
 plt.ylabel('$\sigma_{J}$')
@@ -189,7 +200,7 @@ plt.plot(x,y,'k')
 plt.xlim(xmin=1e-3,xmax=2.3)
 plt.ylim(ymin=1e-3,ymax=2.3)
 plt.tight_layout()
-#plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_not_Xray.png')
+plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_not_Xray_noxtalkcontam.png')
 #plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_not_Xray_K_variables.png')
 #plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_not_Xray_J_variables.png')
 
@@ -201,8 +212,11 @@ plt.errorbar(xKout[xnotzeroinds], xJout[xnotzeroinds],
              color='tab:grey', fmt='.', zorder=0, alpha=0.5)
 plt.scatter(xKout, xJout, c=xz, vmin=0, vmax=6, marker='s')
 
-plt.errorbar(xKout[xzeroinds], xJout[xzeroinds], yerr=0.25e-3, fmt='r.', 
-             zorder=0, uplims=True)
+
+plt.errorbar(xKout[xzeroindsJ], xJout[xzeroindsJ], yerr=0.25e-3, fmt='r.', zorder=0, 
+             uplims=True)
+plt.errorbar(xKout[xzeroindsK], xJout[xzeroindsK], xerr=0.25e-3, fmt='r.', zorder=0, 
+             xuplims=True)
 
 plt.xlabel('$\sigma_{K}$')
 plt.ylabel('$\sigma_{J}$')
@@ -215,7 +229,7 @@ plt.plot(x,y,'k')
 plt.xlim(xmin=1e-3,xmax=2.3)
 plt.ylim(ymin=1e-3,ymax=2.3)
 plt.tight_layout()
-#plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_Xray_zcolours.png')
+plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_Xray_zcolours_noxtalkcontam.png')
 #plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_Xray_zcolours_K_variables.png')
 #plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_Xray_zcolours_J_variables.png')
 
@@ -227,7 +241,10 @@ plt.errorbar(noxKout[noxnotzeroinds], noxJout[noxnotzeroinds],
              color='tab:grey', fmt='.', zorder=0, alpha=0.5)
 plt.scatter(noxKout, noxJout, c=noxz, vmin=0, vmax=6)
 
-plt.errorbar(noxKout[noxzeroinds], noxJout[noxzeroinds], yerr=0.25e-3, fmt='b.', zorder=0, uplims=True)
+plt.errorbar(noxKout[noxzeroindsJ], noxJout[noxzeroindsJ], yerr=0.25e-3, fmt='b.', 
+             zorder=0, uplims=True)
+plt.errorbar(noxKout[noxzeroindsK], noxJout[noxzeroindsK], xerr=0.25e-3, fmt='b.', 
+             zorder=0, xuplims=True)
 
 plt.xlabel('$\sigma_{K}$')
 plt.ylabel('$\sigma_{J}$')
@@ -240,7 +257,7 @@ plt.plot(x,y,'k')
 plt.xlim(xmin=1e-3,xmax=2.3)
 plt.ylim(ymin=1e-3,ymax=2.3)
 plt.tight_layout()
-#plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_not_Xray_zcolours.png')
+plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_not_Xray_zcolours_noxtalkcontam.png')
 #plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_not_Xray_zcolours_K_variables.png')
 #plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_not_Xray_zcolours_J_variables.png')
 
@@ -260,8 +277,12 @@ plt.errorbar(xKout[xnotzeroinds], xJout[xnotzeroinds],
              yerr=xJouterr[xnotzeroinds], xerr=xKouterr[xnotzeroinds], 
              color='tab:grey', fmt='.', zorder=0, alpha=0.5)
 plt.scatter(xKout, xJout, c=xstell)#, vmin=-2, vmax=1.5)
-plt.errorbar(xKout[xzeroinds], xJout[xzeroinds], yerr=0.25e-3, fmt='b.', 
-             zorder=0, uplims=True)
+
+
+plt.errorbar(xKout[xzeroindsJ], xJout[xzeroindsJ], yerr=0.25e-3, fmt='r.', zorder=0, 
+             uplims=True)
+plt.errorbar(xKout[xzeroindsK], xJout[xzeroindsK], xerr=0.25e-3, fmt='r.', zorder=0, 
+             xuplims=True)
 
 plt.xlabel('$\sigma_{K}$')
 plt.ylabel('$\sigma_{J}$')
@@ -275,6 +296,7 @@ plt.plot(x,y,'k')
 plt.xlim(xmin=1e-3,xmax=2.3)
 plt.ylim(ymin=1e-3,ymax=2.3)
 plt.tight_layout()
+plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_Xray_stellcolours_noxtalkcontam.png')
 
 #%% Plot just the non-X-ray points with stellarity colours on ###
 
@@ -283,8 +305,11 @@ plt.errorbar(noxKout[noxnotzeroinds], noxJout[noxnotzeroinds],
              yerr=noxJouterr[noxnotzeroinds], xerr=noxKouterr[noxnotzeroinds], 
              color='tab:grey', fmt='.', zorder=0, alpha=0.5)
 plt.scatter(noxKout, noxJout, c=noxstell)#, vmin=-2, vmax=1.5)
-plt.errorbar(noxKout[noxzeroinds], noxJout[noxzeroinds], yerr=0.25e-3, fmt='b.', 
+
+plt.errorbar(noxKout[noxzeroindsJ], noxJout[noxzeroindsJ], yerr=0.25e-3, fmt='b.', 
              zorder=0, uplims=True)
+plt.errorbar(noxKout[noxzeroindsK], noxJout[noxzeroindsK], xerr=0.25e-3, fmt='b.', 
+             zorder=0, xuplims=True)
 
 plt.xlabel('$\sigma_{K}$')
 plt.ylabel('$\sigma_{J}$')
@@ -298,6 +323,7 @@ plt.plot(x,y,'k')
 plt.xlim(xmin=1e-3,xmax=2.3)
 plt.ylim(ymin=1e-3,ymax=2.3)
 plt.tight_layout()
+plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_not_Xray_stellcolours_noxtalkcontam.png')
 
 end = time.time()
 print(end-start)

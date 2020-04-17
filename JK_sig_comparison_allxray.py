@@ -102,15 +102,15 @@ y = x
 #%% Create figure with X-ray/non X-ray split ###
 
 plt.figure()
-plt.errorbar(xKout[xnotzeroinds], xJout[xnotzeroinds], 
-             xerr=xKouterr[xnotzeroinds], yerr=xJouterr[xnotzeroinds], fmt='.', 
-             color='tab:grey', zorder=0, alpha=0.5)
-plt.errorbar(noxKout[noxnotzeroinds], noxJout[noxnotzeroinds], 
-             xerr=noxKouterr[noxnotzeroinds], yerr=noxJouterr[noxnotzeroinds], 
-             fmt='.', color='tab:grey', zorder=0, alpha=0.5)
-plt.errorbar(allxKout[allxnotzeroinds], allxJout[allxnotzeroinds], 
-             xerr=allxKouterr[allxnotzeroinds], yerr=allxJouterr[allxnotzeroinds], 
-             fmt='.', color='tab:grey', zorder=0, alpha=0.5)
+#plt.errorbar(xKout[xnotzeroinds], xJout[xnotzeroinds], 
+#             xerr=xKouterr[xnotzeroinds], yerr=xJouterr[xnotzeroinds], fmt='.', 
+#             color='tab:grey', zorder=0, alpha=0.5)
+#plt.errorbar(noxKout[noxnotzeroinds], noxJout[noxnotzeroinds], 
+#             xerr=noxKouterr[noxnotzeroinds], yerr=noxJouterr[noxnotzeroinds], 
+#             fmt='.', color='tab:grey', zorder=0, alpha=0.5)
+#plt.errorbar(allxKout[allxnotzeroinds], allxJout[allxnotzeroinds], 
+#             xerr=allxKouterr[allxnotzeroinds], yerr=allxJouterr[allxnotzeroinds], 
+#             fmt='.', color='tab:grey', zorder=0, alpha=0.5)
 plt.plot(xKout, xJout, 'rs', zorder=2)
 plt.plot(noxKout, noxJout, 'bo', zorder=1)
 plt.plot(allxKout, allxJout, 'k+', zorder=3)

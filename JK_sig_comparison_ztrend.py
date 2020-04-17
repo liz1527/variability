@@ -27,7 +27,7 @@ plt.close('all') #close any open plots
 #%% Open the fits files and get data ###
 ### Import data for variables selected in K ###
 varydata = Table.read('variable_tables/J_and_K_variables_varystats_DR11data.fits')
-varydata = varydata[varydata['KMAG_20']<=25]
+#varydata = varydata[varydata['KMAG_20']<=23]
 xvarydata = varydata[varydata['X-ray']==True]
 noxvarydata = varydata[varydata['X-ray']==False]
 
@@ -115,15 +115,15 @@ allxz[allxz > 4.5] = 4.35
 
 ### Plot ###
 plt.figure()
-plt.plot(allxz, allxdiff, 'k+')
-#plt.plot(noxz, noxdiff, 'bo')
+#plt.plot(allxz, allxdiff, 'k+')
+plt.plot(noxz, noxdiff, 'bo')
 plt.plot(xz, xdiff, 'ro')
-#plt.errorbar(noxz[noxz==4.35], noxdiff[noxz==4.35], xerr=0.09, fmt='b.', 
-#             zorder=0, xlolims=True)
+plt.errorbar(noxz[noxz==4.35], noxdiff[noxz==4.35], xerr=0.09, fmt='b.', 
+             zorder=0, xlolims=True)
 plt.errorbar(xz[xz==4.35], xdiff[xz==4.35], xerr=0.09, fmt='r.', 
              zorder=0, xlolims=True)
-plt.errorbar(allxz[allxz==4.35], allxdiff[allxz==4.35], xerr=0.09, fmt='k+', 
-             zorder=0, xlolims=True)
+#plt.errorbar(allxz[allxz==4.35], allxdiff[allxz==4.35], xerr=0.09, fmt='k+', 
+#             zorder=0, xlolims=True)
 plt.xlabel('Redshift')
 plt.ylabel('Difference between $\sigma_{J}$ and $\sigma_{K}$')
 plt.xlim(-0.1, 4.5)
@@ -132,18 +132,18 @@ plt.tight_layout()
 
 ### Plot with fits ###
 plt.figure()
-plt.plot(allxz, allxdiff, 'k+')
-#plt.plot(noxz, noxdiff, 'bo', alpha=0.25)
+#plt.plot(allxz, allxdiff, 'k+')
+plt.plot(noxz, noxdiff, 'bo', alpha=0.25)
 plt.plot(xz, xdiff, 'ro', alpha=0.25)
-#plt.errorbar(noxz[noxz==4.35], noxdiff[noxz==4.35], xerr=0.09, fmt='b.', 
-#             zorder=0, xlolims=True, alpha=0.5)
+plt.errorbar(noxz[noxz==4.35], noxdiff[noxz==4.35], xerr=0.09, fmt='b.', 
+             zorder=0, xlolims=True, alpha=0.5)
 plt.errorbar(xz[xz==4.35], xdiff[xz==4.35], xerr=0.09, fmt='r.', 
              zorder=0, xlolims=True, alpha=0.2)
-plt.errorbar(allxz[allxz==4.35], allxdiff[allxz==4.35], xerr=0.09, fmt='k+', 
-             zorder=0, xlolims=True)
+#plt.errorbar(allxz[allxz==4.35], allxdiff[allxz==4.35], xerr=0.09, fmt='k+', 
+#             zorder=0, xlolims=True)
 plt.plot(x, yxfit,'r-', label='Fit to vary X-ray')
-#plt.plot(x, ynoxfit,'b-', label='Fit to vary non-X-ray')
-plt.plot(x, yallxfit,'k--', label='Fit to X-ray')
+plt.plot(x, ynoxfit,'b-', label='Fit to vary non-X-ray')
+#plt.plot(x, yallxfit,'k--', label='Fit to X-ray')
 plt.xlabel('Redshift')
 plt.ylabel('Difference between $\sigma_{J}$ and $\sigma_{K}$')
 plt.xlim(-0.1, 4.5)
