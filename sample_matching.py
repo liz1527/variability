@@ -49,7 +49,7 @@ def get_differences(ob, noxsize, noxlum, noxz, abso=True):
     else:
         return sizediff, lumdiff, zdiff
     
-def find_matches(ob, lumrange, zrange, noxsize, noxlum, noxz):
+def find_matches(ob, lumrange, zrange, sizerange, noxsize, noxlum, noxz):
 #    print(ob['ID'])
     ### get differences ###
     abssizediff, abslumdiff, abszdiff = get_differences(ob, noxsize, noxlum, noxz)
@@ -63,6 +63,14 @@ def find_matches(ob, lumrange, zrange, noxsize, noxlum, noxz):
     ### Iterate over sortedinds list to find objects that fit the criteria ###
     goodinds = np.array([])
     for ind in sortedinds:
+        ### check z is in range ###
+        if abssizediff[ind] < sizerange:
+            sizematch = 1
+#            print('z match')
+        else:
+            sizematch = 0
+            continue # quit as 1 already out of range
+            
         ### check luminosity is in range ###
         if abslumdiff[ind] < lumrange:
             lummatch = 1 
@@ -78,8 +86,8 @@ def find_matches(ob, lumrange, zrange, noxsize, noxlum, noxz):
         else:
             zmatch = 0
         
-        ### find if both in range ###
-        match = lummatch * zmatch
+        ### check if all in range ###
+        match = sizematch * lummatch * zmatch
         if match == 1:
 #            print('Match found!')
             goodinds = np.append(goodinds, ind)
@@ -100,6 +108,7 @@ def find_matches(ob, lumrange, zrange, noxsize, noxlum, noxz):
         
         ### find closest in size ###
         bestsizeind = goodinds[np.argmin(abssizediff[goodinds])]
+#        print(abssizediff[bestsizeind])
     return goodinds, closeind,  bestsizeind
 
 
@@ -117,6 +126,7 @@ noxz = noxvarydata['z_p'] # best photometric z so consistant with lum calcs
 ''' these are the max differences there can be from the match to the object '''
 lumrange = 0.5
 zrange = 0.2
+sizerange = 0.25
 
 #%% Iterate over objects ###
 allbestsizeinds = np.zeros(len(xvarydata)) + 9999 # so 9999 indicates those that do not have matches
@@ -129,7 +139,8 @@ while uniquelen != fulllen:
         if allbestsizeinds[m] != 9999:
             continue # skip if match already found
         goodinds, closeind, bestsizeind = find_matches(ob, lumrange, zrange, 
-                                                       noxsize, noxlum, noxz)
+                                                       sizerange, noxsize, 
+                                                       noxlum, noxz)
         ### test if the index has already been assigned to its best match ###
         while np.isin(bestsizeind, unique) == True:
 #            print('index assigned')
@@ -144,10 +155,12 @@ while uniquelen != fulllen:
                 testnoxsize = noxsize[goodinds]
                 testnoxlum = noxlum[goodinds]
                 testnoxz = noxz[goodinds]
-                goodinds2, closeind2, bestsizeind2 = find_matches(ob, lumrange, zrange, 
-                                                               testnoxsize, 
-                                                               testnoxlum, 
-                                                               testnoxz)
+                goodinds2, closeind2, bestsizeind2 = find_matches(ob, lumrange, 
+                                                                  zrange,  
+                                                                  sizerange,
+                                                                  testnoxsize, 
+                                                                  testnoxlum, 
+                                                                  testnoxz)
                 ### apply mask to goodinds to get original inds not inds of minitable ###
                 goodinds = goodinds[goodinds2] 
                 closeind = goodinds[closeind2]
@@ -223,10 +236,28 @@ while uniquelen != fulllen:
     ### Set arrays and vals for start of next loop ###
     allbestsizeinds = allbestinds2
     unique = np.unique(allbestsizeinds)
-    uniquelen = len(unique)
+    uniquelen = len(unique) 
+    
+    ### check if one of the unique values is 9999 ###
+    if np.isin(9999, unique) == True:
+        uniquelen -= 1 # remove 1 from length as one value is not a proper index
     print(str(uniquelen)+' unique indicies')
     
-    
+#%% Save matched tables for x and nox  ###
+### Remove those with no matches from xvarydata to get xray table ###
+xmask = np.isnan(allbestsizeinds)
+xmatcheddata = xvarydata[~xmask]
+
+### remove nans from allbestsizeinds so can associate other indicies correctly ###
+noxmask = allbestsizeinds[~xmask]
+noxmatcheddata = noxvarydata[noxmask.astype(int)]
+
+noxmatcheddata.write('variable_tables/matched_notXray_J_and_K_variables_varystats_DR11data_'+
+                     str(sizerange)+'_'+str(lumrange)+'_'+str(zrange)+'.fits')
+xmatcheddata.write('variable_tables/matched_Xray_J_and_K_variables_varystats_DR11data_'+
+                     str(sizerange)+'_'+str(lumrange)+'_'+str(zrange)+'.fits')
+
+
 end = time.time()
 print('time (s) = '+str(end-start))
     

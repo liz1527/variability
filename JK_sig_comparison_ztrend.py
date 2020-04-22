@@ -28,8 +28,11 @@ plt.close('all') #close any open plots
 ### Import data for variables selected in K ###
 varydata = Table.read('variable_tables/J_and_K_variables_varystats_DR11data.fits')
 #varydata = varydata[varydata['KMAG_20']<=23]
-xvarydata = varydata[varydata['X-ray']==True]
-noxvarydata = varydata[varydata['X-ray']==False]
+#xvarydata = varydata[varydata['X-ray']==True]
+#noxvarydata = varydata[varydata['X-ray']==False]
+
+xvarydata = Table.read('variable_tables/matched_Xray_J_and_K_variables_varystats_DR11data_0.25_0.5_0.2.fits')
+noxvarydata = Table.read('variable_tables/matched_notXray_J_and_K_variables_varystats_DR11data_0.25_0.5_0.2.fits')
 
 xraydata = Table.read('UDS_catalogues/xray_varystats_noneg.fits')
 
