@@ -17,7 +17,7 @@ def normalise_flux(flux):
     Output:
         array of object flux values normalised to an average flux of 1
     '''
-    avgflux = np.mean(flux, axis=1)
+    avgflux = np.nanmean(flux, axis=1)
     return flux / avgflux[:,None]
 
 def normalise_flux_and_errors(flux, fluxerr):
@@ -29,7 +29,7 @@ def normalise_flux_and_errors(flux, fluxerr):
         flux = array of object flux values normalised to an average flux of 1
         fluxerr = array of flux errors scales to match
     '''
-    avgflux = np.mean(flux, axis=1)
+    avgflux = np.nanmean(flux, axis=1)
     flux = flux/avgflux[:,None]
     fluxerr = fluxerr/avgflux[:,None]
     return flux, fluxerr
@@ -43,7 +43,7 @@ def normalise_mag(mag):
     
     *** NOT SURE THIS FUNCTION IS IN ANY WAY CORRECT ***    
     '''
-    avgflux = np.mean(mag, axis=1)
+    avgflux = np.nanmean(mag, axis=1)
     diff = avgflux - 1
     return mag - diff[:,None]
 
@@ -88,6 +88,24 @@ def noneg(fluxn, tbdata):
     fluxn = fluxn[mask]
     tbdata = tbdata[mask]
     return fluxn, tbdata
+
+def nanneg(fluxn, fluxerr):
+    ''' Function to remove any objects that have a negative flux in any epoch
+    of their light curve from the analysis
+    
+    Inputs:
+        fluxn = array of flux values
+        fluxerr = array of flux error values
+    
+    Outputs:
+        fluxn = new array of flux values where negatives have been replaced 
+                with nans
+        fluxerr = new array of flux  error values where values where flux is 
+                negative have been replaced with nans
+    '''
+    fluxn[fluxn <= 0] = np.nan
+    fluxerr[fluxn <= 0] = np.nan
+    return fluxn, fluxerr
 
 def fluxlim(fluxn, tbdata, lim=3527):
     ''' Function that imposes a flux limit on the catalogue as defined by lim.
@@ -153,7 +171,7 @@ def fluxbin(min, max, flux, tbdata):
                     the limits of the bin
         tbdata = table of data for that bin                
     '''
-    avgflux = np.mean(flux, axis=1)
+    avgflux = np.nanmean(flux, axis=1)
     bina = avgflux >= min
     binb = avgflux < max
     bin = bina*binb
@@ -174,7 +192,7 @@ def fluxbinerr(min, max, flux, fluxerr):
                     the limits of the bin 
         fluxerrbin = the array of flux errors for objects whose average flux is 
                     within the limits of the bin '''
-    avgflux = np.mean(flux, axis=1)
+    avgflux = np.nanmean(flux, axis=1)
     bina = avgflux >= min
     binb = avgflux < max
     bin = bina*binb

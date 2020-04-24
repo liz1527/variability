@@ -20,47 +20,12 @@ import vari_funcs #my module to help run code neatly
 #from astropy import units as u
 plt.close('all') #close any open plots
 
-def month_avg_lightcurve(avgflux, avgfluxerr):
-    months = ['sep05','oct05','nov05','dec05', 'jan06', 'dec06', 'jan07',  
-          'aug07', 'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 'jul09',  
-          'aug09', 'sep09', 'oct09', 'nov09', 'dec09', 'jan10', 'feb10', 
-          'aug10', 'sep10', 'oct10', 'nov10', 'dec10', 'jan11', 'feb11', 
-          'aug11', 'sep11', 'oct11', 'nov11', 'dec11', 'jan12', 'feb12', 
-          'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
-   
-       
-    #set up time variable for plot
-    nums = fits.open('monthly_numbers.fits')[1].data
-    t = np.linspace(1, len(nums), num=len(nums))
-    tdataind = np.isin(nums['Month'], months)
-    tdata = t[tdataind]
-    
-    ticks = nums['Month']
-    mask = np.zeros(91)
-    inds = [0,4,14,16,23,26,36,38,46,53,59,65,71,77,82,86]
-    mask[inds] = 1
-    mask = mask.astype(bool)
-    ticks[~mask] = ''
-    
-    #Plot graph in new figure
-#    plt.figure(figsize=[17,7])
-    plt.figure(figsize=[13,5])
-    plt.xticks(t, ticks, rotation='vertical')
-    plt.errorbar(tdata, avgflux, yerr=avgfluxerr, fmt = 'ro')
-    plt.xlabel('Month')
-    plt.ylabel('K-band flux of object')
-#    plt.title('Average Lightcurve')
-    plt.tight_layout()
-    return
 
 
 
-tbdata = fits.open('mag_flux_tables/month_mag_flux_table.fits')[1].data
+tbdata = fits.open('mag_flux_tables/K/month/month_mag_flux_table_best_K_extra_quad_clean.fits')[1].data
+sigtb = Table.read('sigma_tables/month_quad_epoch_sigma_table_K_extra_quad_clean_2arcsec_noneg.fits')
 obnum = 173459
-
-
-#mask = fitsdata['NUMBER_1'] == ob
-obdata = tbdata[tbdata['NUMBER'] == obnum]
 
 months = ['sep05','oct05','nov05','dec05', 'jan06', 'dec06', 'jan07',  
           'aug07', 'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 'jul09',  
@@ -69,28 +34,42 @@ months = ['sep05','oct05','nov05','dec05', 'jan06', 'dec06', 'jan07',
           'aug11', 'sep11', 'oct11', 'nov11', 'dec11', 'jan12', 'feb12', 
           'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
 
-for month in months:
-    if month == 'sep05':
-        flux = obdata['MAG_APER_'+month][:,3]
-        fluxerr = obdata['MAGERR_APER_'+month][:,3]
-    else:
-        flux = np.append(flux, obdata['MAG_APER_'+month][:,3])
-        fluxerr = np.append(fluxerr, obdata['MAGERR_APER_'+month][:,3])
-        
-#    if month == 'sep05':
-#        flux = obdata['FLUX_APER_'+month][:,0]
-#        fluxerr = obdata['FLUXERR_APER_'+month][:,0]
-#    else:
-#        flux = np.append(flux, obdata['FLUX_APER_'+month][:,0])
-#        fluxerr = np.append(fluxerr, obdata['FLUXERR_APER_'+month][:,0])
-        
-mask = flux == 99
-#mask = flux <= 0
-flux[mask] = np.nan
-fluxerr[mask] = np.nan
-month_avg_lightcurve(flux, fluxerr)
+### set up month tick details ###
+month_info = fits.open('Images/Convolving_Images/monthly_numbers.fits')[1].data #get month count data
+full_months = month_info['Month'] #extract month nanes
+tick_inds = np.load('Images/Convolving_Images/tick_inds_K.npy') #load tick locations
+mask = np.zeros(len(full_months)) #set up mask
+mask[tick_inds] = 1
+mask = mask.astype(bool)
+month_ticks = np.copy(full_months)
+month_ticks = month_ticks[mask]#retrieve tick details
 
-chisq = vari_funcs.my_chisquare_err([flux], [fluxerr])
+x = np.arange(0, len(month_info['Frames in v11']))
+mask = np.isin(full_months, months)
+x_months = x[mask]
+
+#mask = fitsdata['NUMBER_1'] == ob
+obdata = tbdata[tbdata['NUMBER'] == obnum]
+
+flux = vari_funcs.k_mag_flux.month_flux_stacks(obdata)
+flux, fluxerr, obdata =  vari_funcs.k_mag_flux.create_quad_error_array_month(sigtb, obdata)
+
+mag = 30 - 2.5*np.log10(flux)
+mag += 1.9 #to get to AB mag
+magerr = 1.086/(flux/fluxerr) # taken from http://faculty.virginia.edu/skrutskie/astr3130.s16/notes/astr3130_lec12.pdf?fbclid=IwAR0fe6lNYH8Azj1iVqusb5l-z3xeECx7JBv23ACDV0Xjdq04FHJPD3nPlxE
+
+chisq = vari_funcs.vary_stats.my_chisquare_err(flux, fluxerr)
+
+plt.figure(figsize=[10,5])
+#plt.errorbar(x_months, flux[0,:], yerr=fluxerr[0,:], fmt='ro')
+plt.errorbar(x_months, mag[0,:], yerr=magerr[0,:], fmt='ro')
+plt.xticks(tick_inds, month_ticks, rotation = 'vertical')
+plt.ylabel('Flux')
+plt.xlabel('Month')
+plt.title('Light curve for '+str(obnum)+r' $\chi^{2}$ = ' + str(chisq[0]))
+plt.legend()
+plt.tight_layout()
+
 
 #plt.ylim(ymin=40000)
 #axes = plt.gca()

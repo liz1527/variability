@@ -354,7 +354,7 @@ def flux_variability_plot(flux, fluxchan, plottype, flux2 = [], fluxchan2 = [],
     elif scale == 'symlog':
         plt.yscale('symlog', linthreshy=0.0001)
         
-    plt.ylim(3e-2,3e4)
+#    plt.ylim(3e-2,3e4)
     plt.xlim(8e1, 1e7)
 #    plt.xlim(13,26)
     plt.xlabel('Mean Flux')

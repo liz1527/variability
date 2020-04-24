@@ -9,7 +9,7 @@ is being studied (e.g. slice into quads or restrict to chandra)
 @author: ppxee
 """
 
-def quadrants(initdata,sem):
+def quadrants(initdata,sem='05B'):
     ''' Function that splits the field up into the 4 quadrants covered by the 
     4 camera on WFCAM
     
@@ -53,20 +53,21 @@ def quadrants(initdata,sem):
     return quad1data, quad2data, quad3data, quad4data
 
 
-def chandra_only(tbdata):
+def chandra_only(tbdata, sem='05B'):
     ''' Function that restricts the objects included in analysis to only 
     those within the Chandra footprint 
     Input:
         tbdata = original catalogue of data 
+        sem = semester or month on which the split should be done
     Output:
         newtbdata = new catalogue of data which only includes objects within 
                     the chandra footprint 
     '''
     ### Restrict objects to those in the Chandra field ###
-    mask1 = tbdata['DELTA_J2000_05B'] < -4.93 #max Dec
-    mask2 = tbdata['DELTA_J2000_05B'] > -5.403 #min Dec
-    mask3 = tbdata['ALPHA_J2000_05B'] < 34.72 #max RA
-    mask4 = tbdata['ALPHA_J2000_05B'] > 34.07 #min RA
+    mask1 = tbdata['DELTA_J2000_'+sem] < -4.93 #max Dec
+    mask2 = tbdata['DELTA_J2000_'+sem] > -5.403 #min Dec
+    mask3 = tbdata['ALPHA_J2000_'+sem] < 34.72 #max RA
+    mask4 = tbdata['ALPHA_J2000_'+sem] > 34.07 #min RA
     
     mask = mask1 * mask2 * mask3 * mask4
     
@@ -75,24 +76,25 @@ def chandra_only(tbdata):
     return newtbdata
 
 
-def remove_edges(tbdata):
+def remove_edges(tbdata, sem='05B'):
     ''' Function that masks the edges of the image as there were a large number
     of variable in this area originally so must be too much noise here.
     Inputs:
         tbdata = orginal table of data covering the whole field
+        sem = semester or month on which the split should be done
     Ouputs:
         tbdata = table of date with objects need the edges removed
     '''
     
     ### Set X limits ###
-    x = tbdata['X_IMAGE_05B']
+    x = tbdata['X_IMAGE_'+sem]
     xmask1 = x > 1000
     xmask2 = x < 24000
     xmask = xmask1 * xmask2.astype(bool)
     tbdata = tbdata[xmask]
     
     ### Set Y limits ###
-    y = tbdata['Y_IMAGE_05B']
+    y = tbdata['Y_IMAGE_'+sem]
     ymask1 = y > 2000
     ymask2 = y < 24500
     ymask = ymask1 * ymask2.astype(bool)
