@@ -89,23 +89,33 @@ def noneg(fluxn, tbdata):
     tbdata = tbdata[mask]
     return fluxn, tbdata
 
-def nanneg(fluxn, fluxerr):
-    ''' Function to remove any objects that have a negative flux in any epoch
-    of their light curve from the analysis
+def nanneg(fluxn, fluxerr, tbdata):
+    ''' Function to nan any values that have a negative flux in any epoch
+    of their light curve, and remove any that hace all nans
     
     Inputs:
         fluxn = array of flux values
         fluxerr = array of flux error values
+        tbdata = data array 
     
     Outputs:
         fluxn = new array of flux values where negatives have been replaced 
                 with nans
         fluxerr = new array of flux  error values where values where flux is 
                 negative have been replaced with nans
+        tbdata = new data array with rows removed if objects had all nan values
     '''
     fluxn[fluxn <= 0] = np.nan
     fluxerr[fluxn <= 0] = np.nan
-    return fluxn, fluxerr
+    
+    ### remove rows that are all negative ###
+    sum = np.nansum(fluxn, axis=1)
+    mask = np.isnan(sum)
+    fluxn = fluxn[~mask,:]
+    fluxerr = fluxerr[~mask,:]
+    tbdata = tbdata[~mask]
+    
+    return fluxn, fluxerr, tbdata
 
 def fluxlim(fluxn, tbdata, lim=3527):
     ''' Function that imposes a flux limit on the catalogue as defined by lim.

@@ -409,7 +409,7 @@ def plot_median_line(fluxn, tbdata, statistic='MAD',createplot=True):
         elif statistic == 'MAD':
             binstat = median_absolute_deviation(nmag, axis=1)
         elif statistic == 'var':
-            binstat = np.var(nmag, axis=1, ddof=1)
+            binstat = np.nanvar(nmag, axis=1, ddof=1)
         else:
             print('Unrecognised statistic entered')
             return
@@ -481,7 +481,7 @@ def plot_median_line_stars(fluxn, tbdata, sflux, sdata, statistic='MAD',
         elif statistic == 'MAD':
             binstat = median_absolute_deviation(nmag, axis=1)
         elif statistic == 'var':
-            binstat = np.var(nmag, axis=1, ddof=1)
+            binstat = np.nanvar(nmag, axis=1, ddof=1)
         else:
             print('Unrecognised statistic entered')
             return
@@ -551,7 +551,7 @@ def plot_median_line_stars_J(fluxn, tbdata, sflux, sdata, statistic='MAD'):
         elif statistic == 'MAD':
             binstat = median_absolute_deviation(nmag, axis=1)
         elif statistic == 'var':
-            binstat = np.var(nmag, axis=1, ddof=1)
+            binstat = np.nanvar(nmag, axis=1, ddof=1)
         else:
             print('Unrecognised statistic entered')
             return

@@ -602,10 +602,13 @@ def create_quad_error_array_month(sigtb, tbdata, aper=4, quadoutput=False):
             newquaddata[n] = qdata
     
     if quadoutput == False:
-        if np.isin('X-ray', newtbdata.dtype.names):
-            newtbdata['X-ray'][newtbdata['X-ray']==70] = False 
-            newtbdata['X-ray'][newtbdata['X-ray']==84] = True
-            newtbdata['X-ray'] = newtbdata['X-ray'].astype(bool)
+        if np.isin('X-ray_1', newtbdata.dtype.names):
+            newtbdata['X-ray_1'][newtbdata['X-ray_1']==70] = False 
+            newtbdata['X-ray_1'][newtbdata['X-ray_1']==84] = True
+            newtbdata['X-ray_1'] = newtbdata['X-ray_1'].astype(bool)
+            newtbdata['X-ray_2'][newtbdata['X-ray_2']==70] = False 
+            newtbdata['X-ray_2'][newtbdata['X-ray_2']==84] = True
+            newtbdata['X-ray_2'] = newtbdata['X-ray_2'].astype(bool)
         return flux, errarr, newtbdata
     else:
         return quadflux, quaderr, newquaddata

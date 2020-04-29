@@ -117,31 +117,31 @@ for m, qtbdata in enumerate(quaddata):
         chisqchan = vari_funcs.vary_stats.my_chisquare_char(fluxchan, medvar[n])
         schisq = vari_funcs.vary_stats.my_chisquare_char(sflux, medvar[n])
         
-#        ### plot ###
-#        plt.figure(3,figsize=[8,8])    
-#        if n == np.size(bins)-2:
-#            plt.plot(meanflux, chisq, 'b+',zorder=2, label='Galaxy')
-#            plt.plot(meanchan, chisqchan, 'ro', zorder=3, mfc='None', markersize=10, label='X-ray detected')
-#            plt.plot(meansflux, schisq, 'm*', zorder=1, mfc='None', markersize=10, label='DR11 Star')
-#            plt.yscale('log')
-#            plt.xscale('log')
-#            plt.xlim(xmin=8e1, xmax=1e7)
-#            plt.ylim(ymin=3e-2, ymax=4e4)
-#            plt.ylabel('Chi Squared')
-#            plt.xlabel('Mean Flux')
-#            plt.title('1st iteration')
-#            plt.text(5e2, 1e3, r'$\chi^{2} = \sum{\frac{( \,{x_{i} - \bar{x}})^{2} \,}{\sigma_{noise}^{2}}}$')
-#            plt.hlines(22.458,2e2,1e7, label='99.9% confidence level', zorder=4)
-#            plt.legend()
-#        else:
-#            plt.plot(meanflux, chisq, 'b+',zorder=2)
-#            plt.plot(meanchan, chisqchan, 'ro', zorder=3, mfc='None', markersize=10)
-#            plt.plot(meansflux, schisq, 'm*', zorder=1, mfc='None', markersize=10)
+        ### plot ###
+        plt.figure(3,figsize=[8,8])    
+        if n == np.size(bins)-2 and m==3:
+            plt.plot(meanflux, chisq, 'b+',zorder=2, label='Galaxy')
+            plt.plot(meanchan, chisqchan, 'ro', zorder=3, mfc='None', markersize=10, label='X-ray detected')
+            plt.plot(meansflux, schisq, 'm*', zorder=1, mfc='None', markersize=10, label='DR11 Star')
+            plt.yscale('log')
+            plt.xscale('log')
+            plt.xlim(xmin=8e1, xmax=1e7)
+            plt.ylim(ymin=3e-2, ymax=4e4)
+            plt.ylabel('Chi Squared')
+            plt.xlabel('Mean Flux')
+            plt.title('1st iteration')
+            plt.text(5e2, 1e3, r'$\chi^{2} = \sum{\frac{( \,{x_{i} - \bar{x}})^{2} \,}{\sigma_{noise}^{2}}}$')
+            plt.hlines(22.458,2e2,1e7, label='99.9% confidence level', zorder=4)
+            plt.legend()
+        else:
+            plt.plot(meanflux, chisq, 'b+',zorder=2)
+            plt.plot(meanchan, chisqchan, 'ro', zorder=3, mfc='None', markersize=10)
+            plt.plot(meansflux, schisq, 'm*', zorder=1, mfc='None', markersize=10)
     
         
         ### remove any with chisq > 30 ###
-        newgflux = flux[chisq<30,:]
-        newsflux = sflux[schisq<30,:]
+        newgflux = flux#[chisq<30,:]
+        newsflux = sflux#[schisq<30,:]
         newflux = np.vstack((newgflux, newsflux))
         print(len(newflux))
         newfluxn = vari_funcs.flux_funcs.normalise_flux(newflux)
@@ -152,28 +152,26 @@ for m, qtbdata in enumerate(quaddata):
         newchisqchan = vari_funcs.vary_stats.my_chisquare_char(fluxchan, newmedvar[n])
         newschisq = vari_funcs.vary_stats.my_chisquare_char(sflux, newmedvar[n])
         
-#        ## plot new ###
-#        plt.figure(4, figsize=[8,8])
-#        if n == np.size(bins)-2:
-#            plt.plot(meanflux, newchisq, 'b+',zorder=2, label='Galaxy')
-#            plt.plot(meanchan, newchisqchan, 'ro', zorder=3, mfc='None', markersize=10, label='X-ray detected')
-#            plt.plot(meansflux, newschisq, 'm*', zorder=1, mfc='None', markersize=10, label='DR11 Star')
-#            plt.yscale('log')
-#            plt.xscale('log')
-#            plt.xlim(xmin=8e1, xmax=1e7)
-#            plt.ylim(ymin=3e-2, ymax=4e4)
-#            plt.ylabel('Chi Squared')
-#            plt.xlabel('Mean Flux')
-#            plt.title('2nd iteration')
-#            plt.text(5e2, 1e3, r'$\chi^{2} = \sum{\frac{( \,{x_{i} - \bar{x}})^{2} \,}{\sigma_{noise}^{2}}}$')
-#            plt.hlines(22.458,2e2,1e7, label='99.9% confidence level', zorder=4)
-#            plt.legend()
-#        else:
-#            plt.plot(meanflux, newchisq, 'b+',zorder=2)
-#            plt.plot(meanchan, newchisqchan, 'ro', zorder=3, mfc='None', markersize=10)
-#            plt.plot(meansflux, newschisq, 'm*', zorder=1, mfc='None', markersize=10)
-    
-            
+        ## plot new ###
+        plt.figure(4, figsize=[8,8])
+        if n == np.size(bins)-2 and m==3:
+            plt.plot(meanflux, newchisq, 'b+',zorder=2, label='Galaxy')
+            plt.plot(meanchan, newchisqchan, 'ro', zorder=3, mfc='None', markersize=10, label='X-ray detected')
+            plt.plot(meansflux, newschisq, 'm*', zorder=1, mfc='None', markersize=10, label='DR11 Star')
+            plt.yscale('log')
+            plt.xscale('log')
+            plt.xlim(xmin=8e1, xmax=1e7)
+            plt.ylim(ymin=3e-2, ymax=4e4)
+            plt.ylabel('Chi Squared')
+            plt.xlabel('Mean Flux')
+            plt.title('2nd iteration')
+            plt.text(5e2, 1e3, r'$\chi^{2} = \sum{\frac{( \,{x_{i} - \bar{x}})^{2} \,}{\sigma_{noise}^{2}}}$')
+            plt.hlines(22.458,2e2,1e7, label='99.9% confidence level', zorder=4)
+            plt.legend()
+        else:
+            plt.plot(meanflux, newchisq, 'b+',zorder=2)
+            plt.plot(meanchan, newchisqchan, 'ro', zorder=3, mfc='None', markersize=10)
+            plt.plot(meansflux, newschisq, 'm*', zorder=1, mfc='None', markersize=10)
     
         ### plot new variance ###
     #    plt.figure(5, figsize=[8,8])
@@ -278,7 +276,7 @@ varychi = galchisq[galchisq > 30]
 
 #### Turn dictionary into astropy table ###
 t = Table(sigdict)
-t.write('sigma_tables/quad_epoch_sigma_table_K_extra_clean_1arcsec_noneg.fits', overwrite=True)
+#t.write('sigma_tables/quad_epoch_sigma_table_K_extra_clean_1arcsec_noneg.fits', overwrite=True)
 
 
 

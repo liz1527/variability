@@ -27,12 +27,12 @@ plt.close('all') #close any open plots
 
 #%% Open the fits files and get data ###
 ### Import data for xray sources ###
-Kdata = fits.open('mag_flux_tables/K/xray_mag_flux_table_best_K_extra_clean_DR11data.fits')[1].data
-Jdata = fits.open('mag_flux_tables/J/xray_mag_flux_table_best_J_extra_clean_DR11data.fits')[1].data
+Kdata = fits.open('mag_flux_tables/K/mag_flux_table_best_K_extra_clean_DR11data.fits')[1].data
+Jdata = fits.open('mag_flux_tables/J/mag_flux_table_best_J_extra_clean_DR11data.fits')[1].data
 
 ### Import sig data ###
-Jsigtb = Table.read('sigma_tables/quad_epoch_sigma_table_J_extra_clean_2arcsec_neg.fits')
-Ksigtb = Table.read('sigma_tables/quad_epoch_sigma_table_K_extra_clean_2arcsec_neg.fits')
+Jsigtb = Table.read('sigma_tables/quad_epoch_sigma_table_J_extra_clean_2arcsec_noneg.fits')
+Ksigtb = Table.read('sigma_tables/quad_epoch_sigma_table_K_extra_clean_2arcsec_noneg.fits')
 
 #Jxraydata = Jdata[Jdata['X-ray']==True]
 
@@ -168,7 +168,7 @@ Ktable = add_col(Kchi, Ktable, 'Chi_K')
 Ktable = add_col(Jchi, Ktable, 'Chi_J')
 
 #finaltable.write('variable_tables/NIR_variables_J_and_K.fits', overwrite=True)
-Ktable.write('UDS_catalogues/xray_varystats_neg.fits', overwrite=True)
+Ktable.write('UDS_catalogues/full_varystats_noneg.fits', overwrite=True)
 
 end = time.time()
 print(end-start)
