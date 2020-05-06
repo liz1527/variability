@@ -68,10 +68,14 @@ xmeanflux = np.nanmean(xmonthflux, axis=1)
 noxmeanflux = np.nanmean(noxmonthflux, axis=1)
 
 plt.figure()
-plt.errorbar(noxmeanflux[noxmeanflux>1e4], noxmonthout[noxmeanflux>1e4], 
-             yerr=noxmonthouterr[noxmeanflux>1e4], fmt='bo')
-plt.errorbar(xmeanflux[xmeanflux>1e4], xmonthout[xmeanflux>1e4], 
-yerr=xmonthouterr[xmeanflux>1e4], fmt='rs')
+plt.errorbar(noxmeanflux, noxmonthout, 
+             yerr=noxmonthouterr, fmt='bo')
+plt.errorbar(xmeanflux, xmonthout, 
+yerr=xmonthouterr, fmt='rs')
+#plt.errorbar(noxmeanflux[noxmeanflux>1e4], noxmonthout[noxmeanflux>1e4], 
+#             yerr=noxmonthouterr[noxmeanflux>1e4], fmt='bo')
+#plt.errorbar(xmeanflux[xmeanflux>1e4], xmonthout[xmeanflux>1e4], 
+#yerr=xmonthouterr[xmeanflux>1e4], fmt='rs')
 plt.xscale('log')
 #plt.xlim(xmin=1e4)
 #plt.yscale('log')
@@ -88,10 +92,14 @@ noxmonthout = noxvarydata['Month_Chi_K']
 
 
 plt.figure()
-plt.errorbar(noxmeanflux[noxmeanflux>1e4], noxmonthout[noxmeanflux>1e4], 
-             yerr=noxmonthouterr[noxmeanflux>1e4], fmt='bo')
-plt.errorbar(xmeanflux[xmeanflux>1e4], xmonthout[xmeanflux>1e4], 
-yerr=xmonthouterr[xmeanflux>1e4], fmt='rs')
+plt.errorbar(noxmeanflux, noxmonthout, 
+             yerr=noxmonthouterr, fmt='bo')
+plt.errorbar(xmeanflux, xmonthout, 
+yerr=xmonthouterr, fmt='rs')
+#plt.errorbar(noxmeanflux[noxmeanflux>1e4], noxmonthout[noxmeanflux>1e4], 
+#             yerr=noxmonthouterr[noxmeanflux>1e4], fmt='bo')
+#plt.errorbar(xmeanflux[xmeanflux>1e4], xmonthout[xmeanflux>1e4], 
+#yerr=xmonthouterr[xmeanflux>1e4], fmt='rs')
 plt.xscale('log')
 #plt.xlim(xmin=1e4)
 plt.yscale('log')

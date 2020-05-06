@@ -46,6 +46,7 @@ sigtb = Table.read('sigma_tables/month_quad_epoch_sigma_table_K_extra_quad_clean
 
 ### Extract magnitude table and error tables ###
 Kflux, Kfluxerr, Kdata = vari_funcs.k_mag_flux.create_quad_error_array_month(sigtb, monthdata, aper=4)
+Kflux, Kfluxerr, Kdata = vari_funcs.flux_funcs.nanneg(Kflux, Kfluxerr, Kdata)
 
 ### Normalise ###
 Kfluxnorm, Kfluxerrnorm = vari_funcs.flux_funcs.normalise_flux_and_errors(Kflux, Kfluxerr)

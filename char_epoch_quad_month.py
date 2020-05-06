@@ -36,7 +36,8 @@ def compute_p(flux, chisq):
 
 def get_quaddata(filename):
     ### Open the fits files and get data ###
-    tbdata = fits.open(filename)[1].data
+#    tbdata = fits.open(filename)[1].data
+    tbdata = Table.read(filename)
     print('Removing edges')
     ### Remove edges ###
     tbdata = vari_funcs.field_funcs.remove_edges(tbdata, 'sep05')
@@ -97,12 +98,12 @@ for m, qtbdata in enumerate(quaddata):
     fluxerrchan = vari_funcs.k_mag_flux.month_fluxerr_stacks(qchandata, aper=ap)
     sfluxerr = vari_funcs.k_mag_flux.month_fluxerr_stacks(qsdata, aper=ap)
     
-    ## nan values that are negative ###
-    fluxn, fluxerr, qtbdata = vari_funcs.flux_funcs.nanneg(fluxn, fluxerr, qtbdata)
-    fluxchann, fluxerrchan, qchandata = vari_funcs.flux_funcs.nanneg(fluxchann, 
-                                                                     fluxerrchan,
-                                                                     qchandata)
-    sfluxn, sfluxerr, qsdata = vari_funcs.flux_funcs.nanneg(sfluxn, sfluxerr, qsdata)
+#    ## nan values that are negative ###
+#    fluxn, fluxerr, qtbdata = vari_funcs.flux_funcs.nanneg(fluxn, fluxerr, qtbdata)
+#    fluxchann, fluxerrchan, qchandata = vari_funcs.flux_funcs.nanneg(fluxchann, 
+#                                                                     fluxerrchan,
+#                                                                     qchandata)
+#    sfluxn, sfluxerr, qsdata = vari_funcs.flux_funcs.nanneg(sfluxn, sfluxerr, qsdata)
     
     
 #    ### plot flux vs err ###
@@ -145,14 +146,14 @@ for m, qtbdata in enumerate(quaddata):
         fluxchanerr = vari_funcs.k_mag_flux.month_fluxerr_stacks(binchan, aper=ap)
         sfluxerr = vari_funcs.k_mag_flux.month_fluxerr_stacks(sbindata, aper=ap)
         
-        ### nan values that are negative ###
-        flux, fluxerr, bindata = vari_funcs.flux_funcs.nanneg(flux, fluxerr, 
-                                                              bindata)
-        fluxchan, fluxchanerr, binchan = vari_funcs.flux_funcs.nanneg(fluxchan, 
-                                                                      fluxchanerr, 
-                                                                      binchan)
-        sflux, sfluxerr, sbindata = vari_funcs.flux_funcs.nanneg(sflux, sfluxerr, 
-                                                                 sbindata)
+#        ### nan values that are negative ###
+#        flux, fluxerr, bindata = vari_funcs.flux_funcs.nanneg(flux, fluxerr, 
+#                                                              bindata)
+#        fluxchan, fluxchanerr, binchan = vari_funcs.flux_funcs.nanneg(fluxchan, 
+#                                                                      fluxchanerr, 
+#                                                                      binchan)
+#        sflux, sfluxerr, sbindata = vari_funcs.flux_funcs.nanneg(sflux, sfluxerr, 
+#                                                                 sbindata)
         
 #        print(len(flux)+len(sflux))
         meanflux = np.nanmean(flux, axis=1)
@@ -186,29 +187,29 @@ for m, qtbdata in enumerate(quaddata):
 #            plt.plot(meanchan, chisqchan, 'ro', zorder=3, mfc='None', markersize=10)
 #            plt.plot(meansflux, schisq, 'm*', zorder=1, mfc='None', markersize=10)
     
-        plt.figure(3,figsize=[8,8])    
-        if n == np.size(bins)-2 and m==3:
-            plt.plot(meanflux, p, 'b+',zorder=2, label='Galaxy')
-            plt.plot(meanchan, pchan, 'ro', zorder=3, mfc='None', markersize=10, label='X-ray detected')
-            plt.plot(meansflux, sp, 'm*', zorder=1, mfc='None', markersize=10, label='DR11 Star')
-            plt.yscale('log')
-            plt.xscale('log')
-            plt.xlim(xmin=8e1, xmax=1e7)
-#            plt.ylim(ymin=3e-2, ymax=4e4)
-            plt.ylabel('Chi Squared p value')
-            plt.xlabel('Mean Flux')
-            plt.title('1st iteration')
-#            plt.text(5e2, 1e3, r'$\chi^{2} = \sum{\frac{( \,{x_{i} - \bar{x}})^{2} \,}{\sigma_{noise}^{2}}}$')
-            plt.hlines(0.00003931,2e2,1e7, label='99.9% confidence level', zorder=4)
-            plt.legend()
-        else:
-            plt.plot(meanflux, p, 'b+',zorder=2)
-            plt.plot(meanchan, pchan, 'ro', zorder=3, mfc='None', markersize=10)
-            plt.plot(meansflux, sp, 'm*', zorder=1, mfc='None', markersize=10)
+#        plt.figure(3,figsize=[8,8])    
+#        if n == np.size(bins)-2 and m==3:
+#            plt.plot(meanflux, p, 'b+',zorder=2, label='Galaxy')
+#            plt.plot(meanchan, pchan, 'ro', zorder=3, mfc='None', markersize=10, label='X-ray detected')
+#            plt.plot(meansflux, sp, 'm*', zorder=1, mfc='None', markersize=10, label='DR11 Star')
+#            plt.yscale('log')
+#            plt.xscale('log')
+#            plt.xlim(xmin=8e1, xmax=1e7)
+##            plt.ylim(ymin=3e-2, ymax=4e4)
+#            plt.ylabel('Chi Squared p value')
+#            plt.xlabel('Mean Flux')
+#            plt.title('1st iteration')
+##            plt.text(5e2, 1e3, r'$\chi^{2} = \sum{\frac{( \,{x_{i} - \bar{x}})^{2} \,}{\sigma_{noise}^{2}}}$')
+#            plt.hlines(0.00003931,2e2,1e7, label='99.9% confidence level', zorder=4)
+#            plt.legend()
+#        else:
+#            plt.plot(meanflux, p, 'b+',zorder=2)
+#            plt.plot(meanchan, pchan, 'ro', zorder=3, mfc='None', markersize=10)
+#            plt.plot(meansflux, sp, 'm*', zorder=1, mfc='None', markersize=10)
         
         ### remove any that are significantly variable ###
-        newgflux = flux[p>0.00003931,:]
-        newsflux = sflux[sp>0.00003931,:]
+        newgflux = flux[chisq<84]#[p>0.00003931,:]
+        newsflux = sflux[schisq<84]#[sp>0.00003931,:]
         newflux = np.vstack((newgflux, newsflux))
         print(len(newflux))
         lost += (len(flux)+len(sflux)) - len(newflux)
@@ -244,25 +245,25 @@ for m, qtbdata in enumerate(quaddata):
 #            plt.plot(meanchan, newchisqchan, 'ro', zorder=3, mfc='None', markersize=10)
 #            plt.plot(meansflux, newschisq, 'm*', zorder=1, mfc='None', markersize=10)
     
-        plt.figure(4, figsize=[8,8])
-        if n == np.size(bins)-2 and m==3:
-            plt.plot(meanflux, newp, 'b+',zorder=2, label='Galaxy')
-            plt.plot(meanchan, newpchan, 'ro', zorder=3, mfc='None', markersize=10, label='X-ray detected')
-            plt.plot(meansflux, newsp, 'm*', zorder=1, mfc='None', markersize=10, label='DR11 Star')
-            plt.yscale('log')
-            plt.xscale('log')
-            plt.xlim(xmin=8e1, xmax=1e7)
-#            plt.ylim(ymin=3e-2, ymax=4e4)
-            plt.ylabel('Chi Squared P value')
-            plt.xlabel('Mean Flux')
-            plt.title('2nd iteration')
-            plt.text(5e2, 1e3, r'$\chi^{2} = \sum{\frac{( \,{x_{i} - \bar{x}})^{2} \,}{\sigma_{noise}^{2}}}$')
-            plt.hlines(0.00003931,2e2,1e7, label='99.9% confidence level', zorder=4)
-            plt.legend()
-        else:
-            plt.plot(meanflux, newp, 'b+',zorder=2)
-            plt.plot(meanchan, newpchan, 'ro', zorder=3, mfc='None', markersize=10)
-            plt.plot(meansflux, newsp, 'm*', zorder=1, mfc='None', markersize=10)
+#        plt.figure(4, figsize=[8,8])
+#        if n == np.size(bins)-2 and m==3:
+#            plt.plot(meanflux, newp, 'b+',zorder=2, label='Galaxy')
+#            plt.plot(meanchan, newpchan, 'ro', zorder=3, mfc='None', markersize=10, label='X-ray detected')
+#            plt.plot(meansflux, newsp, 'm*', zorder=1, mfc='None', markersize=10, label='DR11 Star')
+#            plt.yscale('log')
+#            plt.xscale('log')
+#            plt.xlim(xmin=8e1, xmax=1e7)
+##            plt.ylim(ymin=3e-2, ymax=4e4)
+#            plt.ylabel('Chi Squared P value')
+#            plt.xlabel('Mean Flux')
+#            plt.title('2nd iteration')
+#            plt.text(5e2, 1e3, r'$\chi^{2} = \sum{\frac{( \,{x_{i} - \bar{x}})^{2} \,}{\sigma_{noise}^{2}}}$')
+#            plt.hlines(0.00003931,2e2,1e7, label='99.9% confidence level', zorder=4)
+#            plt.legend()
+#        else:
+#            plt.plot(meanflux, newp, 'b+',zorder=2)
+#            plt.plot(meanchan, newpchan, 'ro', zorder=3, mfc='None', markersize=10)
+#            plt.plot(meansflux, newsp, 'm*', zorder=1, mfc='None', markersize=10)
             
             
 #        ### remove any that are significantly variable ###
@@ -379,9 +380,9 @@ for m, qtbdata in enumerate(quaddata):
 
 #varychi = galchisq[galchisq > 84]
 
-## Turn dictionary into astropy table ###
+# Turn dictionary into astropy table ###
 t = Table(sigdict)
-#t.write('sigma_tables/month_quad_epoch_sigma_table_K_extra_quad_clean_2arcsec_noneg_pvalue.fits', overwrite=True)
+t.write('sigma_tables/month_quad_epoch_sigma_table_K_extra_quad_clean_2arcsec_neg_allmonths.fits', overwrite=True)
 
 
 end = time.time()

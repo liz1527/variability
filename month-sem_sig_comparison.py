@@ -34,10 +34,10 @@ plt.close('all') #close any open plots
 varydata = Table.read('variable_tables/J_and_K_variables_month_varystats_DR11data_pvalue.fits')
 
 
-### restrict to high flux ###
-monthflux = varydata['Month_Flux_K']
-meanflux = np.nanmean(monthflux, axis=1)
-varydata = varydata[meanflux>1e4]
+#### restrict to high flux ###
+#monthflux = varydata['Month_Flux_K']
+#meanflux = np.nanmean(monthflux, axis=1)
+#varydata = varydata[meanflux>1e4]
 
 xvarydata = varydata[varydata['X-ray']==True]
 noxvarydata = varydata[varydata['X-ray']==False]

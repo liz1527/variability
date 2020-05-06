@@ -54,6 +54,12 @@ def month_flux_stacks(tbdata, aper=4):
     Output:
         flux = an array with 8 columns containing flux values for each year '''
     aper -= 1 # to make it zero indexed
+#    months = ['sep05','nov05','dec05', 'jan06', #,'oct05''dec06', 
+#              'jan07', 'aug07', 'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 
+#              'jul09', 'aug09', 'sep09', 'oct09', 'nov09', 'dec09', 'jan10', 
+#              'feb10', 'aug10', 'sep10', 'oct10', 'nov10', 'dec10', 'jan11', #'feb11', 
+#              'aug11', 'sep11', 'oct11', 'nov11', 'dec11', 'jan12', 'feb12', 
+#              'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
     months = ['sep05','oct05','nov05','dec05', 'jan06', 'dec06', 'jan07',  
           'aug07', 'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 'jul09',  
           'aug09', 'sep09', 'oct09', 'nov09', 'dec09', 'jan10', 'feb10', 
@@ -550,7 +556,9 @@ def create_quad_error_array_month(sigtb, tbdata, aper=4, quadoutput=False):
     newquaddata = {}
     
     ### Get quadrant data ###
+#    print('Splitting quadrants')
     quaddata = field_funcs.quadrants(tbdata, 'sep05')
+#    print('Split quadrants')
     for n, qdata in enumerate(quaddata):
         ### create flux stacks and find average
         qflux = month_flux_stacks(qdata, aper)
@@ -587,6 +595,7 @@ def create_quad_error_array_month(sigtb, tbdata, aper=4, quadoutput=False):
         
         if quadoutput == False:
             ### Define full arrays to use in the rest of the analysis ###
+#            print('stacking tables')
             if n == 0:
                 flux = np.copy(qflux)
                 errarr = np.copy(qerrarr)
@@ -595,6 +604,7 @@ def create_quad_error_array_month(sigtb, tbdata, aper=4, quadoutput=False):
                 flux = np.vstack((flux, np.copy(qflux)))
                 errarr = np.vstack((errarr, np.copy(qerrarr)))
                 newtbdata = np.hstack((newtbdata, np.copy(qdata)))
+#            print('tables stacked')
         
         else: #this means wants quadrant output
             quadflux[n] = qflux

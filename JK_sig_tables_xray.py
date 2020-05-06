@@ -42,11 +42,11 @@ Ksigtb = Table.read('sigma_tables/quad_epoch_sigma_table_K_extra_clean_2arcsec_n
 #JKdata = vari_funcs.field_funcs.chandra_only(JKdata)
 #JJdata = vari_funcs.field_funcs.chandra_only(JJdata)
 
-#### Remove negatives ###
-#Kflux = vari_funcs.k_mag_flux.flux_stacks(Kdata, aper=4)
-#Jflux = vari_funcs.j_mag_flux.flux_stacks(Jdata, aper=4)
-#Kflux, Kdata = vari_funcs.flux_funcs.noneg(Kflux, Kdata)
-#Jflux, Jdata = vari_funcs.flux_funcs.noneg(Jflux, Jdata)
+### Remove negatives ###
+Kflux = vari_funcs.k_mag_flux.flux_stacks(Kdata, aper=4)
+Jflux = vari_funcs.j_mag_flux.flux_stacks(Jdata, aper=4)
+Kflux, Kdata = vari_funcs.flux_funcs.noneg(Kflux, Kdata)
+Jflux, Jdata = vari_funcs.flux_funcs.noneg(Jflux, Jdata)
 
 ### Make sure tables match ###
 Jmask = np.isin(Jdata['ID'], Kdata['ID'])
@@ -89,6 +89,7 @@ Kbad = [] # array for IDs that do not have a match in the other bad
 KbadIDs = [] # array for IDs that do not have a match in the other bad
 for n in range(len(Kdata)): #loop over the selection band
     obnum = Kdata['ID'][n] #get DR11 number
+    print(obnum)
     Jmask = np.isin(Jdata['ID'], obnum) #find equivilant J
     if ~np.any(Jmask):
         Kbad.append(n)
