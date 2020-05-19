@@ -57,9 +57,6 @@ noxJout = noxvarydata['sig_J']
 noxJouterr = noxvarydata['sig_J_err']
 allxJout = xraydata['sig_J']
 allxJouterr = xraydata['sig_J_err']
-J_K = varydata['JMAG_20'] - varydata['KMAG_20']
-x_J_K = xvarydata['JMAG_20'] - xvarydata['KMAG_20']
-nox_J_K = noxvarydata['JMAG_20'] - noxvarydata['KMAG_20']
 
 ### Indentify those with 0 sig in all, xray and nonxray ###
 inds = np.arange(0,len(varydata))
@@ -100,6 +97,12 @@ xdiff = xJout - xKout
 noxdiff = noxJout - noxKout
 allxdiff = allxJout - allxKout
 
+### calculate errors ###
+differr = np.sqrt(np.square(Jouterr) + np.square(Kouterr))
+xdifferr = np.sqrt(np.square(xJouterr) + np.square(xKouterr))
+noxdifferr = np.sqrt(np.square(noxJouterr) + np.square(noxKouterr))
+allxdifferr = np.sqrt(np.square(allxJouterr) + np.square(allxKouterr))
+
 ### fit lines to populations  ###
 xfit = np.polyfit(xz, xdiff,1)
 noxfit = np.polyfit(noxz, noxdiff,1)
@@ -117,8 +120,14 @@ noxz[noxz > 4.5] = 4.35
 allxz[allxz > 4.5] = 4.35
 
 ### Plot ###
-plt.figure()
+fig = plt.figure()
+ax1 = fig.add_subplot(111) # Subplot covering whole plot
+ax2 = ax1.twiny() # Twin of the first subplot
 #plt.plot(allxz, allxdiff, 'k+')
+plt.errorbar(noxz, noxdiff, yerr=noxdifferr, color='tab:grey', fmt='.',
+             alpha=0.5, zorder=0)
+plt.errorbar(xz, xdiff, yerr=xdifferr, color='tab:grey', fmt='.', alpha=0.5, 
+             zorder=0)
 plt.plot(noxz, noxdiff, 'bo')
 plt.plot(xz, xdiff, 'ro')
 plt.errorbar(noxz[noxz==4.35], noxdiff[noxz==4.35], xerr=0.09, fmt='b.', 
@@ -127,10 +136,21 @@ plt.errorbar(xz[xz==4.35], xdiff[xz==4.35], xerr=0.09, fmt='r.',
              zorder=0, xlolims=True)
 #plt.errorbar(allxz[allxz==4.35], allxdiff[allxz==4.35], xerr=0.09, fmt='k+', 
 #             zorder=0, xlolims=True)
-plt.xlabel('Redshift')
-plt.ylabel('Difference between $\sigma_{J}$ and $\sigma_{K}$')
-plt.xlim(-0.1, 4.5)
+ax1.set_xlabel('Redshift')
+ax1.set_ylabel('Difference between $\sigma_{J}$ and $\sigma_{K}$')
+ax1.set_xlim(-0.1, 4.5)
 plt.hlines(0,-0.1, 4.5)
+
+J_wave = 1.2
+K_wave = 2.2
+tick_z = np.array([0,1,2,3,4])
+tick_J = np.round(J_wave/(1+tick_z),1) 
+ax2.set_xlim(ax1.get_xlim()) #set twin to same limits
+ax1.set_xticks(tick_z) #set z ticks
+ax2.set_xticks(tick_z) #set z ticks
+ax2.set_xticklabels(tick_J) #set J wave ticks
+ax2.set_xlabel('J Restframe Wavelength ($\mu m$)')
+
 plt.tight_layout()
 
 ### Plot with fits ###
@@ -159,61 +179,6 @@ xJout[xJout==0] = zerosigval
 noxKout[noxKout==0] = zerosigval
 noxJout[noxJout==0] = zerosigval
 
-
-#x = np.linspace(0,2.5,10)
-#y = x
-##%% Plot just the X-ray points with z colours on ###
-#
-#plt.figure()
-#plt.errorbar(xKout[xnotzeroinds], xJout[xnotzeroinds], 
-#             yerr=xJouterr[xnotzeroinds], xerr=xKouterr[xnotzeroinds], 
-#             color='tab:grey', fmt='.', zorder=0, alpha=0.5)
-#plt.scatter(xKout, xJout, c=xz, vmin=0, vmax=6, marker='s')
-#
-#plt.errorbar(xKout[xzeroindsK], xJout[xzeroindsK], yerr=0.25e-3, fmt='r.', 
-#             zorder=0, uplims=True)
-#plt.errorbar(xKout[xzeroindsJ], xJout[xzeroindsJ], xerr=0.25e-3, fmt='r.', 
-#             zorder=0, xuplims=True)
-#
-#plt.xlabel('$\sigma_{K}$')
-#plt.ylabel('$\sigma_{J}$')
-#plt.title('X-ray Detected')
-#plt.xscale('log')
-#plt.yscale('log')
-#cbar=plt.colorbar()
-#cbar.set_label('z')
-#plt.plot(x,y,'k')
-#plt.xlim(xmin=1e-3,xmax=2.3)
-#plt.ylim(ymin=1e-3,ymax=2.3)
-#plt.tight_layout()
-##plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_Xray_zcolours.png')
-##plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_Xray_zcolours_K_variables.png')
-##plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_Xray_zcolours_J_variables.png')
-#
-##%% Plot just the non-X-ray points with z colours on ###
-#
-#plt.figure()
-#plt.errorbar(noxKout[noxnotzeroinds], noxJout[noxnotzeroinds], 
-#             yerr=noxJouterr[noxnotzeroinds], xerr=noxKouterr[noxnotzeroinds], 
-#             color='tab:grey', fmt='.', zorder=0, alpha=0.5)
-#plt.scatter(noxKout, noxJout, c=noxz, vmin=0, vmax=6)
-#
-#plt.errorbar(noxKout[noxzeroinds], noxJout[noxzeroinds], yerr=0.25e-3, fmt='b.', zorder=0, uplims=True)
-#
-#plt.xlabel('$\sigma_{K}$')
-#plt.ylabel('$\sigma_{J}$')
-#plt.xscale('log')
-#plt.yscale('log')
-#plt.title('Not X-ray Detected')
-#cbar=plt.colorbar()
-#cbar.set_label('z')
-#plt.plot(x,y,'k')
-#plt.xlim(xmin=1e-3,xmax=2.3)
-#plt.ylim(ymin=1e-3,ymax=2.3)
-#plt.tight_layout()
-##plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_not_Xray_zcolours.png')
-##plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_not_Xray_zcolours_K_variables.png')
-##plt.savefig('plots/new_catalogue/JK_sig_comp/JK_sig_comp_not_Xray_zcolours_J_variables.png')
 
 end = time.time()
 print(end-start)

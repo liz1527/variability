@@ -54,18 +54,18 @@ def month_flux_stacks(tbdata, aper=4):
     Output:
         flux = an array with 8 columns containing flux values for each year '''
     aper -= 1 # to make it zero indexed
-#    months = ['sep05','nov05','dec05', 'jan06', #,'oct05''dec06', 
-#              'jan07', 'aug07', 'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 
-#              'jul09', 'aug09', 'sep09', 'oct09', 'nov09', 'dec09', 'jan10', 
-#              'feb10', 'aug10', 'sep10', 'oct10', 'nov10', 'dec10', 'jan11', #'feb11', 
-#              'aug11', 'sep11', 'oct11', 'nov11', 'dec11', 'jan12', 'feb12', 
-#              'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
-    months = ['sep05','oct05','nov05','dec05', 'jan06', 'dec06', 'jan07',  
-          'aug07', 'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 'jul09',  
-          'aug09', 'sep09', 'oct09', 'nov09', 'dec09', 'jan10', 'feb10', 
-          'aug10', 'sep10', 'oct10', 'nov10', 'dec10', 'jan11', 'feb11', 
-          'aug11', 'sep11', 'oct11', 'nov11', 'dec11', 'jan12', 'feb12', 
-          'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
+    months = ['sep05','oct05','nov05','dec05', 'jan06', #'dec06', 
+              'jan07', 'aug07', 'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 
+              'jul09', 'aug09', 'sep09', 'oct09', 'nov09', 'dec09', 'jan10', 
+              'feb10', 'aug10', 'sep10', 'oct10', 'nov10', 'dec10', 'jan11', #'feb11', 
+              'aug11', 'sep11', 'oct11', 'nov11', 'dec11', 'jan12', 'feb12', 
+              'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
+#    months = ['sep05','oct05','nov05','dec05', 'jan06', 'dec06', 'jan07',  
+#          'aug07', 'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 'jul09',  
+#          'aug09', 'sep09', 'oct09', 'nov09', 'dec09', 'jan10', 'feb10', 
+#          'aug10', 'sep10', 'oct10', 'nov10', 'dec10', 'jan11', 'feb11', 
+#          'aug11', 'sep11', 'oct11', 'nov11', 'dec11', 'jan12', 'feb12', 
+#          'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
     
     for month in months:
         if month == 'sep05':
@@ -83,12 +83,18 @@ def month_fluxerr_stacks(tbdata, aper=4):
     Output:
         flux = an array with 40 columns containing flux values for each year '''
     aper -= 1 # to make it zero indexed
-    months = ['sep05','oct05','nov05','dec05', 'jan06', 'dec06', 'jan07',  
-          'aug07', 'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 'jul09',  
-          'aug09', 'sep09', 'oct09', 'nov09', 'dec09', 'jan10', 'feb10', 
-          'aug10', 'sep10', 'oct10', 'nov10', 'dec10', 'jan11', 'feb11', 
-          'aug11', 'sep11', 'oct11', 'nov11', 'dec11', 'jan12', 'feb12', 
-          'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
+    months = ['sep05','oct05','nov05','dec05', 'jan06', #'dec06', 
+              'jan07', 'aug07', 'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 
+              'jul09', 'aug09', 'sep09', 'oct09', 'nov09', 'dec09', 'jan10', 
+              'feb10', 'aug10', 'sep10', 'oct10', 'nov10', 'dec10', 'jan11', #'feb11', 
+              'aug11', 'sep11', 'oct11', 'nov11', 'dec11', 'jan12', 'feb12', 
+              'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
+#    months = ['sep05','oct05','nov05','dec05', 'jan06', 'dec06', 'jan07',  
+#          'aug07', 'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 'jul09',  
+#          'aug09', 'sep09', 'oct09', 'nov09', 'dec09', 'jan10', 'feb10', 
+#          'aug10', 'sep10', 'oct10', 'nov10', 'dec10', 'jan11', 'feb11', 
+#          'aug11', 'sep11', 'oct11', 'nov11', 'dec11', 'jan12', 'feb12', 
+#          'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
     
     for month in months:
         if month == 'sep05':

@@ -49,9 +49,9 @@ def get_quaddata(filename):
     del tbdata
     return quaddata
 
-filename = 'mag_flux_tables/K/month/month_mag_flux_table_best_K_extra_quad_clean.fits'
-chanfilename = 'mag_flux_tables/K/month/month_xray_mag_flux_table_best_K_extra_quad_clean.fits'
-sfilename = 'mag_flux_tables/K/month/month_stars_mag_flux_table_K_extra_quad_clean.fits'
+filename = 'mag_flux_tables/K/month/month_mag_flux_table_best_K_extra_quad_clean_38.fits'
+chanfilename = 'mag_flux_tables/K/month/month_xray_mag_flux_table_best_K_extra_quad_clean_38.fits'
+sfilename = 'mag_flux_tables/K/month/month_stars_mag_flux_table_K_extra_quad_clean_38.fits'
 
 quaddata = get_quaddata(filename)
 chanquaddata = get_quaddata(chanfilename)
@@ -381,8 +381,7 @@ for m, qtbdata in enumerate(quaddata):
 #varychi = galchisq[galchisq > 84]
 
 # Turn dictionary into astropy table ###
-t = Table(sigdict)
-t.write('sigma_tables/month_quad_epoch_sigma_table_K_extra_quad_clean_2arcsec_neg_allmonths.fits', overwrite=True)
+#t = Table(sigdict) allmonths.fits', overwrite=True)
 
 
 end = time.time()

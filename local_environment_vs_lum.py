@@ -29,6 +29,12 @@ plt.rc('font', **font)
 tbdata1 = Table.read('variable_tables/matched_Xray_J_and_K_variables_varystats_DR11data_0.25_0.5_0.2.fits')
 tbdata2 = Table.read('variable_tables/matched_notXray_J_and_K_variables_varystats_DR11data_0.25_0.5_0.2.fits')
 tbdata3 = Table.read('variable_tables/J_and_K_variables_varystats_DR11data.fits')
+
+### restrict redshift ###
+tbdata1 = tbdata1[tbdata1['z']<1]
+tbdata2 = tbdata2[tbdata2['z']<1]
+tbdata3 = tbdata3[tbdata3['z']<1]
+
 #%% match variables and fullcat catalogue ###
 
 ### Set match distance ###
