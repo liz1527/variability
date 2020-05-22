@@ -34,7 +34,7 @@ varys = Table.read('variable_tables/J_and_K_variables_varystats_DR11data.fits')
 monthdata = fits.open('variable_tables/J_and_K_variables_varystats_DR11data_monthdata.fits')[1].data
 
 ### Import sig data ###
-sigtb = Table.read('sigma_tables/month_quad_epoch_sigma_table_K_extra_quad_clean_2arcsec_noneg_pvalue.fits')
+sigtb = Table.read('sigma_tables/month_quad_epoch_sigma_table_K_extra_quad_clean_38_2arcsec_neg.fits')
 
 #Jxraydata = Jdata[Jdata['X-ray']==True]
 
@@ -46,7 +46,7 @@ sigtb = Table.read('sigma_tables/month_quad_epoch_sigma_table_K_extra_quad_clean
 
 ### Extract magnitude table and error tables ###
 Kflux, Kfluxerr, Kdata = vari_funcs.k_mag_flux.create_quad_error_array_month(sigtb, monthdata, aper=4)
-Kflux, Kfluxerr, Kdata = vari_funcs.flux_funcs.nanneg(Kflux, Kfluxerr, Kdata)
+#Kflux, Kfluxerr, Kdata = vari_funcs.flux_funcs.nanneg(Kflux, Kfluxerr, Kdata)
 
 ### Normalise ###
 Kfluxnorm, Kfluxerrnorm = vari_funcs.flux_funcs.normalise_flux_and_errors(Kflux, Kfluxerr)
@@ -113,8 +113,13 @@ for n in range(len(Kdata)): #loop over the selection band
 
 #%% Set up table with original varys as base ###
 ### Check all variables made it to the end ###
-mask = np.isin(varys['ID'], Kdata['ID'])
-Ktable = varys[mask]
+#mask = np.isin(varys['ID'], Kdata['ID'])
+#Ktable = varys[mask]
+Ktable = Table(Kdata)
+Ktable['X-ray'] = Ktable['X-ray'].astype('bool')
+
+### remove monthdata columns ###
+Ktable.keep_columns(varys.colnames)
 
 ### add sig and err columns for J and K to both tables ###
 def add_col(arr, tbdata, name):
@@ -154,7 +159,7 @@ finaltable = add_col(np.array(Kchi), finaltable, 'Month_Chi_K')
 #finaltable = add_col(Jchi, finaltable, 'Chi_J')
 
 #finaltable.write('variable_tables/NIR_variables_J_and_K.fits', overwrite=True)
-finaltable.write('variable_tables/J_and_K_variables_month_varystats_DR11data_pvalue.fits', 
+finaltable.write('variable_tables/J_and_K_variables_month_varystats_DR11data.fits', 
                  overwrite=True)
 
 end = time.time()

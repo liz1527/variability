@@ -31,7 +31,7 @@ plt.close('all') #close any open plots
 #noxvarydata = varydata[varydata['X-ray']==False]
 
 ### Import matched sample ###
-varydata = Table.read('variable_tables/J_and_K_variables_month_varystats_DR11data_pvalue.fits')
+varydata = Table.read('variable_tables/J_and_K_variables_month_varystats_DR11data.fits')
 
 
 #### restrict to high flux ###
@@ -103,6 +103,24 @@ xsemout[xsemout==0] = zerosigval
 xmonthout[xmonthout==0] = zerosigval
 noxsemout[noxsemout==0] = zerosigval
 noxmonthout[noxmonthout==0] = zerosigval
+
+### get flux data ###
+monthflux = varydata['Month_Flux_K']
+monthfluxerr = varydata['Month_Fluxerr_K']
+semflux = varydata['Flux_K']
+semfluxerr = varydata['Fluxerr_K']
+xmonthflux = xvarydata['Month_Flux_K']
+xmonthfluxerr = xvarydata['Month_Fluxerr_K']
+noxmonthflux = noxvarydata['Month_Flux_K']
+noxmonthfluxerr = noxvarydata['Month_Fluxerr_K']
+
+### calculate mean flux ###
+monthmeanflux = np.nanmean(monthflux, axis=1)
+semmeanflux = np.nanmean(semflux, axis=1)
+xmonthmeanflux = np.nanmean(xmonthflux, axis=1)
+noxmonthmeanflux = np.nanmean(noxmonthflux, axis=1)
+xsemmeanflux = np.nanmean(xmonthflux, axis=1)
+noxsemmeanflux = np.nanmean(noxmonthflux, axis=1)
 
 
 x = np.linspace(0,2.5,10)

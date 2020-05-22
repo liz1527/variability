@@ -380,8 +380,9 @@ for m, qtbdata in enumerate(quaddata):
 
 #varychi = galchisq[galchisq > 84]
 
-# Turn dictionary into astropy table ###
-#t = Table(sigdict) allmonths.fits', overwrite=True)
+### Turn dictionary into astropy table ###
+#t = Table(sigdict) 
+#t.write('sigma_tables/month_quad_epoch_sigma_table_K_extra_quad_clean_38_2arcsec_neg.fits', overwrite=True)
 
 
 end = time.time()

@@ -31,8 +31,8 @@ xvarydata = varydata[varydata['X-ray']==True]
 noxvarydata = varydata[varydata['X-ray']==False]
 
 ### Import matched sample ###
-xvarydata = Table.read('variable_tables/matched_Xray_J_and_K_variables_varystats_DR11data_0.25_0.5_0.2.fits')
-noxvarydata = Table.read('variable_tables/matched_notXray_J_and_K_variables_varystats_DR11data_0.25_0.5_0.2.fits')
+#xvarydata = Table.read('variable_tables/matched_Xray_J_and_K_variables_varystats_DR11data_0.25_0.5_0.2.fits')
+#noxvarydata = Table.read('variable_tables/matched_notXray_J_and_K_variables_varystats_DR11data_0.25_0.5_0.2.fits')
 
 #%% Get lightcurves with errors ###
 def getdata(data):
@@ -196,8 +196,8 @@ nox_j_avgflux, nox_k_avgflux = get_avg_flux(noxvarydata)
 
 
 plt.figure()
-plt.plot(x_k_avgflux, x_ls_J,'rs')
 plt.plot(nox_k_avgflux, nox_ls_J,'bo')
+plt.plot(x_k_avgflux, x_ls_J,'rs')
 plt.xscale('log')
 plt.xlabel('Average K-band Flux')
 plt.ylabel('$Least Square = \sum(F_{J}-F_{K})^{2})$')
