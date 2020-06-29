@@ -26,7 +26,7 @@ plt.close('all') #close any open plots
 
 #%% Open the fits files and get data ###
 ### Import data for variables selected in J and K ###
-varydata = Table.read('variable_tables/J_and_K_variables_varystats_DR11data.fits')
+varydata = Table.read('variable_tables/J_and_K_variables_month_varystats_DR11data.fits')
 xvarydata = varydata[varydata['X-ray']==True]
 noxvarydata = varydata[varydata['X-ray']==False]
 
@@ -36,11 +36,26 @@ noxvarydata = varydata[varydata['X-ray']==False]
 
 #%% Get lightcurves with errors ###
 def getdata(data):
-    mask = [0,2,3,4,5,6,7]
-    j_flux = data['Flux_J'][:,mask]
-    j_fluxerr = data['Fluxerr_J'][:,mask]
-    k_flux = data['Flux_K']
-    k_fluxerr = data['Fluxerr_K']
+    ### Set up month arrays ###
+    kmonths = ['sep05','oct05','nov05','dec05', 'jan06', #'dec06', 
+              'jan07', 'aug07', 'sep07', 'oct07', 'sep08', 'oct08', 'nov08', 
+              'jul09', 'aug09', 'sep09', 'oct09', 'nov09', 'dec09', 'jan10', 
+              'feb10', 'aug10', 'sep10', 'oct10', 'nov10', 'dec10', 'jan11', #'feb11', 
+              'aug11', 'sep11', 'oct11', 'nov11', 'dec11', 'jan12', 'feb12', 
+              'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
+    
+    jmonths = ['sep05', 'oct05', 'nov05', 'dec05', 'jan06', 'oct06', 'nov06',
+              'dec06', 'aug07', 'sep07', 'oct07', 'oct08', 'nov08', 'aug09',
+              'sep09', 'oct09', 'nov09', 'dec09', 'aug10', 'sep10', 'oct10',
+              'nov10', 'dec10', 'jan11', 'aug11', 'sep11', 'oct11', 'nov11',
+              'dec11', 'jan12', 'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
+    
+    jmask = np.isin(jmonths, kmonths)
+    kmask = np.isin(kmonths, jmonths)
+    j_flux = data['Month_Flux_J'][:,jmask]
+    j_fluxerr = data['Month_Fluxerr_J'][:,jmask]
+    k_flux = data['Month_Flux_K'][:,kmask]
+    k_fluxerr = data['Month_Fluxerr_K'][:,kmask]
     
     j_flux, j_fluxerr = vari_funcs.flux_funcs.normalise_flux_and_errors(j_flux, 
                                                                         j_fluxerr)

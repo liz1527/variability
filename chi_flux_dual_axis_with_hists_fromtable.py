@@ -5,8 +5,8 @@ Created on Wed Nov  7 11:35:11 2018
 
 Code to creat chi-flux plot using the bootstraped error bars and 2 arcsec K-band
 
-This version has dual x-axis showing magnitudes and fluxes, and is the version
-used in my first paper.
+This version has dual x-axis showing magnitudes and fluxes, it was created to 
+check the tables my summer student (alex tomlinson) is using.
 
 @author: ppxee
 """
@@ -29,23 +29,27 @@ font = {'family' : 'DejaVu Sans',
 plt.rc('font', **font)
 
 ### Open the fits files and get data ###
-tbdata = fits.open('mag_flux_tables/K/mag_flux_table_best_K_extra_clean.fits')[1].data
-chandata = fits.open('mag_flux_tables/K/xray_mag_flux_table_best_K_extra_clean.fits')[1].data
-sdata = fits.open('mag_flux_tables/K/stars_mag_flux_table_K_extra_clean.fits')[1].data
-sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_K_extra_clean_2arcsec_neg.fits')
+tbdata = Table.read('UDS_catalogues/semester_lightcurves_J_and_K.fits')
 
 def prep_data(tbdata):
-    ### Remove edges ###
-    tbdata = vari_funcs.field_funcs.remove_edges(tbdata)
+#    ### Remove edges ###
+#    tbdata = vari_funcs.field_funcs.remove_edges(tbdata)
     
-    ### Create arrays of flux values ###
-    flux = vari_funcs.k_mag_flux.flux4_stacks(tbdata)
+#    ### Create arrays of flux values ###
+#    flux = vari_funcs.k_mag_flux.flux4_stacks(tbdata)
     
 #    ### remove values that are negative ###
 #    flux, tbdata = vari_funcs.flux_funcs.noneg(flux, tbdata)
     
-    ### Get error arrays ###
-    flux, fluxerr, tbdata = vari_funcs.k_mag_flux.create_quad_error_array(sigtb, tbdata, aper=4)
+    ### Get flux arrays ###
+    flux = np.stack(([tbdata['K_flux_05B'], #tbdata['flux_APER_06B'][:,aper],
+                tbdata['K_flux_07B'], tbdata['K_flux_08B'],
+                tbdata['K_flux_09B'], tbdata['K_flux_10B'], 
+                tbdata['K_flux_11B'], tbdata['K_flux_12B']]), axis=1)
+    fluxerr = np.stack(([tbdata['K_fluxerr_05B'], #tbdata['flux_APER_06B'][:,aper],
+                tbdata['K_fluxerr_07B'], tbdata['K_fluxerr_08B'],
+                tbdata['K_fluxerr_09B'], tbdata['K_fluxerr_10B'], 
+                tbdata['K_fluxerr_11B'], tbdata['K_fluxerr_12B']]), axis=1)
     
     
     ### get average flux for each object ###
@@ -57,12 +61,10 @@ def prep_data(tbdata):
     return tbdata, avgfluxperob, vary
 
 tbdata, avgfluxperob, vary = prep_data(tbdata)
-chandata, avgfluxchanperob, varychan = prep_data(chandata)
-sdata, savgfluxperob, varystar = prep_data(sdata)
 
 ### reset X-ray column as messed up by stacking ###
-tbdata['X-ray'][tbdata['X-ray']==70] = False 
-tbdata['X-ray'][tbdata['X-ray']==84] = True
+#tbdata['X-ray'][tbdata['X-ray']==70] = False 
+#tbdata['X-ray'][tbdata['X-ray']==84] = True
 
 ### Create plot with two axes ##
 fig = plt.figure(figsize=[9,8])
@@ -89,19 +91,19 @@ line, = ax1.plot(avgfluxperob, vary, 'b+', label='Galaxy', picker=2, rasterized=
 
 ### Plot chi sq hist ###
 bins = np.logspace(np.log10(3e-2), np.log10(3e4),100)
-ax4.hist(varystar, bins, color='m', histtype='step', linestyle='--', 
-         linewidth=1.5, density=True, orientation=u'horizontal')
+#ax4.hist(varystar, bins, color='m', histtype='step', linestyle='--', 
+#         linewidth=1.5, density=True, orientation=u'horizontal')
 ax4.hist(vary, bins, color='b', histtype='step', linestyle='-.', 
          linewidth=1.5, density=True, orientation=u'horizontal')
-ax4.hist(varychan, bins, color='r', histtype='step', linestyle='-', 
-         linewidth=1.5, density=True, orientation=u'horizontal')
+#ax4.hist(varychan, bins, color='r', histtype='step', linestyle='-', 
+#         linewidth=1.5, density=True, orientation=u'horizontal')
 
 ### Apply plot characteristics ###
 ax1.set_xscale('log')
 ax1.set_yscale('log')
     
 ax1.set_ylim(3e-2,3e4)
-#ax1.set_xlim(8e1, 1e7) #if flux
+ax1.set_xlim(8e1, 1e7) #if flux
 #    plt.xlim(13,26) #if mag
 
 ax1.set_xlabel('Mean Flux')

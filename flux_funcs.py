@@ -34,6 +34,20 @@ def normalise_flux_and_errors(flux, fluxerr):
     fluxerr = fluxerr/avgflux[:,None]
     return flux, fluxerr
 
+def normalise_single_flux_and_errors(flux, fluxerr):
+    ''' Normalise an object's flux so its average flux is 1
+    Input:
+        flux = array of object flux values 
+        fluxerr = array of flux errors
+    Output:
+        flux = array of object flux values normalised to an average flux of 1
+        fluxerr = array of flux errors scales to match
+    '''
+    avgflux = np.nanmean(flux)
+    flux = flux/avgflux
+    fluxerr = fluxerr/avgflux
+    return flux, fluxerr
+
 def normalise_mag(mag):
     ''' Normalise each objects mag so its average magnitude is 1
     Input:

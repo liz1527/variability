@@ -492,7 +492,8 @@ def plot_median_line_stars(fluxn, tbdata, sflux, sdata, statistic='MAD',
         plt.plot(bins[0:np.size(bins)-1], allmedstat, 'k--')
     return bins, allmedstat
 
-def plot_median_line_stars_J(fluxn, tbdata, sflux, sdata, statistic='MAD'):
+def plot_median_line_stars_J(fluxn, tbdata, sflux, sdata, statistic='MAD',
+                           createplot=True):
     ''' Function to find (and plot a line showing) the median value for a 
     variety of statistics across the flux range of the sample - useful when 
     calculating uncertainties. This version includes the fluxes of stars in the
@@ -558,5 +559,6 @@ def plot_median_line_stars_J(fluxn, tbdata, sflux, sdata, statistic='MAD'):
         statmed = np.nanmedian(binstat)
         allmedstat = np.append(allmedstat, statmed)
         
-#    plt.plot(bins[0:np.size(bins)-1], allmedstat, 'k--')
+    if createplot==True:
+        plt.plot(bins[0:np.size(bins)-1], allmedstat, 'k--')
     return bins, allmedstat

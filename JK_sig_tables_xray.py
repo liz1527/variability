@@ -169,7 +169,7 @@ Ktable = add_col(Kchi, Ktable, 'Chi_K')
 Ktable = add_col(Jchi, Ktable, 'Chi_J')
 
 #finaltable.write('variable_tables/NIR_variables_J_and_K.fits', overwrite=True)
-Ktable.write('UDS_catalogues/full_varystats_noneg.fits', overwrite=True)
+Ktable.write('UDS_catalogues/full_varystats_neg.fits', overwrite=True)
 
 end = time.time()
 print(end-start)

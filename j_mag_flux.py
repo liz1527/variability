@@ -45,6 +45,50 @@ def fluxerr_stacks(tbdata, aper=5):
                 tbdata['FLUXERR_APER_11B'][:,aper],tbdata['FLUXERR_APER_12B'][:,aper]], axis=1)
     return fluxerr
 
+def month_flux_stacks(tbdata, aper=4):
+    ''' Function that takes a catalogue of flux data from the sextracor output
+    and makes a np array containing only the specified aperture data for each 
+    epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        flux = an array with 8 columns containing flux values for each year '''
+    aper -= 1 # to make it zero indexed
+    months = ['sep05', 'oct05', 'nov05', 'dec05', 'jan06', 'oct06', 'nov06',
+              'dec06', 'aug07', 'sep07', 'oct07', 'oct08', 'nov08', 'aug09',
+              'sep09', 'oct09', 'nov09', 'dec09', 'aug10', 'sep10', 'oct10',
+              'nov10', 'dec10', 'jan11', 'aug11', 'sep11', 'oct11', 'nov11',
+              'dec11', 'jan12', 'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
+    
+    for month in months:
+        if month == 'sep05':
+            flux = tbdata['FLUX_APER_'+month][:,aper]
+        else:
+            flux = np.vstack([flux, tbdata['FLUX_APER_'+month][:,aper]])
+    return np.transpose(flux)
+
+def month_fluxerr_stacks(tbdata, aper=4):
+    ''' Function that takes a catalogue of flux data from the sextracor output
+    and makes a np array containing only the specified aperture data for each 
+    epoch
+    Input:
+        tbdata = the original combined catalogue of flux data 
+    Output:
+        flux = an array with 8 columns containing flux values for each year '''
+    aper -= 1 # to make it zero indexed
+    months = ['sep05', 'oct05', 'nov05', 'dec05', 'jan06', 'oct06', 'nov06',
+              'dec06', 'aug07', 'sep07', 'oct07', 'oct08', 'nov08', 'aug09',
+              'sep09', 'oct09', 'nov09', 'dec09', 'aug10', 'sep10', 'oct10',
+              'nov10', 'dec10', 'jan11', 'aug11', 'sep11', 'oct11', 'nov11',
+              'dec11', 'jan12', 'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
+    
+    for month in months:
+        if month == 'sep05':
+            flux = tbdata['FLUXERR_APER_'+month][:,aper]
+        else:
+            flux = np.vstack([flux, tbdata['FLUXERR_APER_'+month][:,aper]])
+    return np.transpose(flux)
+
 def mag_stacks(tbdata, aper=5):
     ''' Function that takes a catalogue of flux data from the sextracor output
     and makes a np array containing only the specified aperture data for each 
@@ -75,6 +119,7 @@ def magerr_stacks(tbdata, aper=5):
                 tbdata['MAGERR_APER_09B'][:,aper],tbdata['MAGERR_APER_10B'][:,aper], 
                 tbdata['MAGERR_APER_11B'][:,aper],tbdata['MAGERR_APER_12B'][:,aper]], axis=1)
     return magerr
+
 
 def flux1_stacks(tbdata):
     ''' Function that takes a catalogue of flux data from the sextracor output
@@ -296,6 +341,127 @@ def create_quad_error_array_J(sigtb, tbdata, aper=5, quadoutput=False):
     for n, qdata in enumerate(quaddata):
         ### create flux stacks and find average
         qflux = flux_stacks(qdata, aper)
+        avgflux = np.nanmean(qflux, axis=1)
+        qerrarr = np.empty(np.shape(qflux))
+        
+        ### Find values within bins and assign correct sigma ###
+        for m, lower in enumerate(binarr[n,0:-1]):
+            if m == 0:
+                #remove lower values
+                mask = avgflux< lower
+                nanarr = np.full_like(sigtb[str(n+1)+' '+str(int(lower))], np.nan)
+                qflux[mask,:] = nanarr
+                qerrarr[mask,:] = nanarr
+            mask1 = avgflux>lower 
+            if m != len(binarr)-1:
+                mask2 = avgflux<binarr[n,m+1]
+            else:
+                #remove upper values
+                mask = avgflux > 6309573 #max bin
+                nanarr = np.full_like(sigtb[str(n+1)+' '+str(int(lower))], np.nan)
+                qflux[mask,:] = nanarr
+                qerrarr[mask,:] = nanarr
+                mask2 = avgflux < 6309573 #max bin
+            
+            mask = mask1*mask2.astype(bool)
+            qerrarr[mask,:] = sigtb[str(n+1)+' '+str(int(lower))]
+            
+        # remove nans
+        mask = ~np.isnan(qflux).any(axis=1)
+        qflux = qflux[mask]
+        qerrarr = qerrarr[mask]
+        qdata = qdata[mask]
+        
+        if quadoutput == False:
+            ### Define full arrays to use in the rest of the analysis ###
+            if n == 0:
+                flux = np.copy(qflux)
+                errarr = np.copy(qerrarr)
+                newtbdata = np.copy(qdata)
+            else:
+                flux = np.vstack((flux, np.copy(qflux)))
+                errarr = np.vstack((errarr, np.copy(qerrarr)))
+                newtbdata = np.hstack((newtbdata, np.copy(qdata)))
+        
+        else: #this means wants quadrant output
+            quadflux[n] = qflux
+            quaderr[n] = qerrarr
+            newquaddata[n] = qdata
+    
+    if quadoutput == False:
+        if np.isin('X-ray', newtbdata.dtype.names):
+            newtbdata['X-ray'][newtbdata['X-ray']==70] = False 
+            newtbdata['X-ray'][newtbdata['X-ray']==84] = True
+            newtbdata['X-ray'] = newtbdata['X-ray'].astype(bool)
+        return flux, errarr, newtbdata
+    else:
+        return quadflux, quaderr, newquaddata
+
+def create_quad_error_array_month_J(sigtb, tbdata, aper=4, quadoutput=False):
+    ''' Function that creates an error array from sigma values calculated from
+    data variations within flux , epoch and quadrant bins - i.e. the error 
+    analysis used in my first paper 
+    
+    Inputs:
+        sigtb = table of error values, column names indicate which bin the  
+                value applies to.
+        tbdata = table of data the array is being created for
+        aper = aperture to create flux arrays for, default is 4 which is the 
+               2 arcsec aperture
+        quadoutput = bool, indicate whether to output the data in 4 separate
+                     arrays corresponding to the four quadrants. Default is 
+                     false so output is as single arrays and tables.
+    Outputs:
+        If quadoutput = False (default):
+            flux = array of flux values that matches errarr
+            erarr = array of calibrated error values
+            newtbdata = overall data table with any null values removed so it 
+                        matches flux and errarr in length
+        If quadoutput = True:
+            quadflux = dictionary with 4 arrays inside that are for flux arrays
+                       for each quadrant of the image. Dict key is the quadrant
+                       number.
+            quaderr = dictionary with 4 arrays inside that are for error arrays
+                      for each quadrant of the image. Dict key is the quadrant
+                      number.
+            newquaddata = dictionary with 4 tables inside that are for the 
+                          overall data tables for each quadrant of the image. 
+                          Dict key is the quadrant number.
+    '''
+    bins = np.array(sigtb.colnames)
+    binarr = np.empty([4,int(len(bins)/4)])
+    k = 0
+    l = 0
+    m = 0
+    n = 0
+    ### Create binedge array for each quadrant ###
+    for bin in bins:
+        if bin[0] == '1':
+            binarr[0,k] = int(bin[2:])
+            k+=1
+        elif bin[0] == '2':
+            binarr[1,l] = int(bin[2:])
+            l+=1
+        elif bin[0] == '3':
+            binarr[2,m] = int(bin[2:])
+            m+=1
+        elif bin[0] == '4':
+            binarr[3,n] = int(bin[2:])
+            n+=1
+    
+    ### Set up empty arrays for data ###
+    flux = np.array([])
+    errarr = np.array([])
+    newtbdata = []
+    quadflux = {}
+    quaderr = {}
+    newquaddata = {}
+    
+    ### Get quadrant data ###
+    quaddata = field_funcs.quadrants(tbdata, 'sep05')
+    for n, qdata in enumerate(quaddata):
+        ### create flux stacks and find average
+        qflux = month_flux_stacks(qdata, aper)
         avgflux = np.nanmean(qflux, axis=1)
         qerrarr = np.empty(np.shape(qflux))
         

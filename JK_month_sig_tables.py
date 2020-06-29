@@ -31,10 +31,12 @@ plt.close('all') #close any open plots
 varys = Table.read('variable_tables/J_and_K_variables_varystats_DR11data.fits')
 
 ### Import month data (doing separately as need fits format) ###
-monthdata = fits.open('variable_tables/J_and_K_variables_varystats_DR11data_monthdata.fits')[1].data
+Kdata = fits.open('variable_tables/J_and_K_variables_varystats_DR11data_monthdata.fits')[1].data
+Jdata = fits.open('variable_tables/J_and_K_variables_varystats_DR11data_J_monthdata.fits')[1].data
 
 ### Import sig data ###
-sigtb = Table.read('sigma_tables/month_quad_epoch_sigma_table_K_extra_quad_clean_38_2arcsec_neg.fits')
+Ksigtb = Table.read('sigma_tables/month_quad_epoch_sigma_table_K_extra_quad_clean_38_2arcsec_neg.fits')
+Jsigtb = Table.read('sigma_tables/month_quad_epoch_sigma_table_J_extra_quad_clean_2arcsec_neg.fits')
 
 #Jxraydata = Jdata[Jdata['X-ray']==True]
 
@@ -45,15 +47,18 @@ sigtb = Table.read('sigma_tables/month_quad_epoch_sigma_table_K_extra_quad_clean
 #JJdata = vari_funcs.field_funcs.chandra_only(JJdata)
 
 ### Extract magnitude table and error tables ###
-Kflux, Kfluxerr, Kdata = vari_funcs.k_mag_flux.create_quad_error_array_month(sigtb, monthdata, aper=4)
+Kflux, Kfluxerr, Kdata = vari_funcs.k_mag_flux.create_quad_error_array_month(Ksigtb, Kdata, aper=4)
+Jflux, Jfluxerr, Jdata = vari_funcs.j_mag_flux.create_quad_error_array_month_J(Jsigtb, Jdata, aper=4)
 #Kflux, Kfluxerr, Kdata = vari_funcs.flux_funcs.nanneg(Kflux, Kfluxerr, Kdata)
 
 ### Normalise ###
 Kfluxnorm, Kfluxerrnorm = vari_funcs.flux_funcs.normalise_flux_and_errors(Kflux, Kfluxerr)
+Jfluxnorm, Jfluxerrnorm = vari_funcs.flux_funcs.normalise_flux_and_errors(Jflux, Jfluxerr)
 
 #%% All points
 posvar = np.linspace(0,2,5000)
 Kmeanflux = np.nanmean(Kfluxnorm, axis=1)
+Jmeanflux = np.nanmean(Jfluxnorm, axis=1)
 
 ### Set up arrays for K selected ###
 allKout = np.array([])
@@ -78,28 +83,28 @@ for n in range(len(Kdata)): #loop over the selection band
     allKouterr = np.append(allKouterr, Kout[1])
         
                
-### Set up arrays for J selected ###
-#allJout = np.array([])
-#allJouterr = np.array([])
+## Set up arrays for J selected ###
+allJout = np.array([])
+allJouterr = np.array([])
 
-#### Find z for full tbdata ###
-#Jz = vari_funcs.get_z(Jdata)
-#
-#Jbad = [] # array for IDs that do not have a match in the other bad
-#JbadIDs = [] # array for IDs that do not have a match in the other bad
-#for n in range(len(Jdata)): #loop over the selection band
-#    obnum = Jdata['ID'][n] #find DR11 number
-#    
-#    ### Get maximum likelihoods in J and K for that object ###
-#    JJout = vari_funcs.vary_stats.maximum_likelihood(Jfluxnorm[n,:], 
-#                                                     Jfluxerrnorm[n,:], 
-#                                                     Jmeanflux[n], posvar)
-#    
-#
-#    ### save output into x-ray and band specfic arrays ###
-#    allJout = np.append(allJout, Jout[0])
-#    allJouterr = np.append(allJouterr, Jout[1])
-#
+### Find z for full tbdata ###
+Jz = vari_funcs.get_z(Jdata)
+
+Jbad = [] # array for IDs that do not have a match in the other bad
+JbadIDs = [] # array for IDs that do not have a match in the other bad
+for n in range(len(Jdata)): #loop over the selection band
+    obnum = Jdata['ID'][n] #find DR11 number
+    
+    ### Get maximum likelihoods in J and K for that object ###
+    Jout = vari_funcs.vary_stats.maximum_likelihood(Jfluxnorm[n,:], 
+                                                    Jfluxerrnorm[n,:], 
+                                                    Jmeanflux[n], posvar)
+    
+
+    ### save output into x-ray and band specfic arrays ###
+    allJout = np.append(allJout, Jout[0])
+    allJouterr = np.append(allJouterr, Jout[1])
+
 ##### remove rows with no K match ###
 #Jtable = Table(np.copy(Jdata))
 #J_xray = Jtable['X-ray']
@@ -132,16 +137,10 @@ Ktable = add_col(Kflux, Ktable, 'Month_Flux_K')
 Ktable = add_col(Kfluxerr, Ktable, 'Month_Fluxerr_K')
 Ktable = add_col(allKout, Ktable, 'Month_sig_K')
 Ktable = add_col(allKouterr, Ktable, 'Month_sig_K_err')
-#Jtable = add_col(Jz, Jtable, 'z')
-#Jtable = add_col(JKflux, Jtable, 'Flux_K')
-#Jtable = add_col(JKfluxerr, Jtable, 'Fluxerr_K')
-#Jtable = add_col(JJflux, Jtable, 'Flux_J')
-#Jtable = add_col(JJfluxerr, Jtable, 'Fluxerr_J')
-#Jtable = add_col(allJKout, Jtable, 'sig_K')
-#Jtable = add_col(allJKouterr, Jtable, 'sig_K_err')
-#Jtable = add_col(allJJout, Jtable, 'sig_J')
-#Jtable = add_col(allJJouterr, Jtable, 'sig_J_err')
-#Jtable = add_col(J_xray, Jtable, 'X-ray')
+Ktable = add_col(Jflux, Ktable, 'Month_Flux_J')
+Ktable = add_col(Jfluxerr, Ktable, 'Month_Fluxerr_J')
+Ktable = add_col(allJout, Ktable, 'Month_sig_J')
+Ktable = add_col(allJouterr, Ktable, 'Month_sig_J_err')
 
 
 ### Match ID columns so that can make one megatable ###
@@ -154,9 +153,9 @@ finaltable = Ktable#vstack([bothtable, Ktable, Jtable])
 
 ### Calculate and add a chi_sq values for J and K ###
 Kchi = vari_funcs.vary_stats.my_chisquare_err(finaltable['Month_Flux_K'], finaltable['Month_Fluxerr_K'])
-#Jchi = vari_funcs.vary_stats.my_chisquare_err(finaltable['Flux_J'], finaltable['Fluxerr_J'])
+Jchi = vari_funcs.vary_stats.my_chisquare_err(finaltable['Month_Flux_J'], finaltable['Month_Fluxerr_J'])
 finaltable = add_col(np.array(Kchi), finaltable, 'Month_Chi_K')
-#finaltable = add_col(Jchi, finaltable, 'Chi_J')
+finaltable = add_col(np.array(Jchi), finaltable, 'Month_Chi_J')
 
 #finaltable.write('variable_tables/NIR_variables_J_and_K.fits', overwrite=True)
 finaltable.write('variable_tables/J_and_K_variables_month_varystats_DR11data.fits', 
