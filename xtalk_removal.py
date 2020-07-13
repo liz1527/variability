@@ -45,7 +45,8 @@ def get_percentage(xtalk, tbdata):
     return percent, kflux, predflux
     
 ### Open the fits files and get data ###
-filename = 'J/K_extraction/J_variables_chi32_noneg_DR11data'
+#filename = 'J/K_extraction/J_variables_chi32_noneg_DR11data'
+filename = 'bad_jan12_DR11data'
 varys = Table.read('variable_tables/'+filename+'.fits')
 xtalk = Table.read('UDS_catalogues/UDS_DR11_pred_xtalk_mag.fits')
 
@@ -143,13 +144,13 @@ y_col = Column(xtalk_y, name='X-talk_Y')
 varys_xtalk.add_column(y_col)
         
 
-### Save tables ###
-varys.write('variable_tables/'+filename+'_xtalkchecked.fits',
-            overwrite=True)
-varys_xtalk.write('variable_tables/'+filename+'_xtalkcontam.fits',
-            overwrite=True)
-varys_noxtalk.write('variable_tables/'+filename+'_noxtalkcontam.fits',
-            overwrite=True)
+#### Save tables ###
+#varys.write('variable_tables/'+filename+'_xtalkchecked.fits',
+#            overwrite=True)
+#varys_xtalk.write('variable_tables/'+filename+'_xtalkcontam.fits',
+#            overwrite=True)
+#varys_noxtalk.write('variable_tables/'+filename+'_noxtalkcontam.fits',
+#            overwrite=True)
 
 
 

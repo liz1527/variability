@@ -60,24 +60,14 @@ low_j_fluxerr = j_fluxerr[~mask]
 low_k_fluxerr = k_fluxerr[~mask]
 
 #%% Mean subract and normalise ###
-def mean_subtract_normalise(flux):
-    ''' Function to create mean subtracted and normalised lightcurves for use 
-    in cross correlation '''
-    meanflux = np.nanmean(flux, axis=1)
-    newflux = (flux - meanflux[:,None])/meanflux[:,None]
-    return newflux
-def weighted_mean_subtract_normalise(flux, fluxerr):
-    ''' Function to create mean subtracted and normalised lightcurves for use 
-    in cross correlation but including errors'''
-    meanflux = np.average(flux, axis=1, weights=1/(fluxerr**2))
-    newflux = (flux - meanflux[:,None])/meanflux[:,None]
-    return newflux
+#
+#test_j_flux = vari_funcs.cross_correlation.mean_subtract_normalise(x_j_flux)
+#test_k_flux = vari_funcs.cross_correlation.mean_subtract_normalise(x_k_flux)
 
-#test_j_flux = mean_subtract_normalise(low_j_flux)
-#test_k_flux = mean_subtract_normalise(low_k_flux)
-
-test_j_flux = weighted_mean_subtract_normalise(x_j_flux, x_j_fluxerr)
-test_k_flux = weighted_mean_subtract_normalise(x_k_flux, x_k_fluxerr)
+test_j_flux = vari_funcs.cross_correlation.weighted_mean_subtract_normalise(x_j_flux, 
+                                                                            x_j_fluxerr)
+test_k_flux = vari_funcs.cross_correlation.weighted_mean_subtract_normalise(x_k_flux, 
+                                                                            x_k_fluxerr)
 #%% Create correlation arrays ###
 ''' Need arrays that have a space for every possible month so that the values 
 can be separated by the correct time periods'''
@@ -103,81 +93,29 @@ jmonths = ['sep05', 'oct05', 'nov05', 'dec05', 'jan06', 'oct06', 'nov06',
 jmask = np.isin(full_months, jmonths)
 
 ### Assign new arrays ###
-def make_corr_arrays(flux, mask, full_months):
-    newflux = np.empty([len(flux), len(full_months)]) # create empty array the right shape
-    newflux[:,mask] = flux
-    newflux[:,~mask] = np.nan
-    return newflux
+corr_test_j_flux = vari_funcs.cross_correlation.make_corr_arrays(test_j_flux, 
+                                                                 jmask, 
+                                                                 full_months)
+corr_test_k_flux = vari_funcs.cross_correlation.make_corr_arrays(test_k_flux, 
+                                                                 kmask, 
+                                                                 full_months)
 
-corr_test_j_flux = make_corr_arrays(test_j_flux, jmask, full_months)
-corr_test_k_flux = make_corr_arrays(test_k_flux, kmask, full_months)
-
-#### Make test array for J out of K ###
-#nanarr = np.empty([len(corr_test_k_flux),4])#, dtype=int)
-#nanarr[:,:] = np.nan
-#corr_test_j_flux = np.copy(corr_test_k_flux)
-#corr_test_j_flux = np.delete(corr_test_j_flux, [0,1,2,3], axis=1)
-#corr_test_j_flux = np.append(corr_test_j_flux, nanarr, axis=1)
-#
-#plt.figure()
-#plt.plot(full_months, corr_test_k_flux[0,:],'o')
-#plt.plot(full_months, corr_test_j_flux[0,:],'o')
-
-
-#%% Calculate the CCF at various tau values ###
-
-def cross_correlate(kflux, jflux, tau):
-    ### set up time arrays from J and K ###
-    _, monthnum = np.shape(kflux)
-    t_k = np.arange(monthnum)
-    t_j = t_k - tau #get array of inds that are tau from k inds
-    
-    ### limit to values with valid t_j values ###
-    t_k = t_k[t_j<monthnum] # t_j should not be larger than total num of months
-    t_j = t_j[t_j<monthnum]
-    t_k = t_k[t_j>=0] # t_j should not be negativ
-    t_j = t_j[t_j>=0]
-    
-    ### limit to values where there are not nans in J or K at those indicies ###
-    for k, j in zip(t_k, t_j):
-        if np.isnan(kflux[0,k]) or np.isnan(jflux[0,j]): # can test on one row as all the same
-            ### set index of both to 999 if there is no flux in one position ###
-            t_k[t_k == k] = 999
-            t_j[t_j == j] = 999
-    
-    t_k = t_k[t_k!=999]
-    t_j = t_j[t_j!=999]
-    
-#    ### check lags are correct ###
-#    checktau = t_k - t_j
-#    print('Tau = '+str(tau))
-#    print(checktau)
-#    
-    ### limit flux arrays to just these months ###
-    pair_k_flux = kflux[:,t_k]
-    pair_j_flux = jflux[:,t_j]
-    
-    ### multiply arrays ###
-    k_flux_test_j_flux = pair_k_flux * pair_j_flux
-    
-    ### find the sum of this multiplied array and divide by tot number of pairs ###
-    multi_sum = np.sum(k_flux_test_j_flux)
-    tot_num_pairs = np.size(k_flux_test_j_flux)
-    ccf = multi_sum/tot_num_pairs
-    
-    return ccf, len(t_k)
     
 tau_arr = np.arange(-50,50)
 #tau_arr = np.arange(-90,90)
 
-out = np.array([cross_correlate(corr_test_k_flux, corr_test_j_flux, tau) for tau in tau_arr])
+out = np.array([vari_funcs.cross_correlation.cross_correlate(corr_test_k_flux, 
+                                                             corr_test_j_flux, 
+                                                             tau) for tau in tau_arr])
 
 ccf = out[:,0]
-num_pairs = out[:,1]
+ccf_err = out[:,1]
+num_pairs = out[:,2]
 
 plt.figure()
 #plt.subplot(211)
-plt.plot(tau_arr, ccf,'o')
+#plt.plot(tau_arr, ccf,'o')
+plt.errorbar(tau_arr, ccf, yerr=ccf_err, fmt='o')
 plt.xlabel('Lag (months)')
 plt.ylabel('Cross-Correlation Function')
 plt.grid(True)
@@ -192,14 +130,130 @@ plt.ylabel('Pairs per Light Curve')
 plt.tight_layout()
 
 #%% Test how average lag changes with CCF Value ###
+#round_ccf = np.round(ccf, decimals=4)
+#test_values = np.arange(-0.008, 0.009,0.0001)
+#test_values = np.round(test_values, decimals=4)
+round_ccf = np.round(ccf, decimals=3)
+test_values = np.arange(-0.008, 0.009,0.001)
+test_values = np.round(test_values, decimals=3)
+mean_tau = np.array([])
+for val in test_values:
+    ### Find places where ccf rounds to the test value ###
+    mask = np.isin(round_ccf, val)
+    
+    ### Find Tau at these and average to find centre of the peak at that ccf value ###
+    taus = tau_arr[mask]
+    print(len(taus))
+    if len(taus) <= 1:
+        mean_tau = np.append(mean_tau, np.nan)
+    else:
+        mean_tau = np.append(mean_tau, np.nanmean(taus))
 
+plt.figure()
+plt.plot(tau_arr, round_ccf,'o')
+plt.xlabel('Mean lag (months)')
+plt.ylabel('Rounded CCF Value')
+plt.grid(True)
+
+#plt.figure()
+plt.plot(mean_tau, test_values,'o')
+#plt.xlabel('Mean lag (months)')
+#plt.ylabel('CCF Value')
+##plt.grid(True)
     
+#%% Test shifting some of the lightcurves artifically ###
+#mask = [10,20,30,40,50,60,70]
+import random
+def make_shifted_data(corr_test_k_flux, lag, percentage):
+    ### Use percentage to calculate the number of lightcurves to shift ###
+    length = len(corr_test_k_flux)
+    no_steps = int(length*percentage/100) # number of lcs to shift based on %
+    mask = random.sample(range(0, length), no_steps)
+    shift = np.arange(0,lag,1, dtype=int)
+    ### Make test array for J out of K ###
+    nanarr = np.empty([len(mask),lag])#, dtype=int)
+    nanarr[:,:] = np.nan
+    corr_test_j_flux_new = np.copy(corr_test_k_flux)
+    corr_test_j_flux_moved = np.delete(corr_test_j_flux_new[mask,:], shift, axis=1)
+    corr_test_j_flux_moved = np.append(corr_test_j_flux_moved, nanarr, axis=1)
     
+    corr_test_j_flux_new[mask,:] = corr_test_j_flux_moved
+    return corr_test_j_flux_new
+
+plt.figure(figsize=[10,10])
+#plt.plot(full_months, corr_test_k_flux[0,:],'o')
+#plt.plot(full_months, corr_test_j_flux[0,:],'o')
+#for lag in [10]:#[0,5,10,15,20,25,30,35,40,45]:
+#    corr_test_j_flux_new = make_shifted_data(corr_test_k_flux, lag=lag, percentage=100)
+#    
+#    test_out = np.array([
+#            vari_funcs.cross_correlation.cross_correlate_shifted(corr_test_k_flux,
+#                                                                 corr_test_j_flux_new, 
+#                                                                 tau) for tau in tau_arr])
+#    
+#    test_ccf = test_out[:,0]
+#    test_ccf_err = test_out[:,1]
+#    test_num_pairs = test_out[:,2]
+#    
+#    plt.plot(tau_arr, test_ccf,'-', label='20% with lag = '+str(lag)+' months')
+#
+##    plt.errorbar(tau_arr, test_ccf,yerr=ccf_err, fmt='-', label='20% with lag = '+str(lag)+' months')
+#
+##plt.figure()
+##plt.subplot(211)
+#plt.plot(tau_arr, ccf,'o', label='Real data')
+##plt.figure()
+##plt.subplot(211)
+##plt.plot(tau_arr, test_ccf,'o')
+#plt.xlabel('Lag (months)')
+#plt.ylabel('Cross-Correlation Function')
+#plt.grid(True)
+#plt.legend()
+#plt.tight_layout()
+
+plt.figure(figsize=[10,10])
+plt.errorbar(tau_arr, ccf, yerr=ccf_err, fmt='o', label='Real data')
+for percent in [5]:#[5,10,15,20,25,30,35,40,45]:
+    corr_test_j_flux_new = make_shifted_data(corr_test_k_flux, lag=10, percentage=percent)
+
+    test_out = np.array([
+            vari_funcs.cross_correlation.cross_correlate_shifted(corr_test_k_flux,
+                                                                 corr_test_j_flux_new, 
+                                                                 tau) for tau in tau_arr])    
+    test_ccf = test_out[:,0]
+    test_num_pairs = test_out[:,1]
     
-    
-    
-    
-    
+    plt.plot(tau_arr, test_ccf, 'o', label=str(percent)+'% with lag = 10 months')
+#    plt.errorbar(tau_arr, test_ccf,yerr=ccf_err, fmt='-', 
+#                 label=str(percent)+'% with lag = 10 months')
+
+#plt.figure()
+#plt.subplot(211)
+#plt.figure()
+#plt.subplot(211)
+#plt.plot(tau_arr, test_ccf,'o')
+plt.xlabel('Lag (months)')
+plt.ylabel('Cross-Correlation Function')
+plt.grid(True)
+plt.legend()
+plt.tight_layout()
+##plt.subplot(212)
+#plt.figure()
+#plt.plot(tau_arr, test_num_pairs,'o')
+#plt.xlabel('Lag (months)')
+#plt.ylabel('Pairs per Light Curve')
+#plt.tight_layout()
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -63,11 +63,18 @@ def chandra_only(tbdata, sem='05B'):
         newtbdata = new catalogue of data which only includes objects within 
                     the chandra footprint 
     '''
-    ### Restrict objects to those in the Chandra field ###
-    mask1 = tbdata['DELTA_J2000_'+sem] < -4.93 #max Dec
-    mask2 = tbdata['DELTA_J2000_'+sem] > -5.403 #min Dec
-    mask3 = tbdata['ALPHA_J2000_'+sem] < 34.72 #max RA
-    mask4 = tbdata['ALPHA_J2000_'+sem] > 34.07 #min RA
+    if sem == '': # allows variable tables to be limited when this is entered
+        ### Restrict objects to those in the Chandra field ###
+        mask1 = tbdata['Dec'] < -4.93 #max Dec
+        mask2 = tbdata['Dec'] > -5.403 #min Dec
+        mask3 = tbdata['RA'] < 34.72 #max RA
+        mask4 = tbdata['RA'] > 34.07 #min RA
+    else:
+        ### Restrict objects to those in the Chandra field ###
+        mask1 = tbdata['DELTA_J2000_'+sem] < -4.93 #max Dec
+        mask2 = tbdata['DELTA_J2000_'+sem] > -5.403 #min Dec
+        mask3 = tbdata['ALPHA_J2000_'+sem] < 34.72 #max RA
+        mask4 = tbdata['ALPHA_J2000_'+sem] > 34.07 #min RA
     
     mask = mask1 * mask2 * mask3 * mask4
     
@@ -78,7 +85,7 @@ def chandra_only(tbdata, sem='05B'):
 
 def remove_edges(tbdata, sem='05B'):
     ''' Function that masks the edges of the image as there were a large number
-    of variable in this area originally so must be too much noise here.
+    of variables in this area originally so must be too much noise here.
     Inputs:
         tbdata = orginal table of data covering the whole field
         sem = semester or month on which the split should be done

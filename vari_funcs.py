@@ -48,6 +48,8 @@ import selection_plot_funcs #for plotting main selection plot + onclicks
 
 import xray_funcs #for calculating luminosities and alpha_ox
 
+import cross_correlation #for running cross-correlation analysis
+
 ### Define miscellanseous functions that don't fit in a sub-module ###
 def get_z(tbdata):
     ''' Get z with spectroscopic data where possible 

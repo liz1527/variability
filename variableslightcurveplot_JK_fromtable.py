@@ -23,6 +23,7 @@ plt.rc('font', **font)
 ### Open the fits files and get data ###
 varydata = Table.read('variable_tables/J_and_K_high_chi_JK_variables.fits')
 
+
 #Kvarys = Kvarys[Kvarys['NUMBER_1']==62253]
 #varys = vari_funcs.chandra_only(varys)
 
@@ -95,5 +96,5 @@ for obdata in varydata:
     plt.tight_layout()
     plt.subplots_adjust(top=0.89)
 #    break
-    plt.savefig('plots/new_catalogue/Chi30Lightcurves/JHK_lightcurves/high_chi_JK/flux_'+str(obnum))#+str(varys['NUMBER_05B'][n])+'_lightcurve.png')
-    plt.close('all')
+#    plt.savefig('plots/new_catalogue/Chi30Lightcurves/JHK_lightcurves/high_chi_JK/flux_'+str(obnum))#+str(varys['NUMBER_05B'][n])+'_lightcurve.png')
+#    plt.close('all')
