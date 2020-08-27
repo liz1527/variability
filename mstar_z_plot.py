@@ -22,7 +22,7 @@ plt.close('all')
 ### Get fits ###
 tbdata = fits.open('mag_flux_tables/K/mag_flux_table_best_K_extra_clean.fits')[1].data
 dr11 = fits.open('UDS_catalogues/DR11-2arcsec-Jun-30-2019_best.fits')[1].data
-varydata = fits.open('variable_tables/K/variables_no06_chi30_DR11data.fits')[1].data
+varydata = fits.open('variable_tables/J_and_K_variables_month_varystats_DR11data.fits')[1].data
 fullxray = Table.read('UDS_catalogues/DR11-2arcsec-Jun-30-2019_best_chandra.fits')
 #sternvary = fits.open('variable_tables/K/no06_variables_chi30_2arcsec_DR11data_SpUDSdata_IRAC_stern.fits')[1].data
 #stern = fits.open('UDS_catalogues/SpUDS_IRAC_catalogue_DR11data_stern.fits')[1].data
@@ -30,7 +30,7 @@ fullxray = Table.read('UDS_catalogues/DR11-2arcsec-Jun-30-2019_best_chandra.fits
 #deviant = fits.open('variable_tables/K/no06_variables_chi30_2arcsec_deviant_DR11data_restframe.fits')[1].data
 #sn = fits.open('variable_tables/K/no06_variables_chi30_2arcsec_DR11data_restframe_SN.fits')[1].data
 #dev07 = fits.open('variable_tables/K/no06_variables_chi30_2arcsec_DR11data_restframe_07B.fits')[1].data
-deviant = fits.open('variable_tables/K/variables_no06_chi30_neg_deviant_DR11data.fits')[1].data
+#deviant = fits.open('variable_tables/K/variables_no06_chi30_neg_deviant_DR11data.fits')[1].data
 
 ### with x/nox split ###
 #noxvarydata = fits.open('variable_tables/K/variables_no06_chi30_DR11data_noxray.fits')[1].data
@@ -38,8 +38,12 @@ deviant = fits.open('variable_tables/K/variables_no06_chi30_neg_deviant_DR11data
 #noxvarydata = fits.open('variable_tables/K/variables_no06_chi30_nochanXray_DR11data.fits')[1].data
 #xvarydata = fits.open('variable_tables/K/variables_no06_chi30_chandata_DR11data.fits')[1].data
 
-noxvarydata = fits.open('variable_tables/K/variables_no06_chi30_neg_DR11data_noxray.fits')[1].data
-xvarydata = fits.open('variable_tables/K/variables_no06_chi30_neg_DR11data_xray.fits')[1].data
+#varydata = varydata[varydata['Chi_K']>100]
+noxvarydata = varydata[varydata['X-ray']==False]
+xvarydata = varydata[varydata['X-ray']==True]
+
+#noxvarydata = fits.open('variable_tables/K/variables_no06_chi30_neg_DR11data_noxray.fits')[1].data
+#xvarydata = fits.open('variable_tables/K/variables_no06_chi30_neg_DR11data_xray.fits')[1].data
 #noxvarydata = fits.open('variable_tables/K/variables_no06_chi30_neg_nochanXray_DR11data.fits')[1].data
 #xvarydata = fits.open('variable_tables/K/variables_no06_chi30_neg_chandata_DR11data.fits')[1].data
 
@@ -70,7 +74,7 @@ allxz, allxm = prep_variables(fullxray)
 #nosternz, nosternm = prep_variables(nosternvarydata)
 #noxsternz, noxsternm = prep_variables(noxsternvarydata)
 #xsternz, xsternm = prep_variables(xsternvarydata)
-devz, devm = prep_variables(deviant)
+#devz, devm = prep_variables(deviant)
 #snz, snm = prep_variables(sn)
 #dev07z, dev07m = prep_variables(dev07)
 
@@ -102,11 +106,11 @@ plt.figure(figsize=[10,7])
 plt.plot(z, m, '.',markersize=1, color='tab:gray', alpha=0.2, label='Galaxy', rasterized=True)
 #plt.plot(allsternz, allsternm, 'm.', label='Stern AGN', alpha=0.5)
 plt.plot(allxz, allxm, 'ks',markersize=5, label='Non-Variable X-ray AGN')
-plt.plot(xz, xm, 'ro', label='Variable X-ray AGN')
 plt.plot(noxz, noxm, 'bo', label='Variable Non-X-ray AGN')
+plt.plot(xz, xm, 'ro', label='Variable X-ray AGN')
 #plt.plot(noxz, noxm, 'rs',mfc='None', label='Variable AGN')
 #plt.plot(xz, xm, 'rs', mfc='None')
-plt.plot(devz, devm, 'yd', label='Deviant')
+#plt.plot(devz, devm, 'yd', label='Deviant')
 #plt.plot(sternz, sternm, 'yd',markersize=10, mfc='none', label='Stern Variable')
 
 #plt.hlines(2e9,-0.1,4.5,linestyle='dashed')

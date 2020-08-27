@@ -15,27 +15,14 @@ import vari_funcs #my module to help run code neatly
 plt.close('all') #close any open plots
 
 
-### Open the fits files and get data ###
-tbdata = fits.open('mag_flux_tables/mag_flux_table_best.fits')[1].data
-chandata = fits.open('mag_flux_tables/xray_mag_flux_table_best.fits')[1].data
-sdata = fits.open('mag_flux_tables/stars_mag_flux_table.fits')[1].data
+values = [-7, -6, -5, -4, -3, -2, -1,  0,  1,  2,  3,  4,  5,  6,  7]
+weights = [-0.01168533, -0.01891393, -0.00103619,  0.00439063,  0.00318069,
+        0.00221236,  0.00222293,  0.00202136,  0.00244354,  0.00285592,
+        0.00347878,  0.00448091,  0.00568668,  0.00546587, -0.00630108]
 
-### extract magnitude arrays ###
-allmag = vari_funcs.flux5_stacks(tbdata)
-allchanmag = vari_funcs.flux5_stacks(chandata) # for chandra non-stellar objects
-allsmag = vari_funcs.flux5_stacks(sdata)
+s = 0
+for x, y in zip(values, weights):
+    s += x * y
 
-### remove 99s ###
-allmag, tbdata = vari_funcs.noneg(allmag, tbdata)
-allchanmag, chandata = vari_funcs.noneg(allchanmag, chandata)
-allsmag, sdata = vari_funcs.noneg(allsmag, sdata)
-
-# get error data
-magerr = vari_funcs.fluxerr5_stacks(tbdata)
-
-#normalise
-normmag = vari_funcs.normalise_flux(allmag)
-normmagerr = vari_funcs.err_correct_flux(allmag, magerr)
-
-vari_funcs.avg_lightcurve(allmag[100,:], magerr[100,:])
-vari_funcs.avg_lightcurve(normmag[100,:], normmagerr[100,:])
+average = s / sum(weights)
+print(average)

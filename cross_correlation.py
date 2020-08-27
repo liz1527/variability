@@ -47,6 +47,44 @@ def weighted_mean_subtract_normalise(flux, fluxerr):
     newflux = (flux - meanflux[:,None])/meanflux[:,None]
     return newflux
 
+def weighted_mean_subtract_normalise_errs(flux, fluxerr):
+    ''' Function to create mean subtracted and normalised lightcurves for use 
+    in cross correlation but including errors
+    Inputs:
+        flux = array of flux values where rows are light curves and columns are
+               values for each epoch
+        fluxerr = array of flux errors the same size/shape as flux
+    Outputs:
+        newflux = array of mean subtracted, normalised light curves the same 
+                  shape as flux, where the errors were used to weight the 
+                  average.
+        newfluxerr = array of corresponding flux errors the same size/shape as 
+        flux
+    '''
+    meanflux = np.average(flux, axis=1, weights=1/(fluxerr**2))
+    meanfluxerr = np.sqrt(1/np.sum(1/(fluxerr**2), axis=1))
+    newflux1 = (flux - meanflux[:,None])
+    newflux1err = fluxerr+meanfluxerr[:,None]
+    newflux = newflux1/meanflux[:,None]
+    newfluxerr = newflux * np.sqrt((newflux1err/newflux1)**2 + (meanfluxerr[:,None]/meanflux[:,None])**2)
+    return newflux, newfluxerr
+
+def weighted_mean_subtract_normalise_single(flux, fluxerr):
+    ''' Function to create mean subtracted and normalised lightcurve for use 
+    in cross correlation but including errors
+    Inputs:
+        flux = 1D array of flux values where columns are
+               values for each epoch
+        fluxerr = array of flux errors the same size/shape as flux
+    Outputs:
+        newflux = array of mean subtracted, normalised light curves the same 
+                  shape as flux, where the errors were used to weight the 
+                  average.
+    '''
+    meanflux = np.average(flux, weights=1/(fluxerr**2))
+    newflux = (flux - meanflux)/meanflux
+    return newflux
+
 def make_corr_arrays(flux, mask, full_months):
     ''' Function to create arrays for the cross correlation, where each column
     is a month and the months with no flux values are set to np.nan. This means
@@ -68,13 +106,36 @@ def make_corr_arrays(flux, mask, full_months):
     newflux[:,~mask] = np.nan
     return newflux
 
-def cross_correlate(kflux, jflux, tau):
+def make_corr_arrays_single(flux, mask, full_months):
+    ''' Function to create arrays for the cross correlation, where each column
+    is a month and the months with no flux values are set to np.nan. This means
+    the epochs are spaced correctly in time.
+    Inputs:
+        flux = array of mean subtracted, normalised flux values where columns 
+        are values for each epoch
+        mask = array that indicates which months there are data for, should be 
+               the same length as full_months
+        full_months = array containing all the month names in the range where 
+                      the data was taken (e.g. sep05 -> jan13)
+    Outputs:
+        newflux = array of light curves with the correct time spacing. Should 
+                  have the same number of columns as the length
+                  of full_months
+    '''
+    newflux = np.empty([1,len(full_months)]) # create empty array the right shape
+    newflux[:,mask] = flux
+    newflux[:,~mask] = np.nan
+    return newflux
+
+def cross_correlate(kflux, jflux, tau, type='ccf'):
     ''' Function to run the stacked cross-correlation analysis at a specfic lag 
     tau between the J and K band lightcurves given.
     Inputs:
         kflux = array of k-band light curves with the correct time spacing. 
         jflux = array of j-band light curves with the correct time spacing. 
         tau = the lag to caluclate the ccf value at
+        type = 'ccf' or 'dcf' sepcifies what type of cross-correlation to run.
+               default is 'ccf'
     Outputs:
         ccf = the cross-correlation value for this tau 
         err = the bootstrapped error on this ccf value
@@ -110,12 +171,16 @@ def cross_correlate(kflux, jflux, tau):
     pair_k_flux = kflux[:,t_k]
     pair_j_flux = jflux[:,t_j]
     
-    ccf = calculate_ccf(pair_k_flux, pair_j_flux)
-    err = bootstrapping(pair_k_flux, pair_j_flux)
+    if type == 'ccf':
+        ccf = calculate_ccf(pair_k_flux, pair_j_flux)
+    elif type == 'dcf':
+        ccf = calculate_dcf(pair_k_flux, pair_j_flux)
+        
+    err = bootstrapping(pair_k_flux, pair_j_flux, type=type)
     
     return ccf, err, len(t_k)
 
-def cross_correlate_shifted(kflux, jflux, tau):
+def cross_correlate_shifted(kflux, jflux, tau, type='ccf'):
     ''' Function to run the stacked cross-correlation analysis at a specfic lag 
     tau between the J and K band lightcurves given when some of the light curves
     have been shifted so you cannot assume all the rows have the same light 
@@ -124,6 +189,8 @@ def cross_correlate_shifted(kflux, jflux, tau):
         kflux = array of k-band light curves with the correct time spacing. 
         jflux = array of j-band light curves with the correct time spacing. 
         tau = the lag to caluclate the ccf value at
+        type = 'ccf' or 'dcf' sepcifies what type of cross-correlation to run.
+               default is 'ccf'
     Outputs:
         ccf = the cross-correlation value for this tau 
         err = the bootstrapped error on this ccf value
@@ -157,8 +224,11 @@ def cross_correlate_shifted(kflux, jflux, tau):
         pair_k_flux = np.append(pair_k_flux, kflux[n,t_k])
         pair_j_flux = np.append(pair_j_flux, jflux[n,t_j]) 
         
-    ccf = calculate_ccf(pair_k_flux, pair_j_flux)
-#    err = bootstrapping(pair_k_flux, pair_j_flux, repeats=1000)
+
+    if type == 'ccf':
+        ccf = calculate_ccf(pair_k_flux, pair_j_flux)
+    elif type == 'dcf':
+        ccf = calculate_dcf(pair_k_flux, pair_j_flux)#    err = bootstrapping(pair_k_flux, pair_j_flux, repeats=1000)
     err=np.nan
     return ccf, err, len(pair_k_flux)
 
@@ -182,9 +252,30 @@ def calculate_ccf(pair_k_flux, pair_j_flux):
     ccf = multi_sum/tot_num_pairs
     
     return ccf
+
+def calculate_dcf(pair_k_flux, pair_j_flux):
+    ''' Function to calculate the dcf value for the paired flux arrays given. 
+    The dcf is the version used in papers, as oppose to the ccf that Mike sent.
+    Needs to be a separate function so that I can call it from the bootstrapping
+    function as well as the cross-correlation function.
+    Inputs:
+        pair_k_flux = 1D array of k-band flux values 
+        pair_j_flux = paired 1D array of j-band flux values 
+    Outputs:
+        ccf = the output of a stacked cross-correlation of these pairs of flux
+              values
+    '''
+    ### multiply arrays ###
+    udcf = ((pair_k_flux - np.mean(pair_k_flux)) * (pair_j_flux - np.mean(pair_j_flux)))/(np.std(pair_k_flux)*np.std(pair_j_flux))
     
+    ### find the sum of this multiplied array and divide by tot number of pairs ###
+    multi_sum = np.sum(udcf)
+    tot_num_pairs = np.size(udcf)
+    ccf = multi_sum/tot_num_pairs
     
-def bootstrapping(pair_k_flux, pair_j_flux, repeats=5000):
+    return ccf    
+    
+def bootstrapping(pair_k_flux, pair_j_flux, repeats=5000, type='ccf'):
     ''' Function to calculate the bootstrapped error on the ccf value given by
     the paired flux arrays
     Inputs:
@@ -192,6 +283,8 @@ def bootstrapping(pair_k_flux, pair_j_flux, repeats=5000):
         pair_j_flux = paired 1D array of j-band flux values 
         repeats = number of resampling repeats to do during bootstrapping, 
                   default is 5000
+        type = 'ccf' or 'dcf' sepcifies what type of cross-correlation to run.
+               default is 'ccf'
     Outputs:
         sig = the standard deviation of the ccf values found through bootstapping,
               this is the standard error on the ccf value.
@@ -203,7 +296,10 @@ def bootstrapping(pair_k_flux, pair_j_flux, repeats=5000):
         inds = random.choices(range(len(pair_k_flux)), k=len(pair_k_flux)) # get random inds with same length
         
         ### run ccf ###
-        ccf[n] = calculate_ccf(pair_k_flux[inds], pair_j_flux[inds])
+        if type == 'ccf':
+            ccf[n] = calculate_ccf(pair_k_flux[inds], pair_j_flux[inds])
+        elif type == 'dcf':
+            ccf[n] = calculate_dcf(pair_k_flux[inds], pair_j_flux[inds])
         
         ### increase counter ##
         n+=1

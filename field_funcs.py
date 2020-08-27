@@ -58,7 +58,8 @@ def chandra_only(tbdata, sem='05B'):
     those within the Chandra footprint 
     Input:
         tbdata = original catalogue of data 
-        sem = semester or month on which the split should be done
+        sem = semester or month on which the split should be done, enter '' if
+              for variable tables.
     Output:
         newtbdata = new catalogue of data which only includes objects within 
                     the chandra footprint 

@@ -24,7 +24,7 @@ plt.close('all') #close any open plots
 tbdata = fits.open('mag_flux_tables/J/mag_flux_table_best_J_extra_clean.fits')[1].data
 chandata = fits.open('mag_flux_tables/J/xray_mag_flux_table_best_J_extra_clean.fits')[1].data
 sdata = fits.open('mag_flux_tables/J/stars_mag_flux_table_J_extra_clean.fits')[1].data
-sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_J_extra_clean_2arcsec_neg.fits')
+sigtb = Table.read('sigma_tables/quad_epoch_sigma_table_J_extra_clean_2arcsec_noneg.fits')
 
 ### Remove edges ###
 tbdata = vari_funcs.field_funcs.remove_edges(tbdata)
@@ -36,10 +36,10 @@ flux = vari_funcs.j_mag_flux.flux_stacks(tbdata, aper=4)
 fluxchan = vari_funcs.j_mag_flux.flux_stacks(chandata, aper=4) 
 sflux = vari_funcs.j_mag_flux.flux_stacks(sdata, aper=4)
 #
-### remove values that are negative ###
-#flux, tbdata = vari_funcs.flux_funcs.noneg(flux, tbdata)
-#fluxchan, chandata = vari_funcs.flux_funcs.noneg(fluxchan, chandata)
-#sflux, sdata = vari_funcs.flux_funcs.noneg(sflux, sdata)
+## remove values that are negative ###
+flux, tbdata = vari_funcs.flux_funcs.noneg(flux, tbdata)
+fluxchan, chandata = vari_funcs.flux_funcs.noneg(fluxchan, chandata)
+sflux, sdata = vari_funcs.flux_funcs.noneg(sflux, sdata)
 
 ### Get error arrays ###
 flux, fluxerr, tbdata = vari_funcs.j_mag_flux.create_quad_error_array_J(sigtb, tbdata, aper=4)
@@ -66,14 +66,14 @@ varydata40 = tbdata[chisq>40]
 varydata50 = tbdata[chisq>50]
 
 plt.hlines(32.08, 4e-1, 1e7,zorder=4,label='Chi>32.08')
-plt.hlines(30, 4e-1, 1e7,'g', zorder=4,label='Chi>30')
-plt.hlines(40, 4e-1, 1e7,'y', zorder=4,label='Chi>40')
+#plt.hlines(30, 4e-1, 1e7,'g', zorder=4,label='Chi>30')
+#plt.hlines(40, 4e-1, 1e7,'y', zorder=4,label='Chi>40')
 #plt.hlines(50, 4e-1, 1e7,'c', zorder=4,label='Chi>50')
 plt.legend()
 
 #### Save new tables ###
-save32 = Table(varydata32)
-save32.write('variable_tables/J/K_extraction/J_variables_chi32_neg.fits')
+#save32 = Table(varydata32)
+#save32.write('variable_tables/J/K_extraction/J_variables_chi32_neg.fits')
 #save30 = Table(varydata30)
 #save30.write('variable_tables/variables_chi30.fits')
 #save40 = Table(varydata40)

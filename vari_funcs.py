@@ -90,3 +90,21 @@ def mag2flux(mag):
     '''
     flux = 10**((mag-30)/(-2.5))
     return flux
+
+def split_selection_band(varydata):
+    ### Split table into J and K selected ###
+    jdata = varydata[varydata['Chi_J'] > 32.08]
+    kdata = varydata[varydata['Chi_K'] > 30]
+    
+    ### Find overlap ###
+    jIDs = jdata['ID']
+    kIDs = kdata['ID']
+    jmask = np.isin(jIDs, kIDs)
+    kmask = np.isin(kIDs, jIDs)
+    
+    ### Mask tables ###
+    bothdata = jdata[jmask]
+    jdata = jdata[~jmask]
+    kdata = kdata[~kmask]
+    
+    return jdata, kdata, bothdata
