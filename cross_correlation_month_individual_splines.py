@@ -217,15 +217,15 @@ for n in range(num):
 #    plt.tight_layout()
 #    plt.savefig(filepath+'/fits/K/'+str(varydata['ID'][n])+'_K.png', overwrite=True)
 #        plt.close('all')
-    ###  use splines to make test arrays ###
-    new_test_j_flux[n,:] = splev(Jx_months, j_spl)
-    new_test_k_flux[n,:] = splev(Kx_months, k_spl)
+#    ###  use splines to make test arrays ###
+#    new_test_j_flux[n,:] = splev(Jx_months, j_spl)
+#    new_test_k_flux[n,:] = splev(Kx_months, k_spl)
+#
+#test_j_flux = new_test_j_flux
+#test_k_flux = new_test_k_flux
 
-test_j_flux = new_test_j_flux
-test_k_flux = new_test_k_flux
-
-#test_j_flux = prewhiten_splines(test_j_flux, j_splines, Jx_months)
-#test_k_flux = prewhiten_splines(test_k_flux, j_splines, Kx_months)
+test_j_flux = prewhiten_splines(test_j_flux, j_splines, Jx_months)
+test_k_flux = prewhiten_splines(test_k_flux, j_splines, Kx_months)
     
 
 #for n in range(num):
