@@ -26,6 +26,7 @@ import weightedstats as ws
 import random
 from scipy.stats import skew
 import scipy.optimize
+from scipy.interpolate import splev, splrep
 plt.close('all') #close any open plots
 #from numpy.lib.recfunctions import append_fields
 
@@ -40,96 +41,26 @@ def getdata(data):
 def parabola(x, a, b, c): #for curve fitting
     return a*x**2 + b*x + c
 
-def prewhiten(flux, bindata, months):
-    ### Get semester data ###
-    model_j_flux = bindata['Flux_J']
-    model_j_fluxerr = bindata['Fluxerr_J']
-    
-    ### Normalise ###
-    model_j_flux = vari_funcs.cross_correlation.weighted_mean_subtract_normalise(
-            model_j_flux, model_j_fluxerr)
-    
-    ### Subtract to get residuals ###
+def prewhiten_splines(flux, spline, x_months):
     newflux = np.zeros(np.shape(flux))
-    for n, mon in enumerate(months):
-        if mon in ('jul05', 'aug05', 'sep05','oct05','nov05','dec05', 'jan06', 'feb06'):
-            ### This means the month is in semester 05B ##
-            newflux[:,n] = flux[:,n] - model_j_flux[:,0]
-        elif mon in ('jul06', 'aug06', 'sep06','oct06','nov06','dec06', 'jan07', 'feb07'):
-            ### This means the month is in semester 06B ##
-            newflux[:,n] = flux[:,n] - model_j_flux[:,1]
-        elif mon in ('jul07', 'aug07', 'sep07','oct07','nov07','dec07', 'jan08', 'feb08'):
-            ### This means the month is in semester 07B ##
-            newflux[:,n] = flux[:,n] - model_j_flux[:,2]
-        elif mon in ('jul08', 'aug08', 'sep08','oct08','nov08','dec08', 'jan09', 'feb09'):
-            ### This means the month is in semester 08B ##
-            newflux[:,n] = flux[:,n] - model_j_flux[:,3]
-        elif mon in ('jul09', 'aug09', 'sep09','oct09','nov09','dec09', 'jan10', 'feb10'):
-            ### This means the month is in semester 09B ##
-            newflux[:,n] = flux[:,n] - model_j_flux[:,4]
-        elif mon in ('jul10', 'aug10', 'sep10','oct10','nov10','dec10', 'jan11', 'feb11'):
-            ### This means the month is in semester 10B ##
-            newflux[:,n] = flux[:,n] - model_j_flux[:,5]
-        elif mon in ('jul11', 'aug11', 'sep11','oct11','nov11','dec11', 'jan12', 'feb12'):
-            ### This means the month is in semester 11B ##
-            newflux[:,n] = flux[:,n] - model_j_flux[:,6]
-        elif mon in ('jul12', 'aug12', 'sep12','oct12','nov12','dec12', 'jan13', 'feb13'):
-            ### This means the month is in semester 12B ##
-            newflux[:,n] = flux[:,n] - model_j_flux[:,7]
+    
+    for n in range(len(flux)):
+        fit = splev(x_months, spline[n])
+        newflux[n,:] = flux[n,:] - fit
             
-    return newflux, model_j_flux
-
-def weighted_mean_and_err(tau, ccf, cut_off=0.5):
-    
-    ### Limit to range of ccf function ##
-    max_ccf = np.max(ccf)
-    lim = cut_off * max_ccf
-    tau = tau[ccf>lim]
-    ccf = ccf[ccf>lim]
-    
-    ### find weighted mean and standard error on the mean ###
-    tau_mean = ws.numpy_weighted_mean(tau, weights=ccf)
-    tau_var = ws.numpy_weighted_mean((tau-tau_mean)**2, weights=ccf)
-    tau_std = np.sqrt(tau_var)
-    tau_SE = tau_std/len(tau)
-    
-    return tau_mean, tau_SE
-  
-def bootstrapping_max(tau_arr, ccf, repeats=5000):
-    ''' Function to calculate the bootstrapped error on the ccf value given by
-    the paired flux arrays
-    Inputs:
-        tau_arr = 1D array of tau values 
-        ccf = 1D array of ccf values 
-        repeats = number of resampling repeats to do during bootstrapping, 
-                  default is 5000
-    Outputs:
-        sig = the standard deviation of the ccf values found through bootstapping,
-              this is the standard error on the ccf value.
-    '''
-    maxes = np.zeros(repeats) #create array to store max values in
-    n=1 #start counter
-    while n<repeats: # repeats until specified number reached
-        ### resample data ###
-        inds = random.choices(range(len(tau_arr)), k=len(tau_arr)) # get random inds with same length
-        new_tau = tau_arr[inds]
-        new_ccf = ccf[inds]
-        
-        ### find max ###
-        maxes[n] = new_tau[np.argmax(new_ccf)]
-        
-        ### increase counter ##
-        n+=1
-    
-    ### calculate sigma on ccf values ###
-    sig = np.std(maxes)
-    
-    return sig
+    return newflux
 
 #%% Import data for variables selected in J and K + define constants ###
 varydata = Table.read('variable_tables/J_and_K_variables_month_varystats_DR11data.fits')
 #varydata = varydata[varydata['X-ray']==True]
-#varydata = varydata[varydata['ID']==250411]
+#varydata = varydata[varydata['ID']==78876]
+
+### Limit to brightest for testing purposes ###
+flux = varydata['Flux_K']
+meanflux = np.mean(flux, axis=1)
+meanfluxsorted = np.sort(meanflux)
+fluxlim = meanfluxsorted[-6] #limit to top 5
+varydata = varydata[meanflux >= fluxlim]
 
 ### Set constants for sample and bins ###
 min_chi = 100 # chi cut required to create sample
@@ -149,7 +80,7 @@ else:
 if save == True and type == 'ccf':
     filepath = 'plots/new_catalogue/JK_lightcurve_comp/cross-correlation/individual/prewhiten/'
 elif save == True and type == 'dcf':
-    filepath = 'plots/new_catalogue/JK_lightcurve_comp/dcf/individual/'
+    filepath = 'plots/new_catalogue/JK_lightcurve_comp/dcf/individual/splines/'
 
 save_ccf = input('Create and save CCF plots? (Y or N) ')
 if save_ccf == 'Y'or save_ccf == 'y':
@@ -178,7 +109,10 @@ jmonths = ['sep05', 'oct05', 'nov05', 'dec05', 'jan06', 'oct06', 'nov06',
           'dec11', 'jan12', 'jul12', 'aug12', 'sep12', 'oct12', 'nov12']
 jmask = np.isin(full_months, jmonths)
 
-testmonths = ['sep05','sep06', 'sep07', 'sep08', 'sep09', 'sep10', 'sep11', 'sep12']
+testmonths = ['nov05', 'nov06', 'sep07', 'oct08', 'oct09', 'oct10', 'nov11', 'sep12']
+#testmonths = ['sep05', 'jan06', 'oct06', 'jan07', 'aug07', 'oct07', 'sep08',
+#              'nov08', 'jul09', 'feb10', 'aug10', 'jan11', 'aug11', 'feb12',
+#              'jul12', 'nov12']
 testmask = np.isin(full_months, testmonths)
 
 ### set up month tick details ###
@@ -195,19 +129,15 @@ month_ticks[~mask] = ''#set labels to blank
 
 x = np.arange(0, len(month_info['Frames in v11']))
 kmask = np.isin(full_months, kmonths)
-Kx_months = x[kmask]
+Kx_months_full = x[kmask]
 jmask = np.isin(full_months, jmonths)
-Jx_months = x[jmask]
+Jx_months_full = x[jmask]
 testmask = np.isin(full_months, testmonths)
 testx_months = x[testmask]
 
-### get sample that has hi chi values and no anomalous masses or z
-varydata = varydata[varydata['Chi_K'] > min_chi]
-varydata = varydata[varydata['Mstar_z_p']!=0] # remove any with 0 as this is likely to be invalid
-varydata = varydata[varydata['z_p']<5] # remove any z>5 as this is likely to be invalid
-##%% Create sample and x/nox subsamples ###
-#mask = varydata['Chi_K'] > min_chi
-#varydata = varydata[mask]
+#%% Create sample and x/nox subsamples ###
+mask = varydata['Chi_K'] > min_chi
+varydata = varydata[mask]
 
 #%% Run ccf on individual sources ###
 num = len(varydata)
@@ -216,35 +146,112 @@ num = len(varydata)
 max_lag = np.zeros(num)
 mean_lag = np.zeros(num)
 mean_lag_test = np.zeros(num)
-mean_lag_err = np.zeros(num)
 median_lag = np.zeros(num)
 max_ccf = np.zeros(num)
 max_lag_fit = np.zeros(num)
-max_lag_fit_err = np.zeros(num)
 
 #%% Get lightcurves with errors ###
 j_flux, j_fluxerr, k_flux, k_fluxerr = getdata(varydata)
 
-#%% Mean subract and normalise ###
-
-test_j_flux = vari_funcs.cross_correlation.weighted_mean_subtract_normalise(
-        j_flux, j_fluxerr)
-test_k_flux = vari_funcs.cross_correlation.weighted_mean_subtract_normalise(
-        k_flux, k_fluxerr)
-
+testind = 30
 #plt.figure(figsize=[9,6])
-#plt.plot(Jx_months, test_j_flux[15,:], 'o', label='J-band')
-#plt.plot(Kx_months, test_k_flux[15,:], 'o', label='K-band')
-
-#%% Prewhiten using J semester data ###
-#test_j_flux, model_j_flux = prewhiten(test_j_flux, varydata, jmonths)
-#test_k_flux, model_j_flux = prewhiten(test_k_flux, varydata, kmonths)
-#plt.plot(testx_months, model_j_flux[15,:], 'o', label='J-band Semester')
+#plt.errorbar(Jx_months, j_flux[testind,:], yerr=j_fluxerr[testind,:], fmt='o', 
+#             label='J-band')
 #plt.xlabel('Month')
 #plt.ylabel('Normalised Flux')
 #plt.xticks(inds, month_ticks, rotation = 'vertical')
 #plt.legend()
 #plt.tight_layout()
+#%% Mean subract and normalise ###
+
+test_j_flux, test_j_fluxerr = vari_funcs.cross_correlation.weighted_mean_subtract_normalise_errs(
+        j_flux, j_fluxerr)
+test_k_flux, test_k_fluxerr = vari_funcs.cross_correlation.weighted_mean_subtract_normalise_errs(
+        k_flux, k_fluxerr)
+
+#%% Model using splines ###
+j_splines = []
+k_splines = []
+knots_full = testx_months[1:-1]
+test_x_full = np.linspace(0,len(full_months)-4,100)
+new_test_j_flux = np.zeros(np.shape(test_j_flux))
+new_test_k_flux = np.zeros(np.shape(test_k_flux))
+z = varydata['z_use']
+for n in range(num):
+    ### De-redshift light curves ###
+    test_x = test_x_full/(1+z[n])
+    Jx_months = Jx_months_full/(1+z[n])
+    Kx_months = Kx_months_full/(1+z[n])
+    knots = knots_full/(1+z[n])
+    
+    j_spl = splrep(Jx_months, test_j_flux[n,:], w=1/test_j_fluxerr[n,:], t=knots)
+    j_splines.append(j_spl)
+    k_spl = splrep(Kx_months, test_k_flux[n,:], w=1/test_k_fluxerr[n,:], t=knots)
+    k_splines.append(k_spl)
+#    if save_ccf == True:
+    fig = plt.figure(figsize=[9,6])
+    ax1 = plt.subplot(111)
+    plt.errorbar(Jx_months, test_j_flux[n,:], yerr=test_j_fluxerr[n,:], fmt='o', 
+                 label='J-band')
+    plt.errorbar(Kx_months, test_k_flux[n,:], yerr=test_k_fluxerr[n,:], fmt='o', 
+                 label='K-band')
+    #plt.plot(Kx_months, test_k_flux[testind,:], 'o', label='K-band')
+    test_J_fit = splev(test_x, j_spl)
+    test_K_fit = splev(test_x, k_spl)
+    test_J_knots = splev(knots, j_spl)
+    test_K_knots = splev(knots, k_spl)
+    plt.plot(test_x, test_J_fit, label='J-band Spline')
+    plt.plot(test_x, test_K_fit, label='K-band Spline')
+    plt.plot(knots, test_J_knots, 'x', color='C2')
+    plt.plot(knots, test_K_knots, 'x', color='C3')
+    plt.xlabel('Restframe Months')
+    plt.ylabel('Normalised Flux')
+    plt.title(str(varydata['ID'][n])+' z = '+str(z[n]))
+#    plt.xticks(inds, month_ticks, rotation = 'vertical')
+    plt.legend()
+    plt.tight_layout()
+#    plt.savefig(filepath+'fits/'+str(varydata['ID'][n])+'.png', overwrite=True)
+#    plt.close('all')
+    
+#    plt.figure(figsize=[9,6])
+#    plt.errorbar(Kx_months, test_k_flux[n,:], yerr=test_k_fluxerr[n,:], fmt='o', 
+#                 label='K-band')
+#    #plt.plot(Kx_months, test_k_flux[testind,:], 'o', label='K-band')
+#    plt.plot(test_x, test_J_fit, label='J-band Spline')
+#    plt.plot(test_x, test_K_fit, label='K-band Spline')
+#    plt.xlabel('Month')
+#    plt.ylabel('Normalised Flux')
+#    plt.xticks(inds, month_ticks, rotation = 'vertical')
+#    plt.legend()
+#    plt.tight_layout()
+#    plt.savefig(filepath+'/fits/K/'+str(varydata['ID'][n])+'_K.png', overwrite=True)
+#        plt.close('all')
+#    ###  use splines to make test arrays ###
+#    new_test_j_flux[n,:] = splev(Jx_months, j_spl)
+#    new_test_k_flux[n,:] = splev(Kx_months, k_spl)
+#
+#test_j_flux = new_test_j_flux
+#test_k_flux = new_test_k_flux
+
+test_j_flux = prewhiten_splines(test_j_flux, j_splines, Jx_months)
+test_k_flux = prewhiten_splines(test_k_flux, j_splines, Kx_months)
+    
+
+#for n in range(num):
+#    if save_ccf == True:
+#        
+#        plt.figure(figsize=[9,6])
+#        plt.plot(Jx_months, test_j_flux[n,:], 'o', 
+#                     label='J-band')
+#        plt.plot(Kx_months, test_k_flux[n,:], 'o', 
+#                     label='K-band')
+#        plt.xlabel('Month')
+#        plt.ylabel('Prewhitened Flux')
+#        plt.xticks(inds, month_ticks, rotation = 'vertical')
+#        plt.legend()
+#        plt.tight_layout()
+#        plt.savefig(filepath+'prewhitened/'+str(varydata['ID'][n])+'_sub.png', overwrite=True)
+#        plt.close('all')
 #
 #plt.figure(figsize=[9,6])
 #plt.plot(Jx_months, test_j_flux[15,:], 'o', label='J-band')
@@ -259,30 +266,7 @@ test_k_flux = vari_funcs.cross_correlation.weighted_mean_subtract_normalise(
 for n in range(num):
     print(n)
     bindata = varydata[n]
-#    
-#    #%% Get lightcurves with errors ###
-#    j_flux, j_fluxerr, k_flux, k_fluxerr = getdata(bindata)
-#
-#    #%% Mean subract and normalise ###
-#    
-#    test_j_flux = vari_funcs.cross_correlation.weighted_mean_subtract_normalise_single(
-#            j_flux, j_fluxerr)
-#    test_k_flux = vari_funcs.cross_correlation.weighted_mean_subtract_normalise_single(
-#            k_flux, k_fluxerr)
-#    
-##    plt.figure()
-##    plt.plot(Jx_months, test_j_flux, 'o')
-##    plt.plot(Kx_months, test_k_flux, 'o')
-#    
-#    #%% Prewhiten using J semester data ###
-#    test_j_flux, model_j_flux = prewhiten(test_j_flux, bindata, jmonths)
-#    test_k_flux, model_j_flux = prewhiten(test_k_flux, bindata, kmonths)
-##    plt.plot(testx_months, model_j_flux, 'o')
-#    
-##    plt.figure()
-##    plt.plot(Jx_months, test_j_flux, 'o')
-##    plt.plot(Kx_months, test_k_flux, 'o')
-##    break
+    
     #%% Create correlation arrays ###
     ''' Need arrays that have a space for every possible month so that the values 
     can be separated by the correct time periods'''
@@ -303,40 +287,37 @@ for n in range(num):
     ccf = out[:,0]
     ccf_err = out[:,1]
 
-#    #%% Calculate the ACF at various tau values for J and K ###
-#        
-#    out_k = np.array([vari_funcs.cross_correlation.cross_correlate(
-#            corr_test_k_flux, corr_test_k_flux, tau, type) for tau in tau_arr])
-#
-#    out_j = np.array([vari_funcs.cross_correlation.cross_correlate(
-#            corr_test_j_flux, corr_test_j_flux, tau, type) for tau in tau_arr])
-#    
-#    ### Unpack values ###
-#    acf_k = out_k[:,0]
-#    acf_k_err = out_k[:,1]
-#    acf_j = out_j[:,0]
-#    acf_j_err = out_j[:,1]
+    #%% Calculate the ACF at various tau values for J and K ###
+        
+    out_k = np.array([vari_funcs.cross_correlation.cross_correlate(
+            corr_test_k_flux, corr_test_k_flux, tau, type) for tau in tau_arr])
+
+    out_j = np.array([vari_funcs.cross_correlation.cross_correlate(
+            corr_test_j_flux, corr_test_j_flux, tau, type) for tau in tau_arr])
+    
+    ### Unpack values ###
+    acf_k = out_k[:,0]
+    acf_k_err = out_k[:,1]
+    acf_j = out_j[:,0]
+    acf_j_err = out_j[:,1]
     
 
     #%% Fit a parabola for those points around the centre of the ccf function ###
     sub_tau = np.arange(-7,8)
     test_ccf = ccf[np.isin(tau_arr, sub_tau)]
-    test_ccf_err = ccf_err[np.isin(tau_arr, sub_tau)]
-    fit_params, pcov = scipy.optimize.curve_fit(parabola, sub_tau, test_ccf,
-                                                    sigma=test_ccf_err)
-    plot_tau = np.linspace(-7,7,100)
+    fit_params, pcov = scipy.optimize.curve_fit(parabola, sub_tau, test_ccf)
+    plot_tau = np.linspace(-7,8,100)
     ccf_fit = parabola(plot_tau, *fit_params)
-    max_lag_fit[n] = plot_tau[np.argmax(ccf_fit)]
-    max_lag_fit_err[n] = bootstrapping_max(plot_tau, ccf_fit)
+    max_lag_fit[n] = sub_tau[np.argmax(test_ccf)]
+    
+    #%% Find lag where ccf is max###
+    max_lag[n] = tau_arr[np.argmax(ccf)]
+    max_ccf[n] = np.nanmax(ccf)
     
     #%% Find mean lag (centroid) in the centre ###
-    mean_lag_test[n] = ws.numpy_weighted_mean(sub_tau, weights=test_ccf)
-    mean_lag[n], mean_lag_err[n] = weighted_mean_and_err(tau_arr, ccf)
+    mean_lag[n] = ws.numpy_weighted_mean(sub_tau, weights=test_ccf)
+    mean_lag_test[n] = np.average(sub_tau, weights=test_ccf)
     median_lag[n] = ws.numpy_weighted_median(sub_tau, weights=test_ccf)
-    
-    #%% Find lag where ccf is max in centre ###
-    max_lag[n] = sub_tau[np.argmax(test_ccf)]
-    max_ccf[n] = np.nanmax(test_ccf)
     
     #%% Create and save ccfs if prompted ###
     if save_ccf == True:
@@ -350,11 +331,11 @@ for n in range(num):
 #                     label = 'J-band ACF', alpha=0.5)
         plt.vlines(max_lag[n], np.min(ccf), np.max(ccf), linestyle='dashed', 
                    label='Max Lag')
-        plt.vlines(max_lag_fit[n], np.min(ccf), np.max(ccf), linestyle='dotted', 
-                   label='Max Fitted Lag')
+#        plt.vlines(max_lag_fit[n], np.min(ccf), np.max(ccf), linestyle='dotted', 
+#                   label='Max Fitted Lag')
         plt.vlines(mean_lag[n], np.min(ccf), np.max(ccf), linestyle='dashdot', 
                    label='Mean Lag')
-        plt.plot(plot_tau, ccf_fit)
+#        plt.plot(plot_tau, ccf_fit)
         plt.xlabel('Lag (months)')
         plt.ylabel('Cross-Correlation Function')
         plt.xlim(-25,25)
@@ -413,23 +394,23 @@ cbar = plt.colorbar()
 cbar.set_label('Chi_K')
 plt.tight_layout()
 
-#%% Plot max restricted vs mass and z ###
+#%% Plot max parabola fit vs mass and z ###
 plt.figure()
-plt.plot(z, max_lag,'o')
+plt.plot(z, max_lag_fit,'o')
 plt.xlabel('z')
-plt.ylabel('Restricted Max Lag (months)')
+plt.ylabel('Max Restricted CCF Lag (months)')
 plt.tight_layout()
 if save == True:
-    plt.savefig(filepath+'max_lag_res_vs_z.png')
+    plt.savefig(filepath+'max_lag_fit_vs_z.png')
 
 plt.figure()
-plt.plot(mstar[mask], max_lag[mask],'o')
+plt.plot(mstar[mask], max_lag_fit[mask],'o')
 plt.xlabel('Mstar_z_p')
 plt.xscale('log')
-plt.ylabel('Restricted Max Lag (months)')
+plt.ylabel('Max Restricted CCF Lag (months)')
 plt.tight_layout()
 if save == True:
-    plt.savefig(filepath+'max_lag_res_vs_mass.png')
+    plt.savefig(filepath+'max_lag_fit_vs_mass.png')
 
 #%% Plot mean vs mass and z ###
 plt.figure()
@@ -439,16 +420,17 @@ plt.ylabel('Mean Lag (months)')
 plt.ylim(-7,7)
 plt.tight_layout()
 if save == True:
-    plt.savefig(filepath+'mean_lag_fit_vs_z.png')
+    plt.savefig(filepath+'mean_lag_vs_z.png')
 
 plt.figure()
 plt.plot(mstar[mask], mean_lag[mask],'o')
 plt.xlabel('Mstar_z_p')
+plt.xscale('log')
 plt.ylabel('Mean Lag (months)')
 plt.ylim(-7,7)
 plt.tight_layout()
 if save == True:
-    plt.savefig(filepath+'mean_lag_fit_vs_mass.png')
+    plt.savefig(filepath+'mean_lag_vs_mass.png')
     
 #%% Plot median vs mass and z ###
 plt.figure()
@@ -458,48 +440,17 @@ plt.ylabel('Median Lag (months)')
 plt.ylim(-7,7)
 plt.tight_layout()
 if save == True:
-    plt.savefig(filepath+'median_lag_fit_vs_z.png')
+    plt.savefig(filepath+'median_lag_vs_z.png')
 
 plt.figure()
 plt.plot(mstar[mask], median_lag[mask],'o')
 plt.xlabel('Mstar_z_p')
+plt.xscale('log')
 plt.ylabel('Median Lag (months)')
 plt.ylim(-7,7)
 plt.tight_layout()
 if save == True:
-    plt.savefig(filepath+'median_lag_fit_vs_mass.png')
-    
-#%% Plot mass vs redshift with max as colours ###
-plt.figure()
-plt.scatter(z[mstar!=0], mstar[mstar!=0], c=max_lag[mstar!=0])
-mbins = np.array([2.3e10, 5.65e10])
-zbins = np.array([1.11, 2])
-plt.hlines(mbins, 0, 5)
-plt.vlines(zbins, 2e9, 5e11)
-plt.xlabel('Redshift')
-plt.ylabel('Mstar_z_p')
-plt.yscale('log')
-cbar = plt.colorbar()
-cbar.set_label('Raw Max Lag')
-plt.tight_layout()
-if save == True:
-    plt.savefig(filepath+'mstar_z_max_lag.png')
-
-#%% Plot mass vs redshift with mean as colours ###
-plt.figure()
-plt.scatter(z[mstar!=0], mstar[mstar!=0], c=mean_lag[mstar!=0])
-mbins = np.array([2.3e10, 5.65e10])
-zbins = np.array([1.11, 2])
-plt.hlines(mbins, 0, 5)
-plt.vlines(zbins, 2e9, 5e11)
-plt.xlabel('Redshift')
-plt.ylabel('Mstar_z_p')
-plt.yscale('log')
-cbar = plt.colorbar()
-cbar.set_label('Weighted Lag')
-plt.tight_layout()
-if save == True:
-    plt.savefig(filepath+'mstar_z_mean_lag.png')
+    plt.savefig(filepath+'median_lag_vs_mass.png')
     
 end = time.time()
 print(end-start)

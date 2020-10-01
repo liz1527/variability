@@ -149,7 +149,7 @@ def cross_correlate(kflux, jflux, tau, type='ccf'):
     ### limit to values with valid t_j values ###
     t_k = t_k[t_j<monthnum] # t_j should not be larger than total num of months
     t_j = t_j[t_j<monthnum]
-    t_k = t_k[t_j>=0] # t_j should not be negativ
+    t_k = t_k[t_j>=0] # t_j should not be negative
     t_j = t_j[t_j>=0]
     
     ### limit to values where there are not nans in J or K at those indicies ###
@@ -180,6 +180,73 @@ def cross_correlate(kflux, jflux, tau, type='ccf'):
     
     return ccf, err, len(t_k)
 
+def cross_correlate_de_z(kflux, jflux, tau, z, type='dcf'):
+    ''' Function to run the stacked cross-correlation analysis at a specfic lag 
+    tau between the J and K band lightcurves given when the light curves have 
+    been de-redshifted so you cannot assume all the rows have the same light 
+    curve spacings. In this case the ccf is done in bins which run from tau-0.5
+    to tau+0.5 so that tau is in the centre of the bin
+    Inputs:
+        kflux = array of k-band light curves with the correct time spacing. 
+        jflux = array of j-band light curves with the correct time spacing. 
+        tau = the lag to caluclate the ccf value at
+        z = redshifts of the objects
+        type = 'ccf' or 'dcf' sepcifies what type of cross-correlation to run.
+               default is 'dcf'
+    Outputs:
+        ccf = the cross-correlation value for this tau 
+        err = the bootstrapped error on this ccf value
+        len(t_k) = the total number of pairs used to calculate this value.
+    '''
+    ### limit to values where there are not nans in J or K at indicies in month bins ###
+    pair_k_flux = np.array([])
+    pair_j_flux = np.array([])
+    for n in range(len(kflux)):
+        ### set up time arrays from J and K ###
+        _, monthnum = np.shape(kflux)
+        full_t = np.arange(monthnum)
+        t_k = full_t/(1+z[n]) # month times of j and k de redshifted
+        t_arr = full_t/(1+z[n]) # need array that doesn't change for indexing
+        
+        for k in t_k:
+            ### Set t_j ###
+            t_j = full_t/(1+z[n])
+            
+            ### find range of t_j values that are valid for current tau bin ###
+            mask1 = t_j > k - (tau+0.5) # t_j is within tau + 0.5 months of k
+            mask2 = t_j <= k - (tau-0.5) # t_j is not more than tau-0.5 months from k
+            mask = mask1*mask2.astype(bool)
+            t_j_match = t_j[mask] # get values that match for loop
+            t_j[~mask] = 999 # set non matches to null
+            
+            ### check if months that match have values ###
+            for j in t_j_match:
+                if np.isnan(kflux[n,t_arr==k]) or np.isnan(jflux[n,t_arr==j]):
+                    ### set j index to null if no value ###
+                    t_j[t_j==j] = 999 
+            
+            ### restrict to values with non-null indices ###
+            t_j = t_j[t_j!=999]
+            
+            ### if there are no matches, set k to null and move on ###
+            if len(t_j) == 0:
+                t_k[t_k==k] = 999 #this probably isn't actually necessary in this version
+                continue
+        
+            ### if there are matches add t_k to the array with each paired t_j ###
+            for j in t_j:
+                pair_k_flux = np.append(pair_k_flux, kflux[n,t_k==k])
+                pair_j_flux = np.append(pair_j_flux, jflux[n,t_arr==j])
+
+    if type == 'ccf':
+        ccf = calculate_ccf(pair_k_flux, pair_j_flux)
+    elif type == 'dcf':
+        ccf = calculate_dcf(pair_k_flux, pair_j_flux)
+        
+#    err = bootstrapping(pair_k_flux, pair_j_flux, repeats=1000)
+    err=np.nan
+    return ccf, err, len(pair_k_flux)
+
 def cross_correlate_shifted(kflux, jflux, tau, type='ccf'):
     ''' Function to run the stacked cross-correlation analysis at a specfic lag 
     tau between the J and K band lightcurves given when some of the light curves
@@ -204,7 +271,7 @@ def cross_correlate_shifted(kflux, jflux, tau, type='ccf'):
     ### limit to values with valid t_j values ###
     t_k = t_k[t_j<monthnum] # t_j should not be larger than total num of months
     t_j = t_j[t_j<monthnum]
-    t_k = t_k[t_j>=0] # t_j should not be negativ
+    t_k = t_k[t_j>=0] # t_j should not be negative
     t_j = t_j[t_j>=0]
     
     ### limit to values where there are not nans in J or K at those indicies ###

@@ -44,6 +44,53 @@ def parabola(x, a, b, c): #for curve fitting
 
 def double_parabola(x, a, b, c, d, e, f): #for curve fitting
     return (a*x**2 + b*x + c) * (d*x**2 + e*x + f)
+
+def weighted_mean_and_err(tau, ccf, cut_off=0.5):
+    
+    ### Limit to range of ccf function ##
+    max_ccf = np.max(ccf)
+    lim = cut_off * max_ccf
+    tau = tau[ccf>lim]
+    ccf = ccf[ccf>lim]
+    
+    ### find weighted mean and standard error on the mean ###
+    tau_mean = ws.numpy_weighted_mean(tau, weights=ccf)
+    tau_var = ws.numpy_weighted_mean((tau-tau_mean)**2, weights=ccf)
+    tau_std = np.sqrt(tau_var)
+    tau_SE = tau_std/len(tau)
+    
+    return tau_mean, tau_SE
+  
+def bootstrapping_max(tau_arr, ccf, repeats=5000):
+    ''' Function to calculate the bootstrapped error on the ccf value given by
+    the paired flux arrays
+    Inputs:
+        tau_arr = 1D array of tau values 
+        ccf = 1D array of ccf values 
+        repeats = number of resampling repeats to do during bootstrapping, 
+                  default is 5000
+    Outputs:
+        sig = the standard deviation of the ccf values found through bootstapping,
+              this is the standard error on the ccf value.
+    '''
+    maxes = np.zeros(repeats) #create array to store max values in
+    n=1 #start counter
+    while n<repeats: # repeats until specified number reached
+        ### resample data ###
+        inds = random.choices(range(len(tau_arr)), k=len(tau_arr)) # get random inds with same length
+        new_tau = tau_arr[inds]
+        new_ccf = ccf[inds]
+        
+        ### find max ###
+        maxes[n] = new_tau[np.argmax(new_ccf)]
+        
+        ### increase counter ##
+        n+=1
+    
+    ### calculate sigma on ccf values ###
+    sig = np.std(maxes)
+    
+    return sig
 #%% Import data for variables selected in J and K + define constants ###
 varydata = Table.read('variable_tables/J_and_K_variables_month_varystats_DR11data.fits')
 #varydata = varydata[varydata['X-ray']==True]
@@ -121,11 +168,11 @@ varydata.sort(keys=key) #sort into increasing according to key#varydata = varyda
 num_m_bins = 3
 num = int(round(len(varydata)/num_m_bins,0)) # calculate number in each bin
 
-num_bins=9
+num_bins=6
 def make_bins(varydata, mbins, zbins):
     
     ### top left ###
-    mask1 = varydata[key] > mbins[1] # high mass
+    mask1 = varydata[key] >= mbins[1] # high mass
     mask2 = varydata[zkey] < zbins[0] # low z
     mask = mask1*mask2.astype(bool)
     bindata1 = varydata[mask]
@@ -133,25 +180,17 @@ def make_bins(varydata, mbins, zbins):
     print(len(bindata1))
     
     ### top middle ###
-    mask1 = varydata[key] > mbins[1] # high mass
-    mask2 = varydata[zkey] > zbins[0] # mid z
+    mask1 = varydata[key] >= mbins[1] # high mass
+    mask2 = varydata[zkey] >= zbins[0] # mid z
     mask3 = varydata[zkey] < zbins[1] # mid z
     mask = mask1*mask2*mask3.astype(bool)
     bindata2 = varydata[mask]
     plt.scatter(bindata2[zkey], bindata2[key], label='top middle')
     print(len(bindata2))
     
-    ### top right ###
-    mask1 = varydata[key] > mbins[1] # high mass
-    mask2 = varydata[zkey] > zbins[1] # high z
-    mask = mask1*mask2.astype(bool)
-    bindata3 = varydata[mask]
-    plt.scatter(bindata3[zkey], bindata3[key], label='top right')
-    print(len(bindata3))
-    
     ### middle left ###
     mask1 = varydata[key] < mbins[1] # mid mass
-    mask2 = varydata[key] > mbins[0] # mid mass
+    mask2 = varydata[key] >= mbins[0] # mid mass
     mask3 = varydata[zkey] < zbins[0] # low z
     mask = mask1*mask2*mask3.astype(bool)
     bindata4 = varydata[mask]
@@ -160,22 +199,14 @@ def make_bins(varydata, mbins, zbins):
     
     ### middle middle ###
     mask1 = varydata[key] < mbins[1] # mid mass
-    mask2 = varydata[key] > mbins[0] # mid mass
-    mask3 = varydata[zkey] > zbins[0] # mid z
+    mask2 = varydata[key] >= mbins[0] # mid mass
+    mask3 = varydata[zkey] >= zbins[0] # mid z
     mask4 = varydata[zkey] < zbins[1] # mid z
     mask = mask1*mask2*mask3*mask4.astype(bool)
     bindata5 = varydata[mask]
     plt.scatter(bindata5[zkey], bindata5[key], label='middle')
     print(len(bindata5))
-    
-    ### middle right ###
-    mask1 = varydata[key] < mbins[1] # mid mass
-    mask2 = varydata[key] > mbins[0] # mid mass
-    mask3 = varydata[zkey] > zbins[1] # high z
-    mask = mask1*mask2*mask3.astype(bool)
-    bindata6 = varydata[mask]
-    plt.scatter(bindata6[zkey], bindata6[key], label='middle right')
-    print(len(bindata6))
+
     
     ### bottom left ###
     mask1 = varydata[key] < mbins[0] # low mass
@@ -187,25 +218,17 @@ def make_bins(varydata, mbins, zbins):
     
     ### bottom middle ###
     mask1 = varydata[key] < mbins[0] # low mass
-    mask2 = varydata[zkey] > zbins[0] # mid z
+    mask2 = varydata[zkey] >= zbins[0] # mid z
     mask3 = varydata[zkey] < zbins[1] # mid z
     mask = mask1*mask2*mask3.astype(bool)
     bindata8 = varydata[mask]
     plt.scatter(bindata8[zkey], bindata8[key], label='bottom middle')
     print(len(bindata8))
     
-    ### bottom right ###
-    mask1 = varydata[key] < mbins[0] # low mass
-    mask2 = varydata[zkey] > zbins[1] # high z
-    mask = mask1*mask2.astype(bool)
-    bindata9 = varydata[mask]
-    plt.scatter(bindata9[zkey], bindata9[key], label='bottom right')
-    print(len(bindata9))
-    
-    plt.hlines(mbins, 0, 5)
+    plt.hlines(mbins, 0, 2.5)
     plt.vlines(zbins, 2e9, 5e11)
 #    plt.legend()
-    return bindata1, bindata2, bindata3, bindata4, bindata5, bindata6, bindata7, bindata8, bindata9
+    return bindata1, bindata2, bindata4, bindata5, bindata7, bindata8
     
 ### Set up Mstar z plot so see bin ranges ###
 plt.figure(1)
@@ -216,7 +239,7 @@ plt.xlabel('Redshift')
 
 ### Define bin boundaries ###
 mbins = np.array([2.3e10, 5.65e10])
-zbins = np.array([0.9, 1.47])
+zbins = np.array([1.11, 2])
 
 ### get bins ### 
 bindatas = make_bins(varydata, mbins, zbins)
@@ -226,21 +249,27 @@ bindatas = make_bins(varydata, mbins, zbins)
 ### Set up arrays for mean vs mass plot ###
 max_lag = np.zeros(num_bins)
 max_lag_fit = np.zeros(num_bins)
+max_lag_fit_err = np.zeros(num_bins)
+mean_lag = np.zeros(num_bins)
+mean_lag_err = np.zeros(num_bins)
 spline_max_lag = np.zeros(num_bins)
 spline_max_lag_fit = np.zeros(num_bins)
+spline_max_lag_fit_err = np.zeros(num_bins)
+spline_mean_lag = np.zeros(num_bins)
+spline_mean_lag_err = np.zeros(num_bins)
 tau_arr = np.arange(-24,25) # tau values to evaluate ccf at 
 
 ### set up coord arrays for text (set up this way to make it clear where they are for) ###
-xcoords = [0.3, 1, 2,
-           0.3, 1, 2,
-           0.3, 1, 2]
-ycoords = [1.5e11, 1.5e11, 1.5e11,
-           3.25e10, 3.25e10, 3.25e10,
-           1e10, 1e10, 1e10]
+xcoords = [0.3, 1.2,
+           0.3, 1.2,
+           0.3, 1.2]
+ycoords = [1.5e11, 1.5e11,
+           3.25e10, 3.25e10,
+           1e10, 1e10]
 
 ### Set up Mstar z plot so see ccf values ###
 plt.figure(2)
-plt.hlines(mbins, 0, 5)
+plt.hlines(mbins, 0, 2.5)
 plt.vlines(zbins, 2e9, 5e11)
 plt.yscale('log')
 plt.ylabel('Stellar Mass')
@@ -248,15 +277,23 @@ plt.xlabel('Redshift')
 plt.title('Real data, raw max')
 
 plt.figure(3)
-plt.hlines(mbins, 0, 5)
+plt.hlines(mbins, 0, 2.5)
 plt.vlines(zbins, 2e9, 5e11)
 plt.yscale('log')
 plt.ylabel('Stellar Mass')
 plt.xlabel('Redshift')
 plt.title('Real data, fitted max')
 
+plt.figure(9)
+plt.hlines(mbins, 0, 2.5)
+plt.vlines(zbins, 2e9, 5e11)
+plt.yscale('log')
+plt.ylabel('Stellar Mass')
+plt.xlabel('Redshift')
+plt.title('Real data, weighted mean')
+
 plt.figure(4)
-plt.hlines(mbins, 0, 5)
+plt.hlines(mbins, 0, 2.5)
 plt.vlines(zbins, 2e9, 5e11)
 plt.yscale('log')
 plt.ylabel('Stellar Mass')
@@ -264,12 +301,20 @@ plt.xlabel('Redshift')
 plt.title('Spline data, raw max')
 
 plt.figure(5)
-plt.hlines(mbins, 0, 5)
+plt.hlines(mbins, 0, 2.5)
 plt.vlines(zbins, 2e9, 5e11)
 plt.yscale('log')
 plt.ylabel('Stellar Mass')
 plt.xlabel('Redshift')
 plt.title('Spline data, fitted max')
+
+plt.figure(10)
+plt.hlines(mbins, 0, 2.5)
+plt.vlines(zbins, 2e9, 5e11)
+plt.yscale('log')
+plt.ylabel('Stellar Mass')
+plt.xlabel('Redshift')
+plt.title('Spline data, weighted mean')
 
 plt.figure(6, figsize=[10,10])
 plt.suptitle('Raw data')
@@ -277,9 +322,15 @@ plt.suptitle('Raw data')
 plt.figure(7, figsize=[10,10])
 plt.suptitle('Splines')
 
-labels = np.array(['top left', 'top middle', 'top right',
-                   'middle left', 'middle', 'middle right',
-                   'bottom left', 'bottom middle', 'bottom right'])
+plt.figure(8, figsize=[10,10])
+plt.suptitle('Fits')
+
+plt.figure(11, figsize=[10,10])
+plt.suptitle('Fits')
+
+labels = np.array(['top left', 'top right',
+                   'middle left', 'middle right',
+                   'bottom left', 'bottom right'])
 for n, bindata in enumerate(bindatas):
     print(n)
     print('running ccf using raw data')
@@ -316,29 +367,72 @@ for n, bindata in enumerate(bindatas):
 
     #%% Find weighted mean and skew of ccf ###
     max_lag[n] = tau_arr[np.argmax(ccf)]
+#    mean_lag[n] = ws.numpy_weighted_mean(tau_arr, ccf)
+    mean_lag[n], mean_lag_err[n] = weighted_mean_and_err(tau_arr, ccf)
     
     #%% Fit a parabola for those points around the centre of the ccf function ###
+    tau_fits = np.arange(2,20)
+    fit_maxes = np.zeros(len(tau_fits))
+    fit_max_errs = np.zeros(len(tau_fits))
+    plt.figure(11)
+    ax11 = plt.subplot(3,2,n+1)
+    ax11.errorbar(tau_arr, ccf, yerr=ccf_err, fmt='o', zorder=0)
+    plt.xlabel('Lag (months)')
+    plt.ylabel('CCF')
+    plt.title(labels[n])
+    for m, tau in enumerate(tau_fits):
+        sub_tau = np.arange(-tau,tau+1)
+        test_ccf = ccf[np.isin(tau_arr, sub_tau)]
+        test_ccf_err = ccf_err[np.isin(tau_arr, sub_tau)]
+        fit_params, pcov = scipy.optimize.curve_fit(parabola, sub_tau, test_ccf,
+                                                    sigma=test_ccf_err)
+        plot_tau = np.linspace(-tau,tau, 100)
+        ccf_fit = parabola(plot_tau, *fit_params)
+        fit_maxes[m] = plot_tau[np.argmax(ccf_fit)]
+        fit_max_errs[m] = bootstrapping_max(plot_tau, ccf_fit)
+        plt.figure(11)
+        ax11.plot(plot_tau, ccf_fit, zorder=1)
+            
+    plt.figure(8)
+    ax8 = plt.subplot(3,2,n+1)
+#    ax8.plot(tau_fits, fit_maxes, 'o')
+    ax8.errorbar(tau_fits, fit_maxes, yerr=fit_max_errs, fmt='o')
+#    ax8.plot(fit_maxes, tau_fits, 'o')
+    plt.xlabel('Fit edge')
+    plt.ylabel('Max Fit')
+    plt.tight_layout()
+    
     sub_tau = np.arange(-7,8)
     test_ccf = ccf[np.isin(tau_arr, sub_tau)]
-#    fit_params, pcov = scipy.optimize.curve_fit(parabola, sub_tau, test_ccf)
-    fit_params, pcov = scipy.optimize.curve_fit(double_parabola, sub_tau, test_ccf)
+    test_ccf_err = ccf_err[np.isin(tau_arr, sub_tau)]
+    fit_params, pcov = scipy.optimize.curve_fit(parabola, sub_tau, test_ccf,
+                                                    sigma=test_ccf_err)
     plot_tau = np.linspace(-7,7, 100)
     ccf_fit = parabola(plot_tau, *fit_params)
     max_lag_fit[n] = plot_tau[np.argmax(ccf_fit)]
-    
+    max_lag_fit_err[n] = bootstrapping_max(plot_tau, ccf_fit)
+    ax8.errorbar(7, max_lag_fit[n], yerr=max_lag_fit_err[n], fmt='o')
     #%% Make grid plots ###
     plt.figure(2)
     plt.text(xcoords[n], ycoords[n], str(max_lag[n]))
     plt.figure(3)
-    plt.text(xcoords[n], ycoords[n], str(round(max_lag_fit[n],2)))
+    plt.text(xcoords[n], ycoords[n], str(round(max_lag_fit[n],2))+' +/- '+str(round(max_lag_fit_err[n],2)))
+    plt.figure(9)
+    plt.text(xcoords[n], ycoords[n], str(round(mean_lag[n],2))+' +/- '+str(round(mean_lag_err[n],2)))
     
     #%% Plot CCF and fit ###
     plt.figure(6)
-    plt.subplot(3,3,n+1)
+    plt.subplot(3,2,n+1)
     plt.errorbar(tau_arr, ccf, yerr=ccf_err, fmt='o', zorder=0)
     plt.plot(plot_tau, ccf_fit, zorder=1)
-    plt.vlines(max_lag[n], np.min(ccf), np.max(ccf),linestyle='dashed')
-    plt.vlines(max_lag_fit[n], np.min(ccf), np.max(ccf),linestyle='dashdot')
+    plt.vlines(max_lag[n], np.min(ccf), np.max(ccf),linestyle='dashed', 
+               label='max = '+str(max_lag[n]))
+    plt.vlines(max_lag_fit[n], np.min(ccf), np.max(ccf),linestyle='dashdot', 
+               label='fitted max = '+str(round(max_lag_fit[n],2)))
+    plt.vlines(mean_lag[n], np.min(ccf), np.max(ccf),linestyle='dotted', 
+               label='mean = '+str(round(mean_lag[n],2))+' +/- '+str(round(mean_lag_err[n],2)))
+    plt.hlines(0.5*np.max(ccf), tau_arr[0], tau_arr[-1])
+    plt.legend(fontsize=10)
     plt.xlabel('Lag (months)')
     plt.ylabel('CCF')
     plt.title(labels[n])
@@ -386,22 +480,29 @@ for n, bindata in enumerate(bindatas):
 
     #%% Find weighted mean and skew of ccf ###
     spline_max_lag[n] = tau_arr[np.argmax(spline_ccf)]
+#    spline_mean_lag[n] = ws.numpy_weighted_mean(tau_arr, spline_ccf)
+    spline_mean_lag[n], spline_mean_lag_err[n] = weighted_mean_and_err(tau_arr, spline_ccf)
     
     #%% Fit a parabola for those points around the centre of the ccf function ###
     spline_test_ccf = spline_ccf[np.isin(tau_arr, sub_tau)]
-#    fit_params, pcov = scipy.optimize.curve_fit(parabola, sub_tau, spline_test_ccf)
-    fit_params, pcov = scipy.optimize.curve_fit(double_parabola, sub_tau, spline_test_ccf)
-#    spline_ccf_fit = parabola(plot_tau, *fit_params)
-    spline_ccf_fit = double_parabola(plot_tau, *fit_params)
+    fit_params, pcov = scipy.optimize.curve_fit(parabola, sub_tau, spline_test_ccf)
+    spline_ccf_fit = parabola(plot_tau, *fit_params)
     spline_max_lag_fit[n] = plot_tau[np.argmax(spline_ccf_fit)]
+    spline_max_lag_fit_err[n] = bootstrapping_max(plot_tau, spline_ccf_fit)
     
     #%% Plot Spline CCF and fit ###
     plt.figure(7)
-    plt.subplot(3,3,n+1)
+    plt.subplot(3,2,n+1)
     plt.errorbar(tau_arr, spline_ccf, yerr=spline_ccf_err, fmt='o', zorder=0)
     plt.plot(plot_tau, spline_ccf_fit, zorder=1)
-    plt.vlines(spline_max_lag[n], np.min(spline_ccf), np.max(spline_ccf),linestyle='dashed')
-    plt.vlines(spline_max_lag_fit[n], np.min(spline_ccf), np.max(spline_ccf),linestyle='dashdot')
+    plt.vlines(spline_max_lag[n], np.min(spline_ccf), np.max(spline_ccf),linestyle='dashed', 
+               label='max = '+str(spline_max_lag[n]))
+    plt.vlines(spline_max_lag_fit[n], np.min(spline_ccf), np.max(spline_ccf),linestyle='dashdot', 
+               label='fitted max = '+str(round(spline_max_lag_fit[n],2)))
+    plt.vlines(spline_mean_lag[n], np.min(spline_ccf), np.max(spline_ccf),linestyle='dotted', 
+               label='mean = '+str(round(spline_mean_lag[n],2))+' +/- '+str(round(spline_mean_lag_err[n],2)))
+    plt.hlines(0.5*np.max(spline_ccf), tau_arr[0], tau_arr[-1])
+    plt.legend(fontsize=10)
     plt.xlabel('Lag (months)')
     plt.ylabel('CCF')
     plt.title(labels[n])
@@ -410,7 +511,9 @@ for n, bindata in enumerate(bindatas):
     plt.figure(4)
     plt.text(xcoords[n], ycoords[n], str(spline_max_lag[n]))
     plt.figure(5)
-    plt.text(xcoords[n], ycoords[n], str(round(spline_max_lag_fit[n],2)))
+    plt.text(xcoords[n], ycoords[n], str(round(spline_max_lag_fit[n],2))+' +/- '+str(round(spline_max_lag_fit_err[n],2)))
+    plt.figure(10)
+    plt.text(xcoords[n], ycoords[n], str(round(spline_mean_lag[n],2))+' +/- '+str(round(spline_mean_lag_err[n],2)))
 
 plt.figure(6)
 plt.tight_layout()
@@ -420,6 +523,10 @@ plt.figure(7)
 plt.tight_layout()
 plt.subplots_adjust(top=0.9)
     
+plt.figure(9)
+plt.tight_layout()
+plt.subplots_adjust(top=0.9)
+
 end = time.time()
 print(end-start)
     

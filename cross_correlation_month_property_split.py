@@ -40,12 +40,29 @@ def getdata(data):
 def parabola(x, a, b, c): #for curve fitting
     return a*x**2 + b*x + c
 
+def weighted_mean_and_err(tau, ccf, cut_off=0.5):
+    
+    ### Limit to range of ccf function ##
+    max_ccf = np.max(ccf)
+    lim = cut_off * max_ccf
+    tau = tau[ccf>lim]
+    ccf = ccf[ccf>lim]
+    
+    ### find weighted mean and standard error on the mean ###
+    tau_mean = ws.numpy_weighted_mean(tau, weights=ccf)
+    tau_var = ws.numpy_weighted_mean((tau-tau_mean)**2, weights=ccf)
+    tau_std = np.sqrt(tau_var)
+    tau_SE = tau_std/len(tau)
+    
+    return tau_mean, tau_SE
 #%% Import data for variables selected in J and K + define constants ###
 varydata = Table.read('variable_tables/J_and_K_variables_month_varystats_DR11data.fits')
 #varydata = varydata[varydata['X-ray']==True]
+#varydata = Table.read('UDS_catalogues/chandra_month_varystats_noneg_DR11data.fits')
 
 ### Set constants for sample and bins ###
 min_chi = 100 # chi cut required to create sample
+dez = input('Should the light curves be de-redshifted? (Y or N) ')
 n = input('Mass(M) or Redshift (Z) bins? ')
 if n == 'M':
     key = 'Mstar_z_p' # column to split on
@@ -73,9 +90,9 @@ else:
 if save == True:
     subfolder = input('subfolder? (leave blank if none) ')
     if key == 'z_p' or key == 'z' or key == 'z_use':
-        filepath = 'plots/new_catalogue/JK_lightcurve_comp/cross-correlation/weighted_mean/bootstrapped/z_split/mass_limited/'+subfolder+'/'
+        filepath = 'plots/new_catalogue/JK_lightcurve_comp/dcf/z_split/'+subfolder+'/'
     elif key == 'Mstar_z_p':
-        filepath = 'plots/new_catalogue/JK_lightcurve_comp/cross-correlation/weighted_mean/bootstrapped/mass_split/z_limited/'+subfolder+'/'
+        filepath = 'plots/new_catalogue/JK_lightcurve_comp/dcf/mass_split/'+subfolder+'/'
 
 ### Get monthly_numbers as this contains all possible months ###
 month_info = fits.open('Images/Convolving_Images/monthly_numbers.fits')[1].data #get month count data
@@ -140,6 +157,8 @@ else:
 ### Set up arrays for mean vs mass plot ###
 mean_lag = np.zeros(num_bins)
 mean_norm_lag = np.zeros(num_bins)
+mean_lag_err = np.zeros(num_bins)
+mean_norm_lag_err = np.zeros(num_bins)
 median_lag = np.zeros(num_bins)
 median_norm_lag = np.zeros(num_bins)
 ccf_skew = np.zeros(num_bins)
@@ -201,15 +220,21 @@ for n in range(num_bins):
 
     #%% Calculate the CCF at various tau values ###
         
-    out = np.array([vari_funcs.cross_correlation.cross_correlate(
-            corr_test_k_flux, corr_test_j_flux, tau, type='dcf') for tau in tau_arr])
+    if dez == 'Y' or dez == 'y':
+        ### do ccf with deredshifted light curves ####
+        z = bindata['z_use']    
+        out = np.array([vari_funcs.cross_correlation.cross_correlate_de_z(
+                corr_test_k_flux, corr_test_j_flux, tau, z, type='dcf') for tau in tau_arr])
+    else:
+        out = np.array([vari_funcs.cross_correlation.cross_correlate(
+                corr_test_k_flux, corr_test_j_flux, tau, type='dcf') for tau in tau_arr])
 
     ### Unpack values ###
     ccf = out[:,0]
     ccf_err = out[:,1]
 
     #%% Find weighted mean and skew of ccf ###
-    mean_lag[n] = ws.numpy_weighted_mean(tau_arr, weights=ccf)
+    mean_lag[n], mean_lag_err[n] = weighted_mean_and_err(tau_arr, ccf)
     median_lag[n] = ws.numpy_weighted_median(tau_arr, weights=ccf)
     ccf_skew[n] = skew(ccf)
     max_lag[n] = tau_arr[np.argmax(ccf)]
@@ -233,7 +258,7 @@ for n in range(num_bins):
 #    plt.plot(plot_tau, ccf_fit, 'C'+str(n))
     plt.xlabel('Lag (months)')
     plt.ylabel('Cross-Correlation Function')
-#    plt.ylim(-0.015,0.02)
+    plt.ylim(-0.7,0.9)
     plt.grid(True)
     plt.legend(loc='lower center')
     plt.tight_layout()
@@ -252,7 +277,7 @@ for n in range(num_bins):
     plt.xlabel('Lag (months)')
     plt.ylabel('Cross-Correlation Function')
     plt.xlim(-25,25)
-    plt.ylim(-0.015,0.02)
+    plt.ylim(-0.7,0.9)
     plt.grid(True)
     plt.legend(loc='lower center')
     plt.tight_layout()
@@ -274,7 +299,7 @@ for n in range(num_bins):
     plt.plot(plot_tau, ccf_fit, 'C'+str(n))
     plt.xlabel('Lag (months)')
     plt.ylabel('Cross-Correlation Function')
-    plt.ylim(-0.015,0.02)
+    plt.ylim(-0.7,0.9)
     plt.grid(True)
     plt.legend(loc='lower center')
     plt.tight_layout()
@@ -290,7 +315,7 @@ for n in range(num_bins):
     norm_ccf_err = ccf_err/area
 
     #%% Find weighted mean and skew of normalised ccf ###
-    mean_norm_lag[n] = ws.numpy_weighted_mean(tau_arr, weights=ccf)
+    mean_norm_lag[n], mean_norm_lag_err[n] = weighted_mean_and_err(tau_arr, ccf)
     median_norm_lag[n] = ws.numpy_weighted_median(tau_arr, weights=ccf)
     norm_ccf_skew[n] = skew(norm_ccf)
     max_norm_lag[n] = tau_arr[np.argmax(norm_ccf)]
@@ -368,8 +393,8 @@ for n in range(num_bins):
 #%% Plot mean lag vs mass ###
 all_bin_errors = np.abs(all_bin_edges - all_bin_mean[None,:])
 plt.figure()
-plt.errorbar(all_bin_mean, mean_norm_lag, xerr=all_bin_errors, fmt='o')
-#plt.errorbar(all_bin_mean, mean_lag, xerr=all_bin_errors, fmt='o')
+#plt.errorbar(all_bin_mean, mean_norm_lag, xerr=all_bin_errors, fmt='o')
+plt.errorbar(all_bin_mean, mean_lag, xerr=all_bin_errors, yerr=mean_lag_err, fmt='o')
 plt.xlabel(key)
 plt.ylabel('Weighted Mean Lag (months)')
 if log==True:
@@ -377,9 +402,9 @@ if log==True:
 plt.tight_layout()
 if save == True:
     if key == 'z_p' or key == 'z' or key == 'z_use':
-        plt.savefig(filepath+'/normalised/mean_lag_vs_z.png')
+        plt.savefig(filepath+'/mean_lag_vs_z.png')
     elif key == 'Mstar_z_p':
-        plt.savefig(filepath+'/normalised/mean_lag_vs_mass.png')
+        plt.savefig(filepath+'/mean_lag_vs_mass.png')
 #
 #plt.figure()
 #plt.errorbar(mean_norm_lag, all_bin_mean, yerr=all_bin_errors, fmt='o')
@@ -391,8 +416,8 @@ if save == True:
 
 #%% Plot median lag vs mass ###
 plt.figure()
-plt.errorbar(all_bin_mean, median_norm_lag, xerr=all_bin_errors, fmt='o')
-#plt.errorbar(all_bin_mean, mean_lag, xerr=all_bin_errors, fmt='o')
+#plt.errorbar(all_bin_mean, median_norm_lag, xerr=all_bin_errors, fmt='o')
+plt.errorbar(all_bin_mean, median_lag, xerr=all_bin_errors, fmt='o')
 plt.xlabel(key)
 plt.ylabel('Weighted Median Lag (months)')
 if log==True:
@@ -400,9 +425,9 @@ if log==True:
 plt.tight_layout()
 if save == True:
     if key == 'z_p' or key == 'z' or key == 'z_use':
-        plt.savefig(filepath+'/normalised/median_lag_vs_z.png')
+        plt.savefig(filepath+'/median_lag_vs_z.png')
     elif key == 'Mstar_z_p':
-        plt.savefig(filepath+'/normalised/median_lag_vs_mass.png')
+        plt.savefig(filepath+'/median_lag_vs_mass.png')
 
 #plt.figure()
 #plt.errorbar(median_norm_lag, all_bin_mean, yerr=all_bin_errors, fmt='o')
@@ -415,8 +440,8 @@ if save == True:
 
 #%% Plot max lag vs mass ###
 plt.figure()
-plt.errorbar(all_bin_mean, max_norm_lag, xerr=all_bin_errors, fmt='o')
-#plt.errorbar(all_bin_mean, mean_lag, xerr=all_bin_errors, fmt='o')
+#plt.errorbar(all_bin_mean, max_norm_lag, xerr=all_bin_errors, fmt='o')
+plt.errorbar(all_bin_mean, max_lag, xerr=all_bin_errors, fmt='o')
 plt.xlabel(key)
 plt.ylabel('Max Lag (months)')
 if log==True:
@@ -424,14 +449,14 @@ if log==True:
 plt.tight_layout()
 if save == True:
     if key == 'z_p' or key == 'z' or key == 'z_use':
-        plt.savefig(filepath+'/normalised/max_lag_vs_z.png')
+        plt.savefig(filepath+'/max_lag_vs_z.png')
     elif key == 'Mstar_z_p':
-        plt.savefig(filepath+'/normalised/max_lag_vs_mass.png')
+        plt.savefig(filepath+'/max_lag_vs_mass.png')
 
 #%% Plot max lag vs mass ###
 plt.figure()
-plt.errorbar(all_bin_mean, max_norm_lag_fit, xerr=all_bin_errors, fmt='o')
-#plt.errorbar(all_bin_mean, mean_lag, xerr=all_bin_errors, fmt='o')
+#plt.errorbar(all_bin_mean, max_norm_lag_fit, xerr=all_bin_errors, fmt='o')
+plt.errorbar(all_bin_mean, max_lag_fit, xerr=all_bin_errors, fmt='o')
 plt.xlabel(key)
 plt.ylabel('Max Fitted Lag (months)')
 if log==True:
@@ -439,9 +464,9 @@ if log==True:
 plt.tight_layout()
 if save == True:
     if key == 'z_p' or key == 'z' or key == 'z_use':
-        plt.savefig(filepath+'/normalised/max_lag_fit_vs_z.png')
+        plt.savefig(filepath+'/max_lag_fit_vs_z.png')
     elif key == 'Mstar_z_p':
-        plt.savefig(filepath+'/normalised/max_lag_fit_vs_mass.png')
+        plt.savefig(filepath+'/max_lag_fit_vs_mass.png')
         
 end = time.time()
 print(end-start)

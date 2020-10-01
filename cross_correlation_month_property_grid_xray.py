@@ -42,10 +42,8 @@ def getdata(data):
 def parabola(x, a, b, c): #for curve fitting
     return a*x**2 + b*x + c
 
-def double_parabola(x, a, b, c, d, e, f): #for curve fitting
-    return (a*x**2 + b*x + c) * (d*x**2 + e*x + f)
 #%% Import data for variables selected in J and K + define constants ###
-varydata = Table.read('variable_tables/J_and_K_variables_month_varystats_DR11data.fits')
+varydata = Table.read('UDS_catalogues/chandra_month_varystats_noneg_DR11data.fits')
 #varydata = varydata[varydata['X-ray']==True]
 
 ### Set constants for sample and bins ###
@@ -320,8 +318,7 @@ for n, bindata in enumerate(bindatas):
     #%% Fit a parabola for those points around the centre of the ccf function ###
     sub_tau = np.arange(-7,8)
     test_ccf = ccf[np.isin(tau_arr, sub_tau)]
-#    fit_params, pcov = scipy.optimize.curve_fit(parabola, sub_tau, test_ccf)
-    fit_params, pcov = scipy.optimize.curve_fit(double_parabola, sub_tau, test_ccf)
+    fit_params, pcov = scipy.optimize.curve_fit(parabola, sub_tau, test_ccf)
     plot_tau = np.linspace(-7,7, 100)
     ccf_fit = parabola(plot_tau, *fit_params)
     max_lag_fit[n] = plot_tau[np.argmax(ccf_fit)]
@@ -389,10 +386,8 @@ for n, bindata in enumerate(bindatas):
     
     #%% Fit a parabola for those points around the centre of the ccf function ###
     spline_test_ccf = spline_ccf[np.isin(tau_arr, sub_tau)]
-#    fit_params, pcov = scipy.optimize.curve_fit(parabola, sub_tau, spline_test_ccf)
-    fit_params, pcov = scipy.optimize.curve_fit(double_parabola, sub_tau, spline_test_ccf)
-#    spline_ccf_fit = parabola(plot_tau, *fit_params)
-    spline_ccf_fit = double_parabola(plot_tau, *fit_params)
+    fit_params, pcov = scipy.optimize.curve_fit(parabola, sub_tau, spline_test_ccf)
+    spline_ccf_fit = parabola(plot_tau, *fit_params)
     spline_max_lag_fit[n] = plot_tau[np.argmax(spline_ccf_fit)]
     
     #%% Plot Spline CCF and fit ###

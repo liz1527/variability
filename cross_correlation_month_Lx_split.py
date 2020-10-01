@@ -23,6 +23,8 @@ import vari_funcs #my module to help run code neatly
 from astropy.cosmology import FlatLambdaCDM
 from astropy import units as u
 import random
+import scipy.optimize
+from scipy.interpolate import splev, splrep
 plt.close('all') #close any open plots
 #from numpy.lib.recfunctions import append_fields
 
@@ -34,6 +36,8 @@ def getdata(data):
     
     return j_flux, j_fluxerr, k_flux, k_fluxerr
 
+def parabola(x, a, b, c): #for curve fitting
+    return a*x**2 + b*x + c
 #%% Import data for variables selected in J and K + define constants ###
 xvarydata = Table.read('variable_tables/J_and_K_variables_month_varystats_DR11data_chan_xray.fits')
 noxvarydata = Table.read('variable_tables/J_and_K_variables_month_varystats_DR11data_chan_notxray.fits')
@@ -43,8 +47,8 @@ noxvarydata = Table.read('variable_tables/J_and_K_variables_month_varystats_DR11
 min_chi = 100 # chi cut required to create sample
 key = '$L_{X}$' # column to split on
 unit = '$erg s^{-1} cm^{-2}$' #for label
-num_bins = 2 # how many bins to create
-tau_arr = np.arange(-50,50) # tau values to evaluate ccf at 
+num_bins = 3 # how many bins to create
+tau_arr = np.arange(-24,25) # tau values to evaluate ccf at 
 #tau_arr = np.arange(-90,90)
 #log = True
 log = False
@@ -91,17 +95,27 @@ if log == True:
 else:    
     bins = np.linspace(x_xlum[0], x_xlum[-1],30)
 
+### Set up arrays for max vs Lx plot ###
+max_lag = np.zeros(num_bins+1)
+max_lag_fit = np.zeros(num_bins+1)
+
+all_bin_edges = np.zeros([2, num_bins])
+all_bin_mean = np.zeros(num_bins)
+
 for n in range(num_bins+1):
-    if n == 2:
+    if n == num_bins:
         bindata = noxvarydata # make nox its own bin
         label = 'Not X-ray Detected'
     else:
         bindata = xvarydata[n*num:(n+1)*num] # define bin according to number in bin
         ### get bin edges ###
-        bin_min = round(np.min(x_xlum[n*num:(n+1)*num]),2)
-        bin_max = round(np.max(x_xlum[n*num:(n+1)*num]),2)
+        all_bin_edges[0,n] = np.min(x_xlum[n*num:(n+1)*num])
+        all_bin_edges[1,n] = np.max(x_xlum[n*num:(n+1)*num])
+        all_bin_mean[n] = np.mean(x_xlum[n*num:(n+1)*num])
+        bin_min = round(all_bin_edges[0,n],2)
+        bin_max = round(all_bin_edges[1,n],2)
         ### set label ###
-        label = '{:.2e}'.format(bin_min)+unit+r' $\leq$ '+key+r' $<$ ' + '{:.2e}'.format(bin_max)+unit
+        label = '{:.1e}'.format(bin_min)+r' $\leq$ '+key+r' $<$ ' + '{:.1e}'.format(bin_max)+unit
     print(len(bindata))
     
     plt.figure(1)
@@ -136,40 +150,64 @@ for n in range(num_bins+1):
     #%% Calculate the CCF at various tau values ###
         
     out = np.array([vari_funcs.cross_correlation.cross_correlate(
-            corr_test_k_flux, corr_test_j_flux, tau) for tau in tau_arr])
+            corr_test_k_flux, corr_test_j_flux, tau, type='dcf') for tau in tau_arr])
 
     ### Unpack values ###
     ccf = out[:,0]
     ccf_err = out[:,1]
 
 
+    #%% Find weighted mean and skew of ccf ###
+    max_lag[n] = tau_arr[np.argmax(ccf)]
+    
+    #%% Fit a parabola for those points around the centre of the ccf function ###
+    sub_tau = np.arange(-7,8)
+    test_ccf = ccf[np.isin(tau_arr, sub_tau)]
+    fit_params, pcov = scipy.optimize.curve_fit(parabola, sub_tau, test_ccf)
+    plot_tau = np.linspace(-7,7, 100)
+    ccf_fit = parabola(plot_tau, *fit_params)
+    max_lag_fit[n] = plot_tau[np.argmax(ccf_fit)]
+    
     #%% Make plots ###
     plt.figure(2,figsize=[10,10])
     #plt.subplot(211)
     #plt.plot(tau_arr, ccf,'o')
     plt.errorbar(tau_arr, ccf, yerr=ccf_err, fmt='o',
                  label=label)
-    
     plt.xlabel('Lag (months)')
     plt.ylabel('Cross-Correlation Function')
-    plt.ylim(-0.015,0.025)
     plt.grid(True)
     plt.legend()
     plt.tight_layout()
     
     
-    plt.figure(n+3,figsize=[10,10])
+    plt.figure(3,figsize=[10,10])
+    plt.subplot(2,2,n+1)
     #plt.subplot(211)
     #plt.plot(tau_arr, ccf,'o')
     plt.errorbar(tau_arr, ccf, yerr=ccf_err, fmt='o', color='C'+str(n),
                  label=label)
+    plt.plot(plot_tau, ccf_fit, zorder=1)
     plt.xlabel('Lag (months)')
     plt.ylabel('Cross-Correlation Function')
-    plt.ylim(-0.015,0.025)
+#    plt.ylim(-0.015,0.025)
     plt.grid(True)
-    plt.legend()
+    plt.title(label)
+    plt.vlines(max_lag[n], np.min(ccf), np.max(ccf), linestyle='dashed')
+    plt.vlines(max_lag_fit[n], np.min(ccf), np.max(ccf), linestyle='dashdot')
+#    plt.legend()
     plt.tight_layout()
 
+all_bin_errors = np.abs(all_bin_edges - all_bin_mean[None,:])
+plt.figure()
+plt.errorbar(all_bin_mean, max_lag[:3], xerr=all_bin_errors, fmt='o')
+plt.xlabel('$L_{X} (ergs s^{-1} cm^{-2}$)')
+plt.ylabel('Max Lag')
+
+plt.figure()
+plt.errorbar(all_bin_mean, max_lag_fit[:3], xerr=all_bin_errors, fmt='o')
+plt.xlabel('$L_{X} (ergs s^{-1} cm^{-2}$)')
+plt.ylabel('Max Fitted Lag')
 
 end = time.time()
 print(end-start)

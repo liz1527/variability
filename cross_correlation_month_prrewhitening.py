@@ -180,18 +180,18 @@ varydata = varydata[mask]
 #varydata = varydata[varydata['X-ray']==True]
 varydata.sort(keys=key) #sort into increasing according to key
 varydata = varydata[varydata[key]!=0] # remove any with 0 as this is likely to be invalid
-#varydata = varydata[varydata['z_use']<4] # remove any z>4 as this is likely to be invalid
+varydata = varydata[varydata['z_use']<5] # remove any z>4 as this is likely to be invalid
 #varydata = varydata[varydata[key]<4] # remove any >4 as this is likely to be invalid
 
 #xvarydata = varydata[varydata['X-ray']==True]
 #noxvarydata = varydata[varydata['X-ray']==False]
 
 ##%% Set up Mstar z plot so see bin ranges ###
-#plt.figure(20)
-#plt.plot(varydata['z_p'], varydata['Mstar_z_p'], 'o')
-#plt.yscale('log')
-#plt.ylabel('Stellar Mass')
-#plt.xlabel('Redshift')
+plt.figure(20)
+plt.plot(varydata['z_use'], varydata['Mstar_z_p'], 'o')
+plt.yscale('log')
+plt.ylabel('Stellar Mass')
+plt.xlabel('Redshift')
 
 #%% Limit mass range for z study or vice versa ###
 if key == 'z_p' or key == 'z' or key == 'z_use':
@@ -494,15 +494,15 @@ if save == True:
 plt.figure()
 plt.errorbar(all_bin_mean, mean_lag_high_ccf, xerr=all_bin_errors, fmt='o')
 plt.xlabel(key)
-plt.ylabel('Weighted Mean Lag (months)')
+plt.ylabel('Weighted Mean Lag from high CCF values (months)')
 if log==True:
     plt.xscale('log')
 plt.tight_layout()
 if save == True:
     if key == 'z_p' or key == 'z' or key == 'z_use':
-        plt.savefig(filepath+'/normalised/mean_lag_vs_z.png')
+        plt.savefig(filepath+'/normalised/mean_lag_high_ccf_vs_z.png')
     elif key == 'Mstar_z_p':
-        plt.savefig(filepath+'/normalised/mean_lag_vs_mass.png')
+        plt.savefig(filepath+'/normalised/mean_lag_high_ccf_vs_mass.png')
 
 #%% Plot median lag vs mass ###
 plt.figure()

@@ -28,14 +28,14 @@ plt.close('all') #close any open plots
 
 #%% Open the fits files and get data ###
 ### Import data for J and K Yearstacks ###
-varys = Table.read('UDS_catalogues/full_varystats_neg.fits')
+varys = Table.read('UDS_catalogues/chandra_varystats_noneg.fits')
 
 ### Import month data ###
 monthdata = Table.read('UDS_catalogues/month_lightcurves_J_and_K.fits')
 
 ### Make sure IDs match up ###
-#mask = np.isin(monthdata['DR11_ID'], varys['ID'])
-#monthdata = monthdata[mask]
+mask = np.isin(monthdata['DR11_ID'], varys['ID'])
+monthdata = monthdata[mask]
 mask = np.isin(varys['ID'], monthdata['DR11_ID'])
 varys = varys[mask]
 
@@ -116,7 +116,7 @@ for n in range(len(monthdata)): #loop over the selection band
 
 #%% Set up table with original varys as base ###
 Ktable = Table(varys)
-Ktable['X-ray'] = Ktable['X-ray'].astype('bool')
+#Ktable['X-ray'] = Ktable['X-ray'].astype('bool')
 
 #### remove monthdata columns ###
 #Ktable.keep_columns(varys.colnames)
@@ -153,7 +153,7 @@ finaltable = add_col(np.array(Kchi), finaltable, 'Month_Chi_K')
 finaltable = add_col(np.array(Jchi), finaltable, 'Month_Chi_J')
 
 #finaltable.write('variable_tables/NIR_variables_J_and_K.fits', overwrite=True)
-finaltable.write('UDS_catalogues/full_month_varystats_neg.fits', 
+finaltable.write('UDS_catalogues/chandra_month_varystats_noneg.fits', 
                  overwrite=True)
 
 end = time.time()
