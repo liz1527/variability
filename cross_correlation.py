@@ -243,8 +243,8 @@ def cross_correlate_de_z(kflux, jflux, tau, z, type='dcf'):
     elif type == 'dcf':
         ccf = calculate_dcf(pair_k_flux, pair_j_flux)
         
-#    err = bootstrapping(pair_k_flux, pair_j_flux, repeats=1000)
-    err=np.nan
+    err = bootstrapping(pair_k_flux, pair_j_flux, repeats=1000)
+#    err=np.nan
     return ccf, err, len(pair_k_flux)
 
 def cross_correlate_shifted(kflux, jflux, tau, type='ccf'):
